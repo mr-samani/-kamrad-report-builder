@@ -1,4 +1,7 @@
 <div class="page-builder-container">
+  <div class="tool-bar">
+    <button (click)="onSave()">Save</button>
+  </div>
   <div
     class="components"
     ngxDropList
@@ -7,11 +10,12 @@
     [disableSort]="true"
   >
     @for (item of sources; track $index) {
-    <div class="tool" ngxDraggable>{{ item.title }}</div>
+    <div class="tool" ngxDraggable [innerHTML]="item.icon | safeHtml" [title]="item.title"></div>
     }
   </div>
 
   <div class="report-page" #reportPage ngxDropList [data]="items" (drop)="onDrop($event)">
     <div class="placeholder" *ngxPlaceholder></div>
   </div>
+  <div class="properties">properties</div>
 </div>

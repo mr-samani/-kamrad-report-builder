@@ -47,9 +47,16 @@ export class DynamicElementService {
       this.renderer.appendChild(element, this.renderer.createText(options.text));
     }
 
-    const parentEl =
+    const parentEl: HTMLElement =
       container instanceof ViewContainerRef ? container.element.nativeElement : container;
-    this.renderer.insertBefore(parentEl, element, parentEl.children[index] || null);
+    if (index != null && index >= 0) {
+      const refNode = parentEl.children[index] || null;
+      this.renderer.insertBefore(parentEl, element, refNode);
+    } else {
+      this.renderer.appendChild(parentEl, element);
+    }
+
+    //this.renderer.insertBefore(parentEl, element, parentEl.children[index] || null);
     //this.renderer.appendChild(parentEl, element);
 
     if (options?.directives?.length) {
