@@ -1,20 +1,17 @@
-<div
-  class="components"
-  ngxDropList
-  [data]="sources"
-  [connectedTo]="[reportPage]"
-  [disableSort]="true"
->
-  @for (item of sources; track $index) {
-  <div class="tool" ngxDraggable>{{ item.title }}</div>
-  }
-</div>
-
-<div class="report-page" #reportPage ngxDropList [data]="items" (drop)="onDrop($event)">
-  <div class="placeholder" *ngxPlaceholder></div>
-  @for (item of items; track $index) {
-  <div class="report-item" ngxDraggable ngxResizable>
-    <ng-container *ngComponentOutlet="item.component"></ng-container>
+<div class="page-builder-container">
+  <div
+    class="components"
+    ngxDropList
+    [data]="sources"
+    [connectedTo]="[reportPage]"
+    [disableSort]="true"
+  >
+    @for (item of sources; track $index) {
+    <div class="tool" ngxDraggable>{{ item.title }}</div>
+    }
   </div>
-  }
+
+  <div class="report-page" #reportPage ngxDropList [data]="items" (drop)="onDrop($event)">
+    <div class="placeholder" *ngxPlaceholder></div>
+  </div>
 </div>

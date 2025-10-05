@@ -1,8 +1,9 @@
-:host {
+.page-builder-container {
   display: flex;
   gap: 5px;
   min-height: 100vh;
   background: #fafafa;
+  padding: 0 10px;
   * {
     box-sizing: border-box;
   }
@@ -10,9 +11,10 @@
 
 .components {
   border: 1px solid #eee;
-  flex-basis: 250px;
-  display: flex;
-  flex-wrap: wrap;
+  width: 250px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: max-content;
   gap: 5px;
   padding: 5px;
   flex-shrink: 0;
@@ -20,7 +22,6 @@
     padding: 5px;
     border: 1px solid #d7d7d7;
     border-radius: 3px;
-    width: calc(50% - 3px);
     height: 80px;
     display: flex;
     align-items: center;
@@ -33,5 +34,14 @@
   flex-basis: 100%;
   .placeholder {
     border: 1px dashed #0400ff;
+  }
+}
+
+.block-item {
+  border: 1px dashed #8d8d8d;
+  min-width: 50px;
+  min-height: 50px;
+  &:hover {
+    border-color: #00b3ff;
   }
 }
