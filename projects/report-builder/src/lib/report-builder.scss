@@ -1,0 +1,37 @@
+:host {
+  display: flex;
+  gap: 5px;
+  min-height: 100vh;
+  background: #fafafa;
+  * {
+    box-sizing: border-box;
+  }
+}
+
+.components {
+  border: 1px solid #eee;
+  flex-basis: 250px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 5px;
+  flex-shrink: 0;
+  .tool {
+    padding: 5px;
+    border: 1px solid #d7d7d7;
+    border-radius: 3px;
+    width: calc(50% - 3px);
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+  }
+}
+.report-page {
+  border: 1px solid #eee;
+  flex-basis: 100%;
+  .placeholder {
+    border: 1px dashed #0400ff;
+  }
+}
