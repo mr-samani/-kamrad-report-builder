@@ -5,6 +5,7 @@ export class ReportItem {
   el!: HTMLElement;
   children: ReportItem[] = [];
   tag!: string;
+  html?: string;
 
   constructor(el: HTMLElement, tag: string) {
     this.el = el;

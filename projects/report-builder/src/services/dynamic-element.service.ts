@@ -7,9 +7,11 @@ import {
   Injector,
   Renderer2,
   RendererFactory2,
+  Signal,
   Type,
   ViewContainerRef,
   runInInjectionContext,
+  createEnvironmentInjector,
 } from '@angular/core';
 import 'reflect-metadata';
 
@@ -56,9 +58,6 @@ export class DynamicElementService {
       this.renderer.appendChild(parentEl, element);
     }
 
-    //this.renderer.insertBefore(parentEl, element, parentEl.children[index] || null);
-    //this.renderer.appendChild(parentEl, element);
-
     if (options?.directives?.length) {
       for (const DirType of options.directives) {
         this.attachDirective(element, DirType);
@@ -68,19 +67,43 @@ export class DynamicElementService {
     return element;
   }
 
+  createElementFromHTML(
+    html: string | undefined,
+    page: Signal<ElementRef<any> | undefined>,
+    directives?: Type<any>[]
+  ): HTMLElement {
+    if (!html) {
+      html = '';
+    }
+    const div: HTMLElement = this.renderer.createElement('div');
+    html = decodeURIComponent(html);
+    this.renderer.setProperty(div, 'innerHTML', html);
+    const element = div.firstChild as HTMLElement;
+    const pageRef = page();
+    if (pageRef) {
+      this.renderer.appendChild(pageRef.nativeElement, element);
+    }
+    if (directives?.length) {
+      for (const DirType of directives) {
+        this.attachDirective(element, DirType);
+      }
+    }
+    return element;
+  }
+
   private attachDirective<T>(element: HTMLElement, DirType: Type<T>) {
-    // ساخت یک injector محلی که ElementRef و Renderer2 را فراهم کند
+    const elRef = new ElementRef(element);
+
+    // ساخت یک EnvironmentInjector کامل که به همه سرویس‌های root دسترسی داره
     const dirInjector = Injector.create({
       providers: [
-        { provide: ElementRef, useValue: new ElementRef(element) },
+        { provide: ElementRef, useValue: elRef },
         { provide: Renderer2, useValue: this.renderer },
-        // اگر توکن یا provider خاصی لازم داری میتوانی اینجا اضافه کنی:
-        // { provide: NGX_DROP_LIST, useValue: undefined }
       ],
-      parent: this.injector,
+      parent: this.envInjector, // این مهمه! از envInjector به جای injector استفاده کن
     });
 
-    // تلاش برای خواندن metadata پارامترهای سازنده (اگر موجود باشد)
+    // خواندن metadata پارامترهای سازنده
     let paramTypes: any[] = [];
     try {
       paramTypes = Reflect.getMetadata('design:paramtypes', DirType) || [];
@@ -88,7 +111,7 @@ export class DynamicElementService {
       paramTypes = [];
     }
 
-    // ساخت instance داخل injection context — این باعث میشه inject(...) در داخل کلاس کار کند
+    // ساخت instance داخل injection context
     let dirInstance: any;
     try {
       dirInstance = runInInjectionContext(dirInjector, () => {
@@ -96,53 +119,48 @@ export class DynamicElementService {
           const deps = paramTypes.map((p: any) => {
             try {
               return dirInjector.get(p);
-            } catch {
+            } catch (err) {
+              console.warn('Could not resolve dependency:', p, err);
               return undefined;
             }
           });
           return new (DirType as any)(...deps);
         } else {
-          // اکثر دایرکتیوهای مدرن سازنده‌ی بدون پارامتر دارند و از inject() داخل فیلد استفاده می‌کنند
-          return new (DirType as any)();
+          return new (DirType as any)(elRef);
         }
       });
     } catch (err) {
-      // fallback خیلی ساده (نباید معمولا اجرا بشه اگر runInInjectionContext موجود باشه)
-      dirInstance = new (DirType as any)();
+      console.error('Error creating directive instance:', err);
+      dirInstance = new (DirType as any)(elRef);
     }
 
-    // فراخوانی lifecycle hooks به صورت دستی (Angular وقتی خودش می‌سازد اینها را می‌زند)
+    // فراخوانی lifecycle hooks
     if (typeof dirInstance.ngOnInit === 'function') {
       try {
         dirInstance.ngOnInit();
-      } catch {}
-    }
-    if (typeof dirInstance.ngAfterViewInit === 'function') {
-      try {
-        dirInstance.ngAfterViewInit();
-      } catch (e) {
-        // ممکنه در ngAfterViewInit دایرکتیو به providers وابسته باشه — معمولا runInInjectionContext این را حل می کند
-        console.warn('ngAfterViewInit error for dynamic directive', e);
+      } catch (err) {
+        console.error('ngOnInit error:', err);
       }
     }
 
-    // ----- شبیه‌سازی HostListener برای onEndDrag (window:mouseup / touchend) -----
-    // (کتابخانه‌ات از HostListener برای window:mouseup/touchend استفاده کرده؛
-    //  چون Angular خودش host listeners را اضافه نمی‌کند، ما این دو را دستی وصل می‌کنیم)
-    const cleanupFns: (() => void)[] = [];
-    if (typeof dirInstance.onEndDrag === 'function') {
-      const winUp = (ev: Event) => {
+    // CRITICAL: ngAfterViewInit باید بعد از اینکه element به DOM اضاف شد اجرا بشه
+    // برای اطمینان از setTimeout استفاده میکنیم
+    setTimeout(() => {
+      if (typeof dirInstance.ngAfterViewInit === 'function') {
         try {
-          dirInstance.onEndDrag(ev);
-        } catch (e) {}
-      };
-      window.addEventListener('mouseup', winUp);
-      window.addEventListener('touchend', winUp);
-      cleanupFns.push(() => window.removeEventListener('mouseup', winUp));
-      cleanupFns.push(() => window.removeEventListener('touchend', winUp));
-    }
+          dirInstance.ngAfterViewInit();
+        } catch (err) {
+          console.error('ngAfterViewInit error:', err);
+        }
+      }
+    }, 0);
 
-    // wrap ngOnDestroy to remove our listeners when directive destroyed
+    // شبیه‌سازی HostListener برای window events
+    // توجه: دایرکتیو از fromEvent استفاده میکنه، پس نیازی به این قسمت نیست
+    // ولی اگر بخوای میتونی نگهش داری
+    const cleanupFns: (() => void)[] = [];
+
+    // wrap ngOnDestroy
     const originalDestroy = dirInstance.ngOnDestroy?.bind(dirInstance);
     dirInstance.ngOnDestroy = () => {
       try {
@@ -155,9 +173,18 @@ export class DynamicElementService {
       }
     };
 
-    // اگر دایرکتیو EventEmitter دارد می‌توانی به آن subscribe کنی:
-    // if (dirInstance.dragStart) dirInstance.dragStart.subscribe((p) => console.log('dragStart', p));
+    // ذخیره instance برای cleanup بعدی
+    (element as any).__ngDirective__ = dirInstance;
 
     return dirInstance;
+  }
+
+  // متد برای cleanup دستی اگر لازم شد
+  destroyDirective(element: HTMLElement) {
+    const dirInstance = (element as any).__ngDirective__;
+    if (dirInstance && typeof dirInstance.ngOnDestroy === 'function') {
+      dirInstance.ngOnDestroy();
+      delete (element as any).__ngDirective__;
+    }
   }
 }
