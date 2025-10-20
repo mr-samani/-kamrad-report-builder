@@ -1,5 +1,5 @@
 import { NgxDraggableDirective, NgxResizableDirective } from 'ngx-drag-drop-kit';
 
-export const DefaultBlockDirectives = [NgxDraggableDirective, NgxResizableDirective];
+export const DefaultBlockDirectives = [NgxDraggableDirective];
 
 export const DefaultBlockClassName = 'block-item';

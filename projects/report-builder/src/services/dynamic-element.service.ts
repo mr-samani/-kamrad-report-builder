@@ -35,16 +35,22 @@ export class DynamicElementService {
     options?: {
       text?: string;
       attributes?: Record<string, any>;
+      events?: Record<string, any>;
       directives?: Type<any>[];
     }
   ): HTMLElement {
     const element = this.renderer.createElement(tag);
-
     if (options?.attributes) {
       for (const [k, v] of Object.entries(options.attributes)) {
-        this.renderer.setAttribute(element, k, String(v));
+        this.renderer.setAttribute(element, k, v);
       }
     }
+    if (options?.events) {
+      for (const [k, v] of Object.entries(options.events)) {
+        this.renderer.listen(element, k, v);
+      }
+    }
+
     if (options?.text) {
       this.renderer.appendChild(element, this.renderer.createText(options.text));
     }

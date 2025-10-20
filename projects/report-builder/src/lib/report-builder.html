@@ -14,8 +14,16 @@
     }
   </div>
 
-  <div class="report-page" #reportPage ngxDropList [data]="items" (drop)="onDrop($event)">
+  <div
+    class="report-page"
+    #reportPage
+    ngxDropList
+    [data]="pageBuilderService.items"
+    (drop)="onDrop($event)"
+  >
     <div class="placeholder" *ngxPlaceholder></div>
   </div>
+
   <div class="properties">properties</div>
 </div>
+<block-selector />

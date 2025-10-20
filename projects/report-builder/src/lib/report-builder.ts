@@ -16,19 +16,21 @@ import { SOURCE_ITEMS, SourceItem } from '../models/SourceItem';
 import { DefaultBlockClassName, DefaultBlockDirectives } from '../consts/defauls';
 import { SafeHtmlPipe } from '../pipes/safe-html.pipe';
 import { sanitizeForStorage } from '../utiles/sanitizeForStorage';
+import { PageBuilderService } from '../services/page-builder.service';
+import { BlockSelectorComponent } from '../components/block-selector/block-selector.component';
 
 @Component({
   selector: 'ngx-report-builder',
   templateUrl: './report-builder.html',
   styleUrls: ['./report-builder.scss'],
-  imports: [CommonModule, NgxDragDropKitModule, SafeHtmlPipe],
+  imports: [CommonModule, NgxDragDropKitModule, SafeHtmlPipe, BlockSelectorComponent],
   encapsulation: ViewEncapsulation.None,
 })
 export class NgxReportBuilder implements OnInit {
   private readonly cd = inject(ChangeDetectorRef);
   private renderer = inject(Renderer2);
   private readonly dynamicElementService = inject(DynamicElementService);
-  items: ReportItem[] = [];
+  public readonly pageBuilderService = inject(PageBuilderService);
   sources: SourceItem[] = SOURCE_ITEMS;
   page = viewChild<ElementRef>('reportPage');
   constructor() {}
@@ -40,8 +42,8 @@ export class NgxReportBuilder implements OnInit {
   loadReport() {
     const report = localStorage.getItem('report');
     if (report) {
-      this.items = JSON.parse(report);
-      this.items.forEach((item) => {
+      this.pageBuilderService.items = JSON.parse(report);
+      this.pageBuilderService.items.forEach((item) => {
         item.el = this.dynamicElementService.createElementFromHTML(
           item.html,
           this.page,
@@ -68,16 +70,19 @@ export class NgxReportBuilder implements OnInit {
           attributes: {
             class: DefaultBlockClassName,
           },
+          events: {
+            click: () => this.pageBuilderService.onSelectBlock(c),
+          },
         }
       );
       const c = new ReportItem(item, tag);
-      this.items.splice(event.currentIndex, 0, c);
+      this.pageBuilderService.items.splice(event.currentIndex, 0, c);
     } else {
       // جابجایی در همون container
-      const nativeEl = this.items[event.previousIndex].el;
+      const nativeEl = this.pageBuilderService.items[event.previousIndex].el;
 
       // ابتدا آرایه رو جابجا کن
-      moveItemInArray(this.items, event.previousIndex, event.currentIndex);
+      moveItemInArray(this.pageBuilderService.items, event.previousIndex, event.currentIndex);
 
       // حالا DOM رو هم جابجا کن
       const containerEl = event.container.el;
@@ -101,13 +106,15 @@ export class NgxReportBuilder implements OnInit {
 
     console.log(
       'Dropped:',
-      this.items.map((m) => m.tag)
+      this.pageBuilderService.items.map((m) => m.tag)
     );
     this.cd.detectChanges();
   }
   onSave() {
-    this.items.forEach((item) => (item.html = encodeURIComponent(item.el.outerHTML)));
-    const sanitized = sanitizeForStorage(this.items);
+    this.pageBuilderService.items.forEach(
+      (item) => (item.html = encodeURIComponent(item.el.outerHTML))
+    );
+    const sanitized = sanitizeForStorage(this.pageBuilderService.items);
     localStorage.setItem('report', JSON.stringify(sanitized));
   }
 }
