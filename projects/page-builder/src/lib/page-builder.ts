@@ -90,29 +90,31 @@ export class NgxPageBuilder implements OnInit {
       this.pageBuilderService.items.splice(event.currentIndex, 0, c);
       this.pageBuilderService.onSelectBlock(c);
     } else {
-      // جابجایی در همون container
-      const nativeEl = this.pageBuilderService.items[event.previousIndex].el;
+      if (event.previousIndex !== event.currentIndex) {
+        // جابجایی در همون container
+        const nativeEl = this.pageBuilderService.items[event.previousIndex].el;
 
-      // ابتدا آرایه رو جابجا کن
-      moveItemInArray(this.pageBuilderService.items, event.previousIndex, event.currentIndex);
+        // ابتدا آرایه رو جابجا کن
+        moveItemInArray(this.pageBuilderService.items, event.previousIndex, event.currentIndex);
 
-      // حالا DOM رو هم جابجا کن
-      const containerEl = event.container.el;
-      const children = Array.from(containerEl.children);
+        // حالا DOM رو هم جابجا کن
+        const containerEl = event.container.el;
+        const children = Array.from(containerEl.children);
 
-      // المنت رو از جای قبلی بردار
-      this.renderer.removeChild(containerEl, nativeEl);
+        // المنت رو از جای قبلی بردار
+        this.renderer.removeChild(containerEl, nativeEl);
 
-      // اگر باید به آخر لیست اضافه بشه
-      if (event.currentIndex >= children.length - 1) {
-        this.renderer.appendChild(containerEl, nativeEl);
-      } else {
-        // وگرنه قبل از المنت مورد نظر قرارش بده
-        // توجه: چون یه element رو remove کردیم، باید index رو تنظیم کنیم
-        const refIndex =
-          event.currentIndex > event.previousIndex ? event.currentIndex : event.currentIndex;
-        const refNode = children[refIndex];
-        this.renderer.insertBefore(containerEl, nativeEl, refNode);
+        // اگر باید به آخر لیست اضافه بشه
+        if (event.currentIndex >= children.length - 1) {
+          this.renderer.appendChild(containerEl, nativeEl);
+        } else {
+          // وگرنه قبل از المنت مورد نظر قرارش بده
+          // توجه: چون یه element رو remove کردیم، باید index رو تنظیم کنیم
+          const refIndex =
+            event.currentIndex > event.previousIndex ? event.currentIndex : event.currentIndex;
+          const refNode = children[refIndex];
+          this.renderer.insertBefore(containerEl, nativeEl, refNode);
+        }
       }
     }
 
@@ -123,9 +125,14 @@ export class NgxPageBuilder implements OnInit {
     this.cd.detectChanges();
   }
   onSave() {
-    this.pageBuilderService.items.forEach(
-      (item) => (item.html = encodeURIComponent(item.el.outerHTML))
-    );
+    this.pageBuilderService.items.forEach((item) => {
+      //cleanup
+      let html = item.el.outerHTML;
+      html = html.replace(/\s*data-id="[^"]*"/g, '');
+      html = html.replace(/<div[^>]*class="[^"]*ngx-corner-resize[^"]*"[^>]*>[\s\S]*?<\/div>/g, '');
+
+      item.html = encodeURIComponent(html);
+    });
     const sanitized = sanitizeForStorage(this.pageBuilderService.items);
     localStorage.setItem('report', JSON.stringify(sanitized));
   }

@@ -208,7 +208,6 @@ export class DynamicElementService {
 
   // متد برای cleanup دستی اگر لازم شد
   destroyDirective(element: HTMLElement) {
-    debugger;
     const directiveInstances = (element as any).__ngDirectives__;
     if (Array.isArray(directiveInstances)) {
       for (const d of directiveInstances) {
