@@ -20,12 +20,19 @@ import { sanitizeForStorage } from '../utiles/sanitizeForStorage';
 import { PageBuilderService } from '../services/page-builder.service';
 import { BlockSelectorComponent } from '../components/block-selector/block-selector.component';
 import { generateUUID } from '../utiles/generateUUID';
+import { BlockPropertiesComponent } from '../components/block-properties/block-properties.component';
 
 @Component({
   selector: 'ngx-page-builder',
   templateUrl: './page-builder.html',
   styleUrls: ['./page-builder.scss'],
-  imports: [CommonModule, NgxDragDropKitModule, SafeHtmlPipe, BlockSelectorComponent],
+  imports: [
+    CommonModule,
+    NgxDragDropKitModule,
+    SafeHtmlPipe,
+    BlockSelectorComponent,
+    BlockPropertiesComponent,
+  ],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -48,15 +55,18 @@ export class NgxPageBuilder implements OnInit {
   loadPageData() {
     const report = localStorage.getItem('report');
     if (report) {
-      this.pageBuilderService.items = JSON.parse(report);
-      this.pageBuilderService.items.forEach((item) => {
+      this.pageBuilderService.items = [];
+      const data = JSON.parse(report) ?? [];
+      data.forEach((d: any) => {
+        const item = new PageItem(d);
+        this.pageBuilderService.items.push(item);
         item.el = this.dynamicElementService.createElementFromHTML(item, this.page, {
           directives: DefaultBlockDirectives,
           attributes: {
             class: DefaultBlockClassName,
           },
           events: {
-            click: () => this.pageBuilderService.onSelectBlock(item),
+            click: (ev: Event) => this.pageBuilderService.onSelectBlock(item, ev),
           },
         });
       });
@@ -67,14 +77,14 @@ export class NgxPageBuilder implements OnInit {
     console.log('Dropped:', event);
     this.deSelectBlock();
     if (event.previousContainer !== event.container) {
-      const id = generateUUID();
       // انتقال از یک container به container دیگه
-      const source = this.sources[event.previousIndex];
-      let item = this.dynamicElementService.createElement(
+      const source = new PageItem(this.sources[event.previousIndex]);
+      source.id = generateUUID();
+      let html = this.dynamicElementService.createElement(
         event.container.el,
         event.currentIndex,
         source.tag,
-        id,
+        source.id,
         {
           text: source.text,
           directives: DefaultBlockDirectives,
@@ -83,13 +93,13 @@ export class NgxPageBuilder implements OnInit {
             class: DefaultBlockClassName,
           },
           events: {
-            click: () => this.pageBuilderService.onSelectBlock(c),
+            click: (ev: Event) => this.pageBuilderService.onSelectBlock(source, ev),
           },
         }
       );
-      const c = new PageItem(item, source.tag, id);
-      this.pageBuilderService.items.splice(event.currentIndex, 0, c);
-      this.pageBuilderService.onSelectBlock(c);
+      source.el = html;
+      this.pageBuilderService.items.splice(event.currentIndex, 0, source);
+      this.pageBuilderService.onSelectBlock(source);
     } else {
       if (event.previousIndex !== event.currentIndex) {
         // جابجایی در همون container

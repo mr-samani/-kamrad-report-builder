@@ -12,9 +12,12 @@ export class PageBuilderService {
   renderer!: Renderer2;
   constructor(private dynamicElementService: DynamicElementService) {}
 
-  onSelectBlock(c: PageItem) {
+  onSelectBlock(c: PageItem, ev?: Event) {
+    // ev?.stopPropagation();
+    ev?.preventDefault();
     this.activeEl.set(c);
   }
+
   removeBlock(item: PageItem) {
     const index = this.items.findIndex((i) => i.id === item.id);
     if (index !== -1 && item.el) {

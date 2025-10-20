@@ -1,4 +1,4 @@
-@if(activeItem()){
+@if(item){
 <div
   class="block-selector"
   [style.left.px]="x"
@@ -14,7 +14,7 @@
         />
       </svg>
     </button>
-    {{ activeItem()?.id }}
+    {{ item.id }}
   </div>
 </div>
 }

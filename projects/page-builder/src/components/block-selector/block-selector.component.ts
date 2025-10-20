@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   HostListener,
   Injector,
   OnInit,
@@ -24,26 +25,28 @@ export class BlockSelectorComponent extends BaseComponent implements OnInit {
   y: number = 0;
   width: number = 0;
   height: number = 0;
-  activeItem = computed(() => {
-    const item = this.pageBuilderService.activeEl();
-    this.updatePosition(item);
-    return item;
-  });
+  item?: PageItem;
   constructor(injector: Injector) {
     super(injector);
+    effect(() => {
+      this.item = this.pageBuilderService.activeEl();
+      // console.log('updated Selected', this.item);
+      this.updatePosition();
+    });
   }
 
   ngOnInit() {}
 
   @HostListener('window:resize', ['$event'])
   onPageResize(ev: Event) {
-    const item = this.activeItem();
-    this.updatePosition(item);
+    this.updatePosition();
   }
 
-  updatePosition(item?: PageItem) {
-    if (item) {
-      const foundedElement: HTMLElement | null = this.doc.querySelector(`[data-id="${item.id}"]`);
+  updatePosition() {
+    if (this.item) {
+      const foundedElement: HTMLElement | null = this.doc.querySelector(
+        `[data-id="${this.item.id}"]`
+      );
       if (foundedElement) {
         let rect = foundedElement.getBoundingClientRect();
         this.x = window.scrollX + rect.x;
@@ -59,12 +62,12 @@ export class BlockSelectorComponent extends BaseComponent implements OnInit {
       this.width = 0;
       this.height = 0;
     }
+    this.chdRef.detectChanges();
   }
 
   deleteBlock() {
-    const item = this.activeItem();
-    if (item) {
-      this.pageBuilderService.removeBlock(item);
+    if (this.item) {
+      this.pageBuilderService.removeBlock(this.item);
     }
   }
 }

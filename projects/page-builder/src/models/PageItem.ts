@@ -6,10 +6,14 @@ export class PageItem {
   children: PageItem[] = [];
   tag!: string;
   html?: string;
+  text?: string;
+  attributes?: Record<string, any> | undefined;
 
-  constructor(el: HTMLElement, tag: string, id?: string) {
-    this.el = el;
-    this.tag = tag;
-    this.id = id || generateUUID();
+  constructor(data?: PageItem | any) {
+    if (data) {
+      for (var property in data) {
+        if (data.hasOwnProperty(property)) (<any>this)[property] = (<any>data)[property];
+      }
+    }
   }
 }
