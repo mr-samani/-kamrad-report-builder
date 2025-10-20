@@ -36,6 +36,7 @@ export class NgxPageBuilder implements OnInit {
   public readonly pageBuilderService = inject(PageBuilderService);
   sources: SourceItem[] = SOURCE_ITEMS;
   page = viewChild<ElementRef>('PageContainer');
+  showOutlines = true;
   constructor() {
     this.pageBuilderService.renderer = this.renderer;
   }
@@ -64,21 +65,21 @@ export class NgxPageBuilder implements OnInit {
 
   async onDrop(event: IDropEvent) {
     console.log('Dropped:', event);
-
+    this.deSelectBlock();
     if (event.previousContainer !== event.container) {
       const id = generateUUID();
       // انتقال از یک container به container دیگه
-      const tag = this.sources[event.previousIndex].tag;
-      const text = this.sources[event.previousIndex].text;
+      const source = this.sources[event.previousIndex];
       let item = this.dynamicElementService.createElement(
         event.container.el,
         event.currentIndex,
-        tag,
+        source.tag,
         id,
         {
-          text,
+          text: source.text,
           directives: DefaultBlockDirectives,
           attributes: {
+            ...source.attributes,
             class: DefaultBlockClassName,
           },
           events: {
@@ -86,7 +87,7 @@ export class NgxPageBuilder implements OnInit {
           },
         }
       );
-      const c = new PageItem(item, tag, id);
+      const c = new PageItem(item, source.tag, id);
       this.pageBuilderService.items.splice(event.currentIndex, 0, c);
       this.pageBuilderService.onSelectBlock(c);
     } else {
@@ -129,11 +130,19 @@ export class NgxPageBuilder implements OnInit {
       //cleanup
       let html = item.el.outerHTML;
       html = html.replace(/\s*data-id="[^"]*"/g, '');
+      html = html.replace(/\s*contenteditable="[^"]*"/g, '');
       html = html.replace(/<div[^>]*class="[^"]*ngx-corner-resize[^"]*"[^>]*>[\s\S]*?<\/div>/g, '');
 
       item.html = encodeURIComponent(html);
     });
     const sanitized = sanitizeForStorage(this.pageBuilderService.items);
     localStorage.setItem('report', JSON.stringify(sanitized));
+  }
+
+  toggleOutlines() {
+    this.showOutlines = !this.showOutlines;
+  }
+  deSelectBlock() {
+    this.pageBuilderService.activeEl.set(undefined);
   }
 }

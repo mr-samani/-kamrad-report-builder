@@ -20,7 +20,10 @@ import { PageItem } from '../../models/PageItem';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BlockSelectorComponent extends BaseComponent implements OnInit {
-  rect?: DOMRect;
+  x: number = 0;
+  y: number = 0;
+  width: number = 0;
+  height: number = 0;
   activeItem = computed(() => {
     const item = this.pageBuilderService.activeEl();
     this.updatePosition(item);
@@ -42,12 +45,19 @@ export class BlockSelectorComponent extends BaseComponent implements OnInit {
     if (item) {
       const foundedElement: HTMLElement | null = this.doc.querySelector(`[data-id="${item.id}"]`);
       if (foundedElement) {
-        this.rect = foundedElement.getBoundingClientRect();
+        let rect = foundedElement.getBoundingClientRect();
+        this.x = window.scrollX + rect.x;
+        this.y = window.scrollY + rect.y;
+        this.width = rect.width;
+        this.height = rect.height;
       }
     }
     // reset => hide
     else {
-      this.rect = undefined;
+      this.x = 0;
+      this.y = 0;
+      this.width = 0;
+      this.height = 0;
     }
   }
 

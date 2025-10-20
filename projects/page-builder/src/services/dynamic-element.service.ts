@@ -29,6 +29,9 @@ export class DynamicElementService {
     this.renderer = rendererFactory.createRenderer(null, null);
   }
 
+  /**
+   * create html element on droped to page
+   */
   createElement(
     container: HTMLElement | ViewContainerRef,
     index: number,
@@ -41,22 +44,16 @@ export class DynamicElementService {
       directives?: Type<any>[];
     }
   ): HTMLElement {
-    const element = this.renderer.createElement(tag);
+    let element = this.renderer.createElement(tag);
     element.dataset['id'] = id;
-    if (options?.attributes) {
-      for (const [k, v] of Object.entries(options.attributes)) {
-        this.renderer.setAttribute(element, k, v);
-      }
-    }
-    if (options?.events) {
-      for (const [k, v] of Object.entries(options.events)) {
-        this.renderer.listen(element, k, v);
-      }
-    }
 
     if (options?.text) {
       this.renderer.appendChild(element, this.renderer.createText(options.text));
     }
+    // if (this.isContentEditable(tag)) {
+    //   element.contentEditable = 'true';
+    // }
+    element = this.bindOptions(element, options);
 
     const parentEl: HTMLElement =
       container instanceof ViewContainerRef ? container.element.nativeElement : container;
@@ -67,15 +64,12 @@ export class DynamicElementService {
       this.renderer.appendChild(parentEl, element);
     }
 
-    if (options?.directives?.length) {
-      for (const DirType of options.directives) {
-        this.attachDirective(element, DirType);
-      }
-    }
-
     return element;
   }
 
+  /**
+   * create html element from PageItem (Saved data)
+   */
   createElementFromHTML(
     item: PageItem,
     page: Signal<ElementRef<any> | undefined>,
@@ -92,12 +86,27 @@ export class DynamicElementService {
     const div: HTMLElement = this.renderer.createElement('div');
     html = decodeURIComponent(html);
     this.renderer.setProperty(div, 'innerHTML', html);
-    const element = div.firstChild as HTMLElement;
+    let element = div.firstChild as HTMLElement;
     element.dataset['id'] = item.id;
+    // if (this.isContentEditable(item.tag)) {
+    //   element.contentEditable = 'true';
+    // }
+    element = this.bindOptions(element, options);
     const pageRef = page();
     if (pageRef) {
       this.renderer.appendChild(pageRef.nativeElement, element);
     }
+    return element;
+  }
+
+  private bindOptions(
+    element: HTMLElement,
+    options?: {
+      attributes?: Record<string, any>;
+      events?: Record<string, any>;
+      directives?: Type<any>[];
+    }
+  ): HTMLElement {
     if (options?.attributes) {
       for (const [k, v] of Object.entries(options.attributes)) {
         this.renderer.setAttribute(element, k, v);
@@ -188,7 +197,6 @@ export class DynamicElementService {
     // wrap ngOnDestroy
     const originalDestroy = dirInstance.ngOnDestroy?.bind(dirInstance);
     dirInstance.ngOnDestroy = () => {
-      debugger;
       try {
         cleanupFns.forEach((f) => f());
       } catch {}
@@ -217,5 +225,10 @@ export class DynamicElementService {
       }
       delete (element as any).__ngDirectives__;
     }
+  }
+
+  isContentEditable(tag: string): boolean {
+    const editableTags = ['div', 'span', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
+    return editableTags.indexOf(tag.toLowerCase()) > 0;
   }
 }

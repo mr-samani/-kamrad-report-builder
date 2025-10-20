@@ -1,10 +1,10 @@
-@if(activeItem() && rect){
+@if(activeItem()){
 <div
   class="block-selector"
-  [style.left.px]="rect.left"
-  [style.top.px]="rect.top"
-  [style.width.px]="rect.width"
-  [style.height.px]="rect.height"
+  [style.left.px]="x"
+  [style.top.px]="y"
+  [style.width.px]="width"
+  [style.height.px]="height"
 >
   <div class="actions">
     <button type="button" (click)="deleteBlock()">
