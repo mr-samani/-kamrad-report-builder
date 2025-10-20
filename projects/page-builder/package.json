@@ -1,5 +1,5 @@
 {
-  "name": "ngx-report-builder",
+  "name": "ngx-page-builder",
   "version": "0.0.1",
   "peerDependencies": {
     "@angular/common": "^20.3.0",

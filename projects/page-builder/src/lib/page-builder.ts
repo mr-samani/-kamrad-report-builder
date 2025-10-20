@@ -20,13 +20,13 @@ import { PageBuilderService } from '../services/page-builder.service';
 import { BlockSelectorComponent } from '../components/block-selector/block-selector.component';
 
 @Component({
-  selector: 'ngx-report-builder',
-  templateUrl: './report-builder.html',
-  styleUrls: ['./report-builder.scss'],
+  selector: 'ngx-page-builder',
+  templateUrl: './page-builder.html',
+  styleUrls: ['./page-builder.scss'],
   imports: [CommonModule, NgxDragDropKitModule, SafeHtmlPipe, BlockSelectorComponent],
   encapsulation: ViewEncapsulation.None,
 })
-export class NgxReportBuilder implements OnInit {
+export class NgxPageBuilder implements OnInit {
   private readonly cd = inject(ChangeDetectorRef);
   private renderer = inject(Renderer2);
   private readonly dynamicElementService = inject(DynamicElementService);

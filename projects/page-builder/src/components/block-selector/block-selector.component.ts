@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Injector, OnInit } from '@angular/core';
 import { BaseComponent } from '../BaseComponent';
-import { ReportItem } from '../../models/ReportItem';
 
 @Component({
   selector: 'block-selector',

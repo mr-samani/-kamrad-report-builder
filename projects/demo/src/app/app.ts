@@ -1,8 +1,8 @@
 import { Component, signal } from '@angular/core';
-import { NgxReportBuilder } from '@ngx-report-builder';
+import { NgxPageBuilder } from '@ngx-page-builder';
 @Component({
   selector: 'app-root',
-  imports: [NgxReportBuilder],
+  imports: [NgxPageBuilder],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })

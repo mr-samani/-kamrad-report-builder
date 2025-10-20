@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { NgxReportBuilder } from './report-builder';
+import { NgxPageBuilder } from './page-builder';
 
-describe('ReportBuilder', () => {
-  let component: NgxReportBuilder;
-  let fixture: ComponentFixture<NgxReportBuilder>;
+describe('PageBuilder', () => {
+  let component: NgxPageBuilder;
+  let fixture: ComponentFixture<NgxPageBuilder>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NgxReportBuilder],
+      imports: [NgxPageBuilder],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(NgxReportBuilder);
+    fixture = TestBed.createComponent(NgxPageBuilder);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

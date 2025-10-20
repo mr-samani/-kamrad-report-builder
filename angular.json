@@ -3,20 +3,20 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "report-builder": {
+    "page-builder": {
       "projectType": "library",
-      "root": "projects/report-builder",
-      "sourceRoot": "projects/report-builder/src",
+      "root": "projects/page-builder",
+      "sourceRoot": "projects/page-builder/src",
       "prefix": "lib",
       "architect": {
         "build": {
           "builder": "@angular/build:ng-packagr",
           "configurations": {
             "production": {
-              "tsConfig": "projects/report-builder/tsconfig.lib.prod.json"
+              "tsConfig": "projects/page-builder/tsconfig.lib.prod.json"
             },
             "development": {
-              "tsConfig": "projects/report-builder/tsconfig.lib.json"
+              "tsConfig": "projects/page-builder/tsconfig.lib.json"
             }
           },
           "defaultConfiguration": "production"
@@ -24,7 +24,7 @@
         "test": {
           "builder": "@angular/build:karma",
           "options": {
-            "tsConfig": "projects/report-builder/tsconfig.spec.json"
+            "tsConfig": "projects/page-builder/tsconfig.spec.json"
           }
         }
       }
@@ -52,9 +52,7 @@
                 "input": "projects/demo/public"
               }
             ],
-            "styles": [
-              "projects/demo/src/styles.scss"
-            ]
+            "styles": ["projects/demo/src/styles.scss"]
           },
           "configurations": {
             "production": {
@@ -106,9 +104,7 @@
                 "input": "projects/demo/public"
               }
             ],
-            "styles": [
-              "projects/demo/src/styles.scss"
-            ]
+            "styles": ["projects/demo/src/styles.scss"]
           }
         }
       }

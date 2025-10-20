@@ -12,9 +12,7 @@
     "isolatedModules": true,
     "experimentalDecorators": true,
     "paths": {
-      "report-builder": [
-        "./dist/report-builder"
-      ]
+      "page-builder": ["./dist/page-builder"]
     },
     "importHelpers": true,
     "target": "ES2022",
@@ -30,10 +28,10 @@
   "files": [],
   "references": [
     {
-      "path": "./projects/report-builder/tsconfig.lib.json"
+      "path": "./projects/page-builder/tsconfig.lib.json"
     },
     {
-      "path": "./projects/report-builder/tsconfig.spec.json"
+      "path": "./projects/page-builder/tsconfig.spec.json"
     },
     {
       "path": "./projects/demo/tsconfig.app.json"
