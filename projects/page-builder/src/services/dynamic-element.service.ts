@@ -14,6 +14,7 @@ import {
   createEnvironmentInjector,
 } from '@angular/core';
 import 'reflect-metadata';
+import { PageItem } from '../models/PageItem';
 
 @Injectable({ providedIn: 'root' })
 export class DynamicElementService {
@@ -32,6 +33,7 @@ export class DynamicElementService {
     container: HTMLElement | ViewContainerRef,
     index: number,
     tag: string,
+    id: string,
     options?: {
       text?: string;
       attributes?: Record<string, any>;
@@ -40,6 +42,7 @@ export class DynamicElementService {
     }
   ): HTMLElement {
     const element = this.renderer.createElement(tag);
+    element.dataset['id'] = id;
     if (options?.attributes) {
       for (const [k, v] of Object.entries(options.attributes)) {
         this.renderer.setAttribute(element, k, v);
@@ -74,10 +77,15 @@ export class DynamicElementService {
   }
 
   createElementFromHTML(
-    html: string | undefined,
+    item: PageItem,
     page: Signal<ElementRef<any> | undefined>,
-    directives?: Type<any>[]
+    options?: {
+      attributes?: Record<string, any>;
+      events?: Record<string, any>;
+      directives?: Type<any>[];
+    }
   ): HTMLElement {
+    let html = item.html;
     if (!html) {
       html = '';
     }
@@ -85,12 +93,23 @@ export class DynamicElementService {
     html = decodeURIComponent(html);
     this.renderer.setProperty(div, 'innerHTML', html);
     const element = div.firstChild as HTMLElement;
+    element.dataset['id'] = item.id;
     const pageRef = page();
     if (pageRef) {
       this.renderer.appendChild(pageRef.nativeElement, element);
     }
-    if (directives?.length) {
-      for (const DirType of directives) {
+    if (options?.attributes) {
+      for (const [k, v] of Object.entries(options.attributes)) {
+        this.renderer.setAttribute(element, k, v);
+      }
+    }
+    if (options?.events) {
+      for (const [k, v] of Object.entries(options.events)) {
+        this.renderer.listen(element, k, v);
+      }
+    }
+    if (options && options.directives?.length) {
+      for (const DirType of options.directives) {
         this.attachDirective(element, DirType);
       }
     }
@@ -169,6 +188,7 @@ export class DynamicElementService {
     // wrap ngOnDestroy
     const originalDestroy = dirInstance.ngOnDestroy?.bind(dirInstance);
     dirInstance.ngOnDestroy = () => {
+      debugger;
       try {
         cleanupFns.forEach((f) => f());
       } catch {}
@@ -180,17 +200,23 @@ export class DynamicElementService {
     };
 
     // ذخیره instance برای cleanup بعدی
-    (element as any).__ngDirective__ = dirInstance;
+    if (!(element as any).__ngDirectives__) (element as any).__ngDirectives__ = [];
+    (element as any).__ngDirectives__.push(dirInstance);
 
     return dirInstance;
   }
 
   // متد برای cleanup دستی اگر لازم شد
   destroyDirective(element: HTMLElement) {
-    const dirInstance = (element as any).__ngDirective__;
-    if (dirInstance && typeof dirInstance.ngOnDestroy === 'function') {
-      dirInstance.ngOnDestroy();
-      delete (element as any).__ngDirective__;
+    debugger;
+    const directiveInstances = (element as any).__ngDirectives__;
+    if (Array.isArray(directiveInstances)) {
+      for (const d of directiveInstances) {
+        if (d && typeof d.ngOnDestroy === 'function') {
+          d.ngOnDestroy?.();
+        }
+      }
+      delete (element as any).__ngDirectives__;
     }
   }
 }

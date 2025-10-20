@@ -6,7 +6,7 @@
     class="components"
     ngxDropList
     [data]="sources"
-    [connectedTo]="[reportPage]"
+    [connectedTo]="[PageContainer]"
     [disableSort]="true"
   >
     @for (item of sources; track $index) {
@@ -15,8 +15,8 @@
   </div>
 
   <div
-    class="report-page"
-    #reportPage
+    class="page-container"
+    #PageContainer
     ngxDropList
     [data]="pageBuilderService.items"
     (drop)="onDrop($event)"

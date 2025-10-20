@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import {
+  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   ElementRef,
@@ -10,7 +11,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { IDropEvent, moveItemInArray, NgxDragDropKitModule } from 'ngx-drag-drop-kit';
-import { ReportItem } from '../models/ReportItem';
+import { PageItem } from '../models/PageItem';
 import { DynamicElementService } from '../services/dynamic-element.service';
 import { SOURCE_ITEMS, SourceItem } from '../models/SourceItem';
 import { DefaultBlockClassName, DefaultBlockDirectives } from '../consts/defauls';
@@ -18,6 +19,7 @@ import { SafeHtmlPipe } from '../pipes/safe-html.pipe';
 import { sanitizeForStorage } from '../utiles/sanitizeForStorage';
 import { PageBuilderService } from '../services/page-builder.service';
 import { BlockSelectorComponent } from '../components/block-selector/block-selector.component';
+import { generateUUID } from '../utiles/generateUUID';
 
 @Component({
   selector: 'ngx-page-builder',
@@ -25,6 +27,7 @@ import { BlockSelectorComponent } from '../components/block-selector/block-selec
   styleUrls: ['./page-builder.scss'],
   imports: [CommonModule, NgxDragDropKitModule, SafeHtmlPipe, BlockSelectorComponent],
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NgxPageBuilder implements OnInit {
   private readonly cd = inject(ChangeDetectorRef);
@@ -32,23 +35,29 @@ export class NgxPageBuilder implements OnInit {
   private readonly dynamicElementService = inject(DynamicElementService);
   public readonly pageBuilderService = inject(PageBuilderService);
   sources: SourceItem[] = SOURCE_ITEMS;
-  page = viewChild<ElementRef>('reportPage');
-  constructor() {}
-
-  ngOnInit(): void {
-    this.loadReport();
+  page = viewChild<ElementRef>('PageContainer');
+  constructor() {
+    this.pageBuilderService.renderer = this.renderer;
   }
 
-  loadReport() {
+  ngOnInit(): void {
+    this.loadPageData();
+  }
+
+  loadPageData() {
     const report = localStorage.getItem('report');
     if (report) {
       this.pageBuilderService.items = JSON.parse(report);
       this.pageBuilderService.items.forEach((item) => {
-        item.el = this.dynamicElementService.createElementFromHTML(
-          item.html,
-          this.page,
-          DefaultBlockDirectives
-        );
+        item.el = this.dynamicElementService.createElementFromHTML(item, this.page, {
+          directives: DefaultBlockDirectives,
+          attributes: {
+            class: DefaultBlockClassName,
+          },
+          events: {
+            click: () => this.pageBuilderService.onSelectBlock(item),
+          },
+        });
       });
     }
   }
@@ -57,6 +66,7 @@ export class NgxPageBuilder implements OnInit {
     console.log('Dropped:', event);
 
     if (event.previousContainer !== event.container) {
+      const id = generateUUID();
       // انتقال از یک container به container دیگه
       const tag = this.sources[event.previousIndex].tag;
       const text = this.sources[event.previousIndex].text;
@@ -64,6 +74,7 @@ export class NgxPageBuilder implements OnInit {
         event.container.el,
         event.currentIndex,
         tag,
+        id,
         {
           text,
           directives: DefaultBlockDirectives,
@@ -75,8 +86,9 @@ export class NgxPageBuilder implements OnInit {
           },
         }
       );
-      const c = new ReportItem(item, tag);
+      const c = new PageItem(item, tag, id);
       this.pageBuilderService.items.splice(event.currentIndex, 0, c);
+      this.pageBuilderService.onSelectBlock(c);
     } else {
       // جابجایی در همون container
       const nativeEl = this.pageBuilderService.items[event.previousIndex].el;

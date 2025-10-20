@@ -1,1 +1,29 @@
-/* custom styles block-selector */
+.block-selector {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 5px;
+  outline: 2px solid #0073ff;
+  outline-offset: -2px;
+  .actions {
+    position: absolute;
+    pointer-events: auto;
+    background-color: #0073ff;
+    color: #fff;
+    padding: 5px;
+    height: 24px;
+    top: -34px;
+    display: inline-flex;
+    overflow: hidden;
+    max-width: 50%;
+    border-radius: 5px 5px 0 0;
+    align-items: center;
+    button {
+      background: none;
+      border: none;
+      min-width: 26px;
+    }
+    svg {
+      fill: #fff;
+    }
+  }
+}
