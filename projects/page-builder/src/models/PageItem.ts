@@ -2,7 +2,7 @@ import { generateUUID } from '../utiles/generateUUID';
 
 export class PageItem {
   id: string = generateUUID();
-  el!: HTMLElement;
+  el?: HTMLElement;
   children: PageItem[] = [];
   tag!: string;
   html?: string;

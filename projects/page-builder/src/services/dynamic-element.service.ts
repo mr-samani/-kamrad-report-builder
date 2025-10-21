@@ -77,7 +77,7 @@ export class DynamicElementService {
       events?: Record<string, any>;
       directives?: Type<any>[];
     }
-  ): HTMLElement {
+  ): HTMLElement | undefined {
     let html = item.html;
     if (!html) {
       html = '';
@@ -86,10 +86,15 @@ export class DynamicElementService {
     html = decodeURIComponent(html);
     this.renderer.setProperty(div, 'innerHTML', html);
     let element = div.firstChild as HTMLElement;
+    if (element.nodeType !== 1) {
+      console.error('Error on create elment:', element.nodeType, element);
+      return undefined;
+    }
     element.dataset['id'] = item.id;
     // if (this.isContentEditable(item.tag)) {
     //   element.contentEditable = 'true';
     // }
+
     element = this.bindOptions(element, options);
     const pageRef = page();
     if (pageRef) {

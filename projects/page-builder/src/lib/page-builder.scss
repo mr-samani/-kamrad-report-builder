@@ -102,17 +102,6 @@
     min-height: var(--letter-width);
   }
 
-  &.show-outlines {
-    .block-item {
-      outline: 1px dashed #8d8d8d;
-      outline-offset: 1px;
-      min-width: 50px;
-      min-height: 20px;
-      &:hover {
-        outline-color: #00b3ff;
-      }
-    }
-  }
   .placeholder {
     border: 2px #008a3c solid;
     &:after,
@@ -152,5 +141,16 @@
   }
   .page-body {
     min-height: calc(var(--a5-height) / 2);
+  }
+}
+.show-outlines {
+  .block-item {
+    outline: 1px dashed #8d8d8d;
+    outline-offset: 1px;
+    min-width: 50px;
+    min-height: 20px;
+    &:hover {
+      outline-color: #00b3ff;
+    }
   }
 }

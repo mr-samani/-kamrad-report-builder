@@ -53,6 +53,12 @@ export class TextEditorComponent implements AfterViewInit {
   textColor = '#000000';
   bgColor = '#ffffff';
 
+  // ✅ ذخیره selection
+  private savedSelection: Range | null = null;
+
+  // ✅ نمایش تعداد کاراکترهای انتخاب شده
+  selectedCharCount = 0;
+
   constructor(
     private sanitizer: DomSanitizer,
     @Inject(MAT_DIALOG_DATA) public data: PageItem,
@@ -63,13 +69,47 @@ export class TextEditorComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    // initialize content if value was set before view init
     this.editableRef.nativeElement.innerHTML = this._value || '';
+
+    // ✅ Listen به تغییرات selection
+    this.editableRef.nativeElement.addEventListener('mouseup', () => this.saveSelection('mouseup'));
+    this.editableRef.nativeElement.addEventListener('keyup', () => this.saveSelection('keyup'));
+    this.editableRef.nativeElement.addEventListener('selectstart', () =>
+      this.saveSelection('selectstart')
+    );
+    this.editableRef.nativeElement.addEventListener('selectend', () =>
+      this.saveSelection('selectend')
+    );
   }
 
-  // Generic command wrapper for simple commands
+  // ✅ ذخیره کردن selection فعلی
+  saveSelection(eventType: string = 'other') {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+      this.savedSelection = sel.getRangeAt(0).cloneRange();
+
+      // محاسبه تعداد کاراکترهای انتخاب شده
+      const selectedText = sel.toString();
+      this.selectedCharCount = selectedText.length;
+
+      // آپدیت toolbar state
+      this.updateToolbarState();
+    }
+    console.log('Selection saved on:', eventType);
+  }
+
+  // ✅ بازگردانی selection ذخیره شده
+  restoreSelection() {
+    if (this.savedSelection) {
+      const sel = window.getSelection();
+      if (sel) {
+        sel.removeAllRanges();
+        sel.addRange(this.savedSelection);
+      }
+    }
+  }
+
   execCommand(cmd: string, value: string | null = null) {
-    // Try document command, fallback to manual if needed
     try {
       this.doc.execCommand(cmd, false, value as any);
     } catch (e) {
@@ -86,6 +126,8 @@ export class TextEditorComponent implements AfterViewInit {
   }
 
   setAlign(direction: 'left' | 'center' | 'right') {
+    this.restoreSelection(); // ✅ بازگردانی selection
+
     const cmd =
       direction === 'left'
         ? 'justifyleft'
@@ -93,96 +135,144 @@ export class TextEditorComponent implements AfterViewInit {
         ? 'justifycenter'
         : 'justifyright';
     this.execCommand(cmd);
+
+    this.saveSelection(); // ✅ ذخیره selection جدید
   }
 
   setFontFamily(family: string) {
     this.fontFamily = family;
+    this.restoreSelection(); // ✅ بازگردانی selection
     this.applyStyle({ fontFamily: family });
   }
 
   setFontSize(size: string) {
     const px = parseInt(size, 10) || 14;
     this.fontSize = px;
+    this.restoreSelection(); // ✅ بازگردانی selection
     this.applyStyle({ fontSize: px + 'px' });
   }
 
-  applyStyle(styleObj: { [k: string]: string }) {
-    const sel = document.getSelection();
-    if (!sel || sel.rangeCount === 0) return;
-    const range = sel.getRangeAt(0);
-    const node = sel.focusNode;
-    // 1️⃣ اگر selection داخل span هست
-    const parentSpan = this.findParentSpan(node);
+  // ✅ برای color picker ها که با (change) یا (input) کار میکنن
+  onTextColorChange(color: string) {
+    this.textColor = color;
+    this.restoreSelection(); // ✅ بازگردانی selection قبل از apply
+    this.applyStyle({ color: color });
+  }
 
-    if (parentSpan) {
-      // بررسی کن ببین استایل فعلی span با چیزی که می‌خوای یکیه یا نه
-      let updated = false;
-      for (const key of Object.keys(styleObj)) {
-        const newVal = styleObj[key];
-        const oldVal = parentSpan.style[key as any];
-        if (oldVal !== newVal) {
-          parentSpan.style[key as any] = newVal;
-          updated = true;
-        }
-      }
-      // if (updated) this.emitChange();
+  onBgColorChange(color: string) {
+    this.bgColor = color;
+    this.restoreSelection(); // ✅ بازگردانی selection قبل از apply
+    this.applyStyle({ backgroundColor: color });
+  }
+
+  applyStyle(styleObj: { [k: string]: string }) {
+    const range = this.savedSelection;
+    const sel = document.getSelection();
+
+    // اگر هیچ متنی انتخاب نشده
+    if (!range || range.collapsed || !sel) {
+      console.warn('No text selected. Please select text to apply styles.');
       return;
     }
 
-    // 2️⃣ اگر selection داخل span نیست → بساز فقط در صورت نیاز
-    if (range.collapsed) {
-      const span = document.createElement('span');
-      this.applyStyleObject(span.style, styleObj);
-      span.appendChild(document.createTextNode('\u200B'));
-      range.insertNode(span);
+    const span = document.createElement('span');
+    this.applyStyleObject(span.style, styleObj);
 
-      range.setStart(span.firstChild as Node, 1);
-      range.collapse(true);
-      sel.removeAllRanges();
-      sel.addRange(range);
-    } else {
-      const span = document.createElement('span');
-      this.applyStyleObject(span.style, styleObj);
-      try {
-        range.surroundContents(span);
-      } catch {
-        const extracted = range.extractContents();
-        span.appendChild(extracted);
-        range.insertNode(span);
-      }
+    try {
+      range.surroundContents(span);
+    } catch (e) {
+      const fragment = range.extractContents();
+      this.applyStyleToFragment(fragment, styleObj);
+      span.appendChild(fragment);
+      range.insertNode(span);
     }
+
+    // ✅ selection را حفظ کن
+    sel.removeAllRanges();
+    const newRange = document.createRange();
+    newRange.selectNodeContents(span);
+    sel.addRange(newRange);
+
+    // ✅ selection جدید را ذخیره کن
+    this.savedSelection = newRange.cloneRange();
 
     this.editableRef.nativeElement.normalize();
   }
 
+  applyStyleToFragment(fragment: DocumentFragment, styleObj: { [k: string]: string }) {
+    const walker = document.createTreeWalker(
+      fragment,
+      NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT,
+      null
+    );
+
+    const nodesToWrap: Node[] = [];
+    let node: Node | null;
+
+    while ((node = walker.nextNode())) {
+      if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()) {
+        nodesToWrap.push(node);
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        const el = node as HTMLElement;
+        if (el.tagName === 'SPAN') {
+          this.applyStyleObject(el.style, styleObj);
+        }
+      }
+    }
+
+    nodesToWrap.forEach((textNode) => {
+      const span = document.createElement('span');
+      this.applyStyleObject(span.style, styleObj);
+
+      const parent = textNode.parentNode;
+      if (parent) {
+        parent.insertBefore(span, textNode);
+        span.appendChild(textNode);
+      }
+    });
+  }
+
   applyStyleObject(style: CSSStyleDeclaration, obj: { [k: string]: string }) {
     for (const k of Object.keys(obj)) {
-      // map camelCase to css property names if needed
-      // direct assignment works for most properties
-      // @ts-ignore
-      style[k] = obj[k];
+      (style as any)[k] = obj[k];
     }
   }
 
   clearFormatting() {
     const root = this.editableRef.nativeElement;
-    // Remove inline styles and convert to plain text-preserving simple tags for paragraphs/line breaks
     const html = root.innerText || '';
     root.innerHTML = html.replace(/\n/g, '<br>');
+    this.savedSelection = null;
+    this.selectedCharCount = 0;
   }
 
-  onKeyUp() {
-    // keep internal state in sync for color inputs if caret style changed
-    // try to inspect parent element of selection to read styles
+  // ✅ آپدیت کردن state های toolbar بر اساس selection
+  updateToolbarState() {
     const sel = this.doc.getSelection();
     if (!sel || sel.rangeCount === 0) return;
+
     const node = sel.anchorNode as Node | null;
     const el = this.findParentElement(node);
+
     if (el) {
       const st = window.getComputedStyle(el as Element);
       this.textColor = this.ensureColorHex(st.color) || this.textColor;
       this.bgColor = this.ensureColorHex(st.backgroundColor) || this.bgColor;
+
+      const fontFamily = st.fontFamily.replace(/['"]/g, '').split(',')[0].trim();
+      if (this.fontFamilies.includes(fontFamily)) {
+        this.fontFamily = fontFamily;
+      }
+
+      const fontSize = parseInt(st.fontSize);
+      if (!isNaN(fontSize) && this.fontSizes.includes(fontSize)) {
+        this.fontSize = fontSize;
+      }
     }
+  }
+
+  onKeyUp() {
+    this.saveSelection(); // ✅ ذخیره selection
   }
 
   findParentElement(n: Node | null): HTMLElement | null {
@@ -194,7 +284,7 @@ export class TextEditorComponent implements AfterViewInit {
 
   ensureColorHex(colorStr: string | null): string | null {
     if (!colorStr) return null;
-    // convert rgb(...) to hex if needed
+
     const m = colorStr.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
     if (m) {
       const r = parseInt(m[1]).toString(16).padStart(2, '0');
@@ -202,9 +292,10 @@ export class TextEditorComponent implements AfterViewInit {
       const b = parseInt(m[3]).toString(16).padStart(2, '0');
       return `#${r}${g}${b}`;
     }
-    // if it's already a hex or named color, return as-is (works for inputs)
+
     return colorStr;
   }
+
   findParentSpan(node: Node | null): HTMLSpanElement | null {
     while (node) {
       if (node.nodeType === Node.ELEMENT_NODE && (node as HTMLElement).tagName === 'SPAN') {
@@ -217,7 +308,7 @@ export class TextEditorComponent implements AfterViewInit {
 
   getValue() {
     const html = this.editableRef.nativeElement.innerHTML;
-    return html;
+    return html.replace(/\u200B/g, '').replace(/<span[^>]*>\s*<\/span>/g, '');
   }
 
   ok() {

@@ -55,6 +55,15 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
     });
   }
 
+  removePage() {
+    const c = confirm('Are you sure you want to remove this page?');
+    if (c) {
+      this.pageBuilderService.removePage().then((index) => {
+        this.pageNumber = index + 1;
+      });
+    }
+  }
+
   onSave() {
     this.isSaving = true;
     this.storageService

@@ -55,6 +55,17 @@ export class PageBuilderService implements OnDestroy {
       return this.changePage(index + 1);
     });
   }
+  removePage(): Promise<number> {
+    return new Promise((resolve, reject) => {
+      let index = this.currentPageIndex();
+      if (index > -1) {
+        this.cleanCanvas(index);
+        this.pageInfo.pages.splice(index, 1);
+        return this.changePage(index);
+      }
+      return reject('Invalid page index');
+    });
+  }
 
   /**
    * Change the current page
@@ -62,25 +73,29 @@ export class PageBuilderService implements OnDestroy {
    */
   changePage(pageNumber: number): Promise<number> {
     return new Promise((resolve, reject) => {
-      if (!pageNumber) reject('Required page number');
-      if (pageNumber < 1 || pageNumber > this.pageInfo.pages.length) {
-        reject('Invalid page number');
-      } else {
-        this.cleanCanvas(this.currentPageIndex());
-        for (let item of this.pageInfo.pages[pageNumber - 1]?.items) {
-          item.el = this.dynamicElementService.createElementFromHTML(item, this.page, {
-            directives: DefaultBlockDirectives,
-            attributes: {
-              class: DefaultBlockClassName,
-            },
-            events: {
-              click: (ev: Event) => this.onSelectBlock(item, ev),
-            },
-          });
-        }
+      try {
+        if (pageNumber == undefined || pageNumber == null) reject('Required page number');
+        if (pageNumber < 1 || pageNumber > this.pageInfo.pages.length) {
+          reject('Invalid page number');
+        } else {
+          this.cleanCanvas(this.currentPageIndex());
+          for (let item of this.pageInfo.pages[pageNumber - 1]?.items) {
+            item.el = this.dynamicElementService.createElementFromHTML(item, this.page, {
+              directives: DefaultBlockDirectives,
+              attributes: {
+                class: DefaultBlockClassName,
+              },
+              events: {
+                click: (ev: Event) => this.onSelectBlock(item, ev),
+              },
+            });
+          }
 
-        this.currentPageIndex.set(pageNumber - 1);
-        resolve(this.currentPageIndex());
+          this.currentPageIndex.set(pageNumber - 1);
+          resolve(this.currentPageIndex());
+        }
+      } catch (error) {
+        console.error('Error changing page:', error);
       }
     });
   }
@@ -130,7 +145,7 @@ export class PageBuilderService implements OnDestroy {
     if (!page || !data) return;
     this.activeEl.set(data);
     const index = page.items.findIndex((x) => x.id == data.id);
-    if (index > -1) {
+    if (index > -1 && page.items[index].el) {
       page.items[index].el = this.dynamicElementService.updateElementContent(
         page.items[index].el,
         data
