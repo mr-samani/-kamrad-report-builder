@@ -1,8 +1,5 @@
 import { PageItem } from './PageItem';
 
-export declare type PageSize = 'A4' | 'A5' | 'Letter';
-export declare type PageOrientation = 'portrait' | 'landscape';
-
 export class Page {
   items: PageItem[] = [];
   config: PageConfig = new PageConfig();
@@ -16,8 +13,6 @@ export class Page {
 }
 
 export class PageConfig {
-  title: string = '';
-  description: string = '';
-  size: PageSize = 'A4';
-  orientation: PageOrientation = 'portrait';
+  title?: string = '';
+  description?: string = '';
 }

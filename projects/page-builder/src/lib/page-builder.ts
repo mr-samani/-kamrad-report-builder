@@ -4,6 +4,7 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  Inject,
   inject,
   Injector,
   OnInit,
@@ -28,6 +29,8 @@ import { PageHeaderComponent } from './page-header/page-header.component';
 import { PageFooterComponent } from './page-footer/page-footer.component';
 import { PageBuilderBaseComponent } from './page-builder-base-component';
 import { Page } from '../models/Page';
+import { IStorageService } from '../services/storage/IStorageService';
+import { STORAGE_SERVICE } from '../services/storage/token.storage';
 
 @Component({
   selector: 'ngx-page-builder',
@@ -52,7 +55,10 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
   sources: SourceItem[] = SOURCE_ITEMS;
   private _page = viewChild<ElementRef>('PageContainer');
 
-  constructor(injector: Injector) {
+  constructor(
+    injector: Injector,
+    @Inject(STORAGE_SERVICE) private storageService: IStorageService
+  ) {
     super(injector);
     this.dynamicElementService.renderer = this.renderer;
     this.pageBuilderService.renderer = this.renderer;
@@ -64,32 +70,33 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
   }
 
   preventDefault() {}
-  loadPageData() {
+  async loadPageData() {
+    debugger;
     try {
-      const report = localStorage.getItem(LOCAL_STORAGE_SAVE_KEY);
-      debugger;
-      if (report) {
-        this.pageBuilderService.pagelist = [];
-        const pageList = JSON.parse(report) ?? [];
-        for (let pageData of pageList) {
-          const page = new Page(pageData);
-          this.pageBuilderService.pagelist.push(page);
-          for (let item of page.items) {
-            item = new PageItem(item);
-            page.items.push(item);
-            item.el = this.dynamicElementService.createElementFromHTML(item, this._page, {
-              directives: DefaultBlockDirectives,
-              attributes: {
-                class: DefaultBlockClassName,
-              },
-              events: {
-                click: (ev: Event) => this.pageBuilderService.onSelectBlock(item, ev),
-              },
-            });
-          }
+      this.pageBuilderService.pageInfo = await this.storageService.loadData();
+      let pages = this.pageBuilderService.pageInfo.pages;
+      this.pageBuilderService.pageInfo.pages = [];
+
+      for (let pageData of pages) {
+        const page = new Page(pageData);
+        this.pageBuilderService.pageInfo.pages.push(page);
+        for (let item of page.items) {
+          item = new PageItem(item);
+          item.el = this.dynamicElementService.createElementFromHTML(item, this._page, {
+            directives: DefaultBlockDirectives,
+            attributes: {
+              class: DefaultBlockClassName,
+            },
+            events: {
+              click: (ev: Event) => this.pageBuilderService.onSelectBlock(item, ev),
+            },
+          });
         }
-        if (this.pageBuilderService.pagelist.length > 0) {
+
+        if (this.pageBuilderService.pageInfo.pages.length > 0) {
           this.pageBuilderService.changePage(1);
+        } else {
+          this.pageBuilderService.addPage();
         }
       }
     } catch (error) {

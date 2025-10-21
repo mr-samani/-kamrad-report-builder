@@ -1,9 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, Injector, OnInit } from '@angular/core';
+import { Component, effect, Inject, Injector, OnInit } from '@angular/core';
 import { PageBuilderBaseComponent } from '../page-builder-base-component';
 import { sanitizeForStorage } from '../../utiles/sanitizeForStorage';
 import { LOCAL_STORAGE_SAVE_KEY } from '../../consts/defauls';
 import { FormsModule } from '@angular/forms';
+import { STORAGE_SERVICE } from '../../services/storage/token.storage';
+import { IStorageService } from '../../services/storage/IStorageService';
 
 @Component({
   selector: 'toolbar',
@@ -14,7 +16,11 @@ import { FormsModule } from '@angular/forms';
 })
 export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit {
   pageNumber: number = 1;
-  constructor(injector: Injector) {
+  isSaving: boolean = false;
+  constructor(
+    injector: Injector,
+    @Inject(STORAGE_SERVICE) private storageService: IStorageService
+  ) {
     super(injector);
     effect(() => {
       this.pageNumber = this.pageBuilderService.currentPageIndex() + 1;
@@ -36,23 +42,14 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
   }
 
   onSave() {
-    for (let page of this.pageBuilderService.pagelist) {
-      for (let item of page.items) {
-        //cleanup
-        let html = item.el.outerHTML;
-        html = html.replace(/\s*data-id="[^"]*"/g, '');
-        html = html.replace(/\s*contenteditable="[^"]*"/g, '');
-        html = html.replace(
-          /<div[^>]*class="[^"]*ngx-corner-resize[^"]*"[^>]*>[\s\S]*?<\/div>/g,
-          ''
-        );
-
-        item.html = encodeURIComponent(html);
-      }
-    }
-
-    const sanitized = sanitizeForStorage(this.pageBuilderService.pagelist);
-    localStorage.setItem(LOCAL_STORAGE_SAVE_KEY, JSON.stringify(sanitized));
+    this.isSaving = true;
+    this.storageService
+      .saveData()
+      .then((result) => {
+        console.log('Data saved successfully:', result);
+        alert('Data saved successfully');
+      })
+      .finally(() => (this.isSaving = false));
   }
 
   toggleOutlines() {
@@ -70,5 +67,8 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
         orientation: 'portrait',
       });
     }
+  }
+  openConfigDialog() {
+    throw new Error('Method not implemented.');
   }
 }

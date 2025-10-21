@@ -2,35 +2,35 @@ import { ElementRef, inject, Injectable, Renderer2, Signal, signal } from '@angu
 import { PageItem } from '../models/PageItem';
 import { DynamicElementService } from './dynamic-element.service';
 import { Page } from '../models/Page';
+import { PageBuilderDto } from '../models/PageBuilderDto';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PageBuilderService {
-  pagelist: Page[] = [];
-
   currentPageIndex = signal<number>(-1);
 
   activeEl = signal<PageItem | undefined>(undefined);
   renderer!: Renderer2;
   page: Signal<ElementRef<any> | undefined> = signal<ElementRef<any> | undefined>(undefined);
   showOutlines = true;
+  pageInfo = new PageBuilderDto();
 
   constructor(private dynamicElementService: DynamicElementService) {}
 
   public get currentPageItems(): PageItem[] {
-    return this.pagelist[this.currentPageIndex()]?.items || [];
+    return this.pageInfo.pages[this.currentPageIndex()]?.items || [];
   }
   public set currentPageItems(items: PageItem[]) {
-    if (!this.pagelist[this.currentPageIndex()]) {
+    if (!this.pageInfo.pages[this.currentPageIndex()]) {
       throw new Error('Current page does not exist');
     }
-    this.pagelist[this.currentPageIndex()].items = items;
+    this.pageInfo.pages[this.currentPageIndex()].items = items;
   }
 
   addPage(): Promise<number> {
     return new Promise((resolve, reject) => {
-      this.pagelist.splice(this.currentPageIndex(), 0, new Page());
+      this.pageInfo.pages.splice(this.currentPageIndex(), 0, new Page());
       this.currentPageIndex.set(this.currentPageIndex() + 1);
       resolve(this.currentPageIndex());
     });
@@ -43,7 +43,7 @@ export class PageBuilderService {
   changePage(pageNumber: number): Promise<number> {
     return new Promise((resolve, reject) => {
       if (!pageNumber) reject('Required page number');
-      if (pageNumber < 1 || pageNumber > this.pagelist.length) {
+      if (pageNumber < 1 || pageNumber > this.pageInfo.pages.length) {
         reject('Invalid page number');
       } else {
         this.currentPageIndex.set(pageNumber - 1);
@@ -61,7 +61,7 @@ export class PageBuilderService {
     this.activeEl.set(undefined);
   }
   removeBlock(item: PageItem) {
-    let page = this.pagelist[this.currentPageIndex()];
+    let page = this.pageInfo.pages[this.currentPageIndex()];
     if (!page || !item) return;
 
     const index = page.items.findIndex((i) => i.id === item.id);
@@ -74,7 +74,7 @@ export class PageBuilderService {
   }
 
   writeItemValue(data: PageItem) {
-    let page = this.pagelist[this.currentPageIndex()];
+    let page = this.pageInfo.pages[this.currentPageIndex()];
     if (!page || !data) return;
     this.activeEl.set(data);
     const index = page.items.findIndex((x) => x.id == data.id);
