@@ -18,8 +18,8 @@
     }
   </div>
   <div class="page-container" (click)="pageBuilderService.deSelectBlock()">
-    {{ pageBuilderService.currentPageIndex() }}
     <div
+      [hidden]="pageBuilderService.currentPageIndex() < 0"
       class="paper {{ pageBuilderService.pageInfo.config.size }} {{
         pageBuilderService.pageInfo.config.orientation
       }}"

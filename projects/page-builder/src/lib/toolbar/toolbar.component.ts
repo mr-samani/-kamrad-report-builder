@@ -39,9 +39,14 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
   ngOnInit() {}
 
   changePage() {
-    this.pageBuilderService.changePage(this.pageNumber).then((index) => {
-      this.pageNumber = index + 1;
-    });
+    this.pageBuilderService
+      .changePage(this.pageNumber)
+      .then((index) => {
+        this.pageNumber = index + 1;
+      })
+      .catch((er) => {
+        this.pageNumber = this.pageBuilderService.currentPageIndex() + 1;
+      });
   }
 
   addPage() {

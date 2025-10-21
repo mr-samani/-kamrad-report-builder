@@ -12,6 +12,7 @@ import { DynamicElementService } from './dynamic-element.service';
 import { Page } from '../models/Page';
 import { PageBuilderDto } from '../models/PageBuilderDto';
 import { Subject } from 'rxjs';
+import { DefaultBlockDirectives, DefaultBlockClassName } from '../consts/defauls';
 
 @Injectable({
   providedIn: 'root',
@@ -49,9 +50,9 @@ export class PageBuilderService implements OnDestroy {
 
   addPage(): Promise<number> {
     return new Promise((resolve, reject) => {
-      this.pageInfo.pages.splice(this.currentPageIndex(), 0, new Page());
-      this.currentPageIndex.set(this.currentPageIndex() + 1);
-      resolve(this.currentPageIndex());
+      let index = this.currentPageIndex() + 1;
+      this.pageInfo.pages.splice(index, 0, new Page());
+      return this.changePage(index + 1);
     });
   }
 
@@ -65,10 +66,42 @@ export class PageBuilderService implements OnDestroy {
       if (pageNumber < 1 || pageNumber > this.pageInfo.pages.length) {
         reject('Invalid page number');
       } else {
+        this.cleanCanvas(this.currentPageIndex());
+        for (let item of this.pageInfo.pages[pageNumber - 1]?.items) {
+          item.el = this.dynamicElementService.createElementFromHTML(item, this.page, {
+            directives: DefaultBlockDirectives,
+            attributes: {
+              class: DefaultBlockClassName,
+            },
+            events: {
+              click: (ev: Event) => this.onSelectBlock(item, ev),
+            },
+          });
+        }
+
         this.currentPageIndex.set(pageNumber - 1);
         resolve(this.currentPageIndex());
       }
     });
+  }
+
+  /**
+   * Clean the canvas by removing all elements
+   * - and destroy directives
+   * @returns void
+   */
+  private cleanCanvas(pageIndex: number) {
+    this.deSelectBlock();
+    const page = this.pageInfo.pages[pageIndex];
+    if (!page) return;
+
+    for (let item of page.items) {
+      if (item.el) {
+        this.dynamicElementService.destroyDirective(item.el);
+        this.renderer.removeChild(this.renderer.parentNode(item.el), item.el);
+      }
+    }
+    this.page()!.nativeElement.innerHTML = '';
   }
 
   onSelectBlock(c: PageItem, ev?: Event) {

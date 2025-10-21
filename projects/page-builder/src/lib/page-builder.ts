@@ -82,15 +82,6 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
         page.items = [];
         for (let item of pageData.items) {
           item = new PageItem(item);
-          item.el = this.dynamicElementService.createElementFromHTML(item, this._page, {
-            directives: DefaultBlockDirectives,
-            attributes: {
-              class: DefaultBlockClassName,
-            },
-            events: {
-              click: (ev: Event) => this.pageBuilderService.onSelectBlock(item, ev),
-            },
-          });
           page.items.push(item);
         }
         this.pageBuilderService.pageInfo.pages.push(page);
