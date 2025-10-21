@@ -21,6 +21,7 @@ import { PageBuilderService } from '../services/page-builder.service';
 import { BlockSelectorComponent } from '../components/block-selector/block-selector.component';
 import { generateUUID } from '../utiles/generateUUID';
 import { BlockPropertiesComponent } from '../components/block-properties/block-properties.component';
+import { PrintService } from '../services/print.service';
 
 @Component({
   selector: 'ngx-page-builder',
@@ -41,6 +42,7 @@ export class NgxPageBuilder implements OnInit {
   private renderer = inject(Renderer2);
   private readonly dynamicElementService = inject(DynamicElementService);
   public readonly pageBuilderService = inject(PageBuilderService);
+  public readonly printService = inject(PrintService);
   sources: SourceItem[] = SOURCE_ITEMS;
   page = viewChild<ElementRef>('PageContainer');
   showOutlines = true;
@@ -146,5 +148,15 @@ export class NgxPageBuilder implements OnInit {
   }
   deSelectBlock() {
     this.pageBuilderService.activeEl.set(undefined);
+  }
+
+  print() {
+    if (this.page()) {
+      this.printService.print({
+        html: this.page()?.nativeElement,
+        size: 'A4',
+        orientation: 'portrait',
+      });
+    }
   }
 }
