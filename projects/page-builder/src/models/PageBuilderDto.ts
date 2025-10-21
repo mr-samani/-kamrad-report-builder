@@ -16,5 +16,5 @@ export class PageBuilderConfig {
   title?: string = '';
   description?: string = '';
   size: PageSize = 'A4';
-  orientation: PageOrientation = 'portrait';
+  orientation: PageOrientation = 'Portrait';
 }

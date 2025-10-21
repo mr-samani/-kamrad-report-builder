@@ -1,11 +1,18 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, Inject, Injector, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  Inject,
+  Injector,
+  OnInit,
+} from '@angular/core';
 import { PageBuilderBaseComponent } from '../page-builder-base-component';
-import { sanitizeForStorage } from '../../utiles/sanitizeForStorage';
-import { LOCAL_STORAGE_SAVE_KEY } from '../../consts/defauls';
 import { FormsModule } from '@angular/forms';
 import { STORAGE_SERVICE } from '../../services/storage/token.storage';
 import { IStorageService } from '../../services/storage/IStorageService';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfigDialogComponent } from '../config-dialog/config-dialog.component';
 
 @Component({
   selector: 'toolbar',
@@ -13,13 +20,15 @@ import { IStorageService } from '../../services/storage/IStorageService';
   styleUrls: ['./toolbar.component.scss'],
   standalone: true,
   imports: [CommonModule, FormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit {
   pageNumber: number = 1;
   isSaving: boolean = false;
   constructor(
     injector: Injector,
-    @Inject(STORAGE_SERVICE) private storageService: IStorageService
+    @Inject(STORAGE_SERVICE) private storageService: IStorageService,
+    private matDialog: MatDialog
   ) {
     super(injector);
     effect(() => {
@@ -69,6 +78,6 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
     }
   }
   openConfigDialog() {
-    throw new Error('Method not implemented.');
+    this.matDialog.open(ConfigDialogComponent);
   }
 }

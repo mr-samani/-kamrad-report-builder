@@ -1,13 +1,22 @@
-import { ElementRef, inject, Injectable, Renderer2, Signal, signal } from '@angular/core';
+import {
+  ElementRef,
+  inject,
+  Injectable,
+  OnDestroy,
+  Renderer2,
+  Signal,
+  signal,
+} from '@angular/core';
 import { PageItem } from '../models/PageItem';
 import { DynamicElementService } from './dynamic-element.service';
 import { Page } from '../models/Page';
 import { PageBuilderDto } from '../models/PageBuilderDto';
+import { Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
-export class PageBuilderService {
+export class PageBuilderService implements OnDestroy {
   currentPageIndex = signal<number>(-1);
 
   activeEl = signal<PageItem | undefined>(undefined);
@@ -16,7 +25,17 @@ export class PageBuilderService {
   showOutlines = true;
   pageInfo = new PageBuilderDto();
 
+  private _changed$ = new Subject<string>();
+  changed$ = this._changed$.asObservable();
+
   constructor(private dynamicElementService: DynamicElementService) {}
+
+  ngOnDestroy(): void {
+    this._changed$.complete();
+  }
+  updateChangeDetection(arg0: string) {
+    this._changed$.next(arg0);
+  }
 
   public get currentPageItems(): PageItem[] {
     return this.pageInfo.pages[this.currentPageIndex()]?.items || [];

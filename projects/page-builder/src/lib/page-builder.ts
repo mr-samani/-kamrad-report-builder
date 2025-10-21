@@ -50,7 +50,6 @@ import { STORAGE_SERVICE } from '../services/storage/token.storage';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
-  private readonly cd = inject(ChangeDetectorRef);
   private renderer = inject(Renderer2);
   sources: SourceItem[] = SOURCE_ITEMS;
   private _page = viewChild<ElementRef>('PageContainer');
@@ -63,6 +62,9 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
     this.dynamicElementService.renderer = this.renderer;
     this.pageBuilderService.renderer = this.renderer;
     this.pageBuilderService.page = this._page;
+    this.pageBuilderService.changed$.subscribe(() => {
+      this.chdRef.detectChanges();
+    });
   }
 
   ngOnInit(): void {
@@ -71,16 +73,14 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
 
   preventDefault() {}
   async loadPageData() {
-    debugger;
     try {
       this.pageBuilderService.pageInfo = await this.storageService.loadData();
       let pages = this.pageBuilderService.pageInfo.pages;
       this.pageBuilderService.pageInfo.pages = [];
-
       for (let pageData of pages) {
         const page = new Page(pageData);
-        this.pageBuilderService.pageInfo.pages.push(page);
-        for (let item of page.items) {
+        page.items = [];
+        for (let item of pageData.items) {
           item = new PageItem(item);
           item.el = this.dynamicElementService.createElementFromHTML(item, this._page, {
             directives: DefaultBlockDirectives,
@@ -91,7 +91,9 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
               click: (ev: Event) => this.pageBuilderService.onSelectBlock(item, ev),
             },
           });
+          page.items.push(item);
         }
+        this.pageBuilderService.pageInfo.pages.push(page);
 
         if (this.pageBuilderService.pageInfo.pages.length > 0) {
           this.pageBuilderService.changePage(1);
@@ -100,7 +102,7 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
         }
       }
     } catch (error) {
-      console.log('Error loading page data:', error);
+      console.error('Error loading page data:', error);
     }
   }
 
@@ -158,6 +160,6 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
       currentPageItems.map((m) => m.tag)
     );
     this.pageBuilderService.currentPageItems = currentPageItems;
-    this.cd.detectChanges();
+    this.chdRef.detectChanges();
   }
 }
