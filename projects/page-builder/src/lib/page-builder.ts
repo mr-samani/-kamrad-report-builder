@@ -5,6 +5,7 @@ import {
   Component,
   ElementRef,
   inject,
+  Injector,
   OnInit,
   Renderer2,
   viewChild,
@@ -12,16 +13,16 @@ import {
 } from '@angular/core';
 import { IDropEvent, moveItemInArray, NgxDragDropKitModule } from 'ngx-drag-drop-kit';
 import { PageItem } from '../models/PageItem';
-import { DynamicElementService } from '../services/dynamic-element.service';
 import { SOURCE_ITEMS, SourceItem } from '../models/SourceItem';
 import { DefaultBlockClassName, DefaultBlockDirectives } from '../consts/defauls';
 import { SafeHtmlPipe } from '../pipes/safe-html.pipe';
-import { sanitizeForStorage } from '../utiles/sanitizeForStorage';
-import { PageBuilderService } from '../services/page-builder.service';
 import { BlockSelectorComponent } from '../components/block-selector/block-selector.component';
 import { generateUUID } from '../utiles/generateUUID';
 import { BlockPropertiesComponent } from '../components/block-properties/block-properties.component';
-import { PrintService } from '../services/print.service';
+import { ToolbarComponent } from './toolbar/toolbar.component';
+import { PageHeaderComponent } from './page-header/page-header.component';
+import { PageFooterComponent } from './page-footer/page-footer.component';
+import { PageBuilderBaseComponent } from './page-builder-base-component';
 
 @Component({
   selector: 'ngx-page-builder',
@@ -31,24 +32,26 @@ import { PrintService } from '../services/print.service';
     CommonModule,
     NgxDragDropKitModule,
     SafeHtmlPipe,
+    ToolbarComponent,
     BlockSelectorComponent,
     BlockPropertiesComponent,
+    PageHeaderComponent,
+    PageFooterComponent,
   ],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NgxPageBuilder implements OnInit {
+export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
   private readonly cd = inject(ChangeDetectorRef);
   private renderer = inject(Renderer2);
-  private readonly dynamicElementService = inject(DynamicElementService);
-  public readonly pageBuilderService = inject(PageBuilderService);
-  public readonly printService = inject(PrintService);
   sources: SourceItem[] = SOURCE_ITEMS;
-  page = viewChild<ElementRef>('PageContainer');
-  showOutlines = true;
-  constructor() {
+  private _page = viewChild<ElementRef>('PageContainer');
+
+  constructor(injector: Injector) {
+    super(injector);
     this.dynamicElementService.renderer = this.renderer;
     this.pageBuilderService.renderer = this.renderer;
+    this.pageBuilderService.page = this._page;
   }
 
   ngOnInit(): void {
@@ -63,7 +66,7 @@ export class NgxPageBuilder implements OnInit {
       data.forEach((d: any) => {
         const item = new PageItem(d);
         this.pageBuilderService.items.push(item);
-        item.el = this.dynamicElementService.createElementFromHTML(item, this.page, {
+        item.el = this.dynamicElementService.createElementFromHTML(item, this._page, {
           directives: DefaultBlockDirectives,
           attributes: {
             class: DefaultBlockClassName,
@@ -78,7 +81,7 @@ export class NgxPageBuilder implements OnInit {
 
   async onDrop(event: IDropEvent) {
     console.log('Dropped:', event);
-    this.deSelectBlock();
+    this.pageBuilderService.activeEl.set(undefined);
     if (event.previousContainer !== event.container) {
       // انتقال از یک container به container دیگه
       const source = new PageItem(this.sources[event.previousIndex]);
@@ -128,35 +131,5 @@ export class NgxPageBuilder implements OnInit {
       this.pageBuilderService.items.map((m) => m.tag)
     );
     this.cd.detectChanges();
-  }
-  onSave() {
-    this.pageBuilderService.items.forEach((item) => {
-      //cleanup
-      let html = item.el.outerHTML;
-      html = html.replace(/\s*data-id="[^"]*"/g, '');
-      html = html.replace(/\s*contenteditable="[^"]*"/g, '');
-      html = html.replace(/<div[^>]*class="[^"]*ngx-corner-resize[^"]*"[^>]*>[\s\S]*?<\/div>/g, '');
-
-      item.html = encodeURIComponent(html);
-    });
-    const sanitized = sanitizeForStorage(this.pageBuilderService.items);
-    localStorage.setItem('report', JSON.stringify(sanitized));
-  }
-
-  toggleOutlines() {
-    this.showOutlines = !this.showOutlines;
-  }
-  deSelectBlock() {
-    this.pageBuilderService.activeEl.set(undefined);
-  }
-
-  print() {
-    if (this.page()) {
-      this.printService.print({
-        html: this.page()?.nativeElement,
-        size: 'A4',
-        orientation: 'portrait',
-      });
-    }
   }
 }

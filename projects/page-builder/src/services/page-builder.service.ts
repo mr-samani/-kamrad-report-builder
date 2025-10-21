@@ -1,4 +1,4 @@
-import { inject, Injectable, Renderer2, signal } from '@angular/core';
+import { ElementRef, inject, Injectable, Renderer2, Signal, signal } from '@angular/core';
 import { PageItem } from '../models/PageItem';
 import { DynamicElementService } from './dynamic-element.service';
 
@@ -10,6 +10,9 @@ export class PageBuilderService {
 
   activeEl = signal<PageItem | undefined>(undefined);
   renderer!: Renderer2;
+  page: Signal<ElementRef<any> | undefined> = signal<ElementRef<any> | undefined>(undefined);
+  showOutlines = true;
+
   constructor(private dynamicElementService: DynamicElementService) {}
 
   onSelectBlock(c: PageItem, ev?: Event) {
