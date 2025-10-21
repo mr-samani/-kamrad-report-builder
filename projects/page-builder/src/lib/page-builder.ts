@@ -14,7 +14,11 @@ import {
 import { IDropEvent, moveItemInArray, NgxDragDropKitModule } from 'ngx-drag-drop-kit';
 import { PageItem } from '../models/PageItem';
 import { SOURCE_ITEMS, SourceItem } from '../models/SourceItem';
-import { DefaultBlockClassName, DefaultBlockDirectives } from '../consts/defauls';
+import {
+  DefaultBlockClassName,
+  DefaultBlockDirectives,
+  LOCAL_STORAGE_SAVE_KEY,
+} from '../consts/defauls';
 import { SafeHtmlPipe } from '../pipes/safe-html.pipe';
 import { BlockSelectorComponent } from '../components/block-selector/block-selector.component';
 import { generateUUID } from '../utiles/generateUUID';
@@ -23,6 +27,7 @@ import { ToolbarComponent } from './toolbar/toolbar.component';
 import { PageHeaderComponent } from './page-header/page-header.component';
 import { PageFooterComponent } from './page-footer/page-footer.component';
 import { PageBuilderBaseComponent } from './page-builder-base-component';
+import { Page } from '../models/Page';
 
 @Component({
   selector: 'ngx-page-builder',
@@ -58,29 +63,44 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
     this.loadPageData();
   }
 
+  preventDefault() {}
   loadPageData() {
-    const report = localStorage.getItem('report');
-    if (report) {
-      this.pageBuilderService.items = [];
-      const data = JSON.parse(report) ?? [];
-      data.forEach((d: any) => {
-        const item = new PageItem(d);
-        this.pageBuilderService.items.push(item);
-        item.el = this.dynamicElementService.createElementFromHTML(item, this._page, {
-          directives: DefaultBlockDirectives,
-          attributes: {
-            class: DefaultBlockClassName,
-          },
-          events: {
-            click: (ev: Event) => this.pageBuilderService.onSelectBlock(item, ev),
-          },
-        });
-      });
+    try {
+      const report = localStorage.getItem(LOCAL_STORAGE_SAVE_KEY);
+      debugger;
+      if (report) {
+        this.pageBuilderService.pagelist = [];
+        const pageList = JSON.parse(report) ?? [];
+        for (let pageData of pageList) {
+          const page = new Page(pageData);
+          this.pageBuilderService.pagelist.push(page);
+          for (let item of page.items) {
+            item = new PageItem(item);
+            page.items.push(item);
+            item.el = this.dynamicElementService.createElementFromHTML(item, this._page, {
+              directives: DefaultBlockDirectives,
+              attributes: {
+                class: DefaultBlockClassName,
+              },
+              events: {
+                click: (ev: Event) => this.pageBuilderService.onSelectBlock(item, ev),
+              },
+            });
+          }
+        }
+        if (this.pageBuilderService.pagelist.length > 0) {
+          this.pageBuilderService.changePage(1);
+        }
+      }
+    } catch (error) {
+      console.log('Error loading page data:', error);
     }
   }
 
   async onDrop(event: IDropEvent) {
     console.log('Dropped:', event);
+    const currentPageItems = this.pageBuilderService.currentPageItems;
+
     this.pageBuilderService.activeEl.set(undefined);
     if (event.previousContainer !== event.container) {
       // انتقال از یک container به container دیگه
@@ -104,12 +124,12 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
         }
       );
       source.el = html;
-      this.pageBuilderService.items.splice(event.currentIndex, 0, source);
+      currentPageItems.splice(event.currentIndex, 0, source);
       this.pageBuilderService.onSelectBlock(source);
     } else {
       if (event.previousIndex !== event.currentIndex) {
-        const nativeEl = this.pageBuilderService.items[event.previousIndex].el;
-        moveItemInArray(this.pageBuilderService.items, event.previousIndex, event.currentIndex);
+        const nativeEl = currentPageItems[event.previousIndex].el;
+        moveItemInArray(currentPageItems, event.previousIndex, event.currentIndex);
 
         const containerEl = event.container.el;
         const children = Array.from(containerEl.children);
@@ -128,8 +148,9 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
 
     console.log(
       'Dropped:',
-      this.pageBuilderService.items.map((m) => m.tag)
+      currentPageItems.map((m) => m.tag)
     );
+    this.pageBuilderService.currentPageItems = currentPageItems;
     this.cd.detectChanges();
   }
 }

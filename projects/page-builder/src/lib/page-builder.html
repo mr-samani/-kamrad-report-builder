@@ -1,5 +1,5 @@
 <div class="page-builder-container">
-  <toolbar class="tool-bar"></toolbar>
+  <toolbar></toolbar>
   <div
     class="components"
     ngxDropList
@@ -8,52 +8,56 @@
     [disableSort]="true"
   >
     @for (item of sources; track $index) {
-    <div class="tool" ngxDraggable [innerHTML]="item.icon | safeHtml" [title]="item.title"></div>
+    <div
+      class="tool"
+      ngxDraggable
+      [innerHTML]="item.icon | safeHtml"
+      [title]="item.title"
+      (click)="preventDefault()"
+    ></div>
     }
   </div>
-
-  <div class="paper">
-    <div class="paper-inner">
-      <div class="first-page-cover">
-        <h2 class="titr-font">آموزش و توسعه سرمایه انسانی</h2>
-        <h2 class="titr-font">واحد ارزیابی و توسعه شایستگی</h2>
-      </div>
-      <table cellspacing="0" cellpadding="0">
-        <thead>
-          <tr>
-            <th class="pb-3">
-              <page-header></page-header>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-              <!-- ---------------- body ---------------------- -->
-              <div class="page-body">
+  <div class="page-container" (click)="pageBuilderService.deSelectBlock()">
+    {{ pageBuilderService.currentPageIndex() }}
+    <div class="paper">
+      <div class="paper-inner">
+        <table cellspacing="0" cellpadding="0" class="ngx-page-builder">
+          <thead>
+            <tr>
+              <th class="pb-3">
+                <page-header></page-header>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <!-- ---------------- body ---------------------- -->
                 <div
-                  [class.show-outlines]="pageBuilderService.showOutlines"
+                  class="page-body"
                   #PageContainer
+                  [class.show-outlines]="pageBuilderService.showOutlines"
                   ngxDropList
-                  [data]="pageBuilderService.items"
+                  [data]="pageBuilderService.currentPageItems"
                   (drop)="onDrop($event)"
                 >
                   <div class="placeholder" *ngxPlaceholder></div>
                 </div>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-        <tfoot>
-          <tr>
-            <td>
-              <page-footer></page-footer>
-            </td>
-          </tr>
-        </tfoot>
-      </table>
+              </td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td>
+                <page-footer></page-footer>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
     </div>
   </div>
+
   <block-properties class="properties"></block-properties>
 </div>
 <block-selector />

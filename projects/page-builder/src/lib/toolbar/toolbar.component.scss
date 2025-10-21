@@ -1,1 +1,56 @@
-/* custom styles toolbar */
+:host {
+  display: flex;
+
+  grid-row-start: 1;
+  grid-column: span 3 / span 3;
+  background-color: var(--toolbar-bg);
+  color: var(--toolbar-fg);
+  position: sticky;
+  top: var(--toolbar-sticky-offset);
+  z-index: 100;
+  user-select: none;
+  button {
+    outline: none;
+    border: none;
+    border-radius: 3px;
+    padding: 4px 8px;
+    cursor: pointer;
+    background: transparent;
+    color: inherit;
+    min-width: 50px;
+    max-height: 100%;
+    height: 100%;
+    transition: background 0.2s ease;
+    &:hover {
+      background: var(--active-button);
+    }
+    svg {
+      color: var(--toolbar-fg);
+      fill: var(--toolbar-fg);
+      max-width: 100%;
+      max-height: 100%;
+    }
+  }
+
+  .spacer {
+    flex: auto;
+  }
+}
+
+.page-handler {
+  display: flex;
+  gap: 5px;
+  margin: 0 10px;
+  align-items: center;
+  input {
+    border: none;
+    background: none;
+    color: inherit;
+    background-color: hsl(from var(--toolbar-bg) h s calc(l - 5));
+    border-radius: 4px;
+    max-width: 100px;
+  }
+  svg {
+    max-height: 100%;
+  }
+}

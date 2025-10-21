@@ -12,7 +12,7 @@ export class PageItem {
   constructor(data?: PageItem | any) {
     if (data) {
       for (var property in data) {
-        if (data.hasOwnProperty(property)) (<any>this)[property] = (<any>data)[property];
+        if (this.hasOwnProperty(property)) (<any>this)[property] = (<any>data)[property];
       }
     }
   }
