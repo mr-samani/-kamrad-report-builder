@@ -1,1 +1,16 @@
-/* custom styles block-properties */
+.text {
+  border: 1px solid #8d8d8d63;
+  min-height: 30px;
+  border-radius: 5px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+
+  svg {
+    width: 20px;
+  }
+}

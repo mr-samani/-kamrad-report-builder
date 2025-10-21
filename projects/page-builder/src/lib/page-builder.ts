@@ -45,6 +45,7 @@ export class NgxPageBuilder implements OnInit {
   page = viewChild<ElementRef>('PageContainer');
   showOutlines = true;
   constructor() {
+    this.dynamicElementService.renderer = this.renderer;
     this.pageBuilderService.renderer = this.renderer;
   }
 
@@ -86,7 +87,7 @@ export class NgxPageBuilder implements OnInit {
         source.tag,
         source.id,
         {
-          text: source.text,
+          text: source.content,
           directives: DefaultBlockDirectives,
           attributes: {
             ...source.attributes,
@@ -102,29 +103,20 @@ export class NgxPageBuilder implements OnInit {
       this.pageBuilderService.onSelectBlock(source);
     } else {
       if (event.previousIndex !== event.currentIndex) {
-        // جابجایی در همون container
         const nativeEl = this.pageBuilderService.items[event.previousIndex].el;
-
-        // ابتدا آرایه رو جابجا کن
         moveItemInArray(this.pageBuilderService.items, event.previousIndex, event.currentIndex);
 
-        // حالا DOM رو هم جابجا کن
         const containerEl = event.container.el;
         const children = Array.from(containerEl.children);
-
-        // المنت رو از جای قبلی بردار
-        this.renderer.removeChild(containerEl, nativeEl);
-
         // اگر باید به آخر لیست اضافه بشه
         if (event.currentIndex >= children.length - 1) {
           this.renderer.appendChild(containerEl, nativeEl);
         } else {
           // وگرنه قبل از المنت مورد نظر قرارش بده
           // توجه: چون یه element رو remove کردیم، باید index رو تنظیم کنیم
-          const refIndex =
-            event.currentIndex > event.previousIndex ? event.currentIndex : event.currentIndex;
-          const refNode = children[refIndex];
+          const refNode = children[event.currentIndex];
           this.renderer.insertBefore(containerEl, nativeEl, refNode);
+          // this.renderer.removeChild(containerEl, nativeEl);
         }
       }
     }

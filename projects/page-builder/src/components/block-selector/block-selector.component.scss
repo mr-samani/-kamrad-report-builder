@@ -12,11 +12,19 @@
     padding: 5px;
     height: 24px;
     top: -34px;
+    left: 5px;
     display: inline-flex;
     overflow: hidden;
     max-width: 50%;
     border-radius: 5px 5px 0 0;
     align-items: center;
+    min-width: 100px;
+    gap: 4px;
+    &.bottom {
+      top: auto;
+      bottom: -34px;
+      border-radius: 0 0 5px 5px;
+    }
     button {
       background: none;
       border: none;
@@ -24,6 +32,15 @@
     }
     svg {
       fill: #fff;
+    }
+    span.id {
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      display: inline-block;
+      overflow: hidden;
+    }
+    span.tag {
+      color: #3e3d4a;
     }
   }
 }

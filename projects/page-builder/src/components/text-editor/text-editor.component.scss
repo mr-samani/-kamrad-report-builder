@@ -1,0 +1,59 @@
+:host {
+  display: block;
+  font-family: var(--ui-font, Arial), sans-serif;
+}
+.editor-wrapper {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.toolbar {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  background: #fafafa;
+  border-bottom: 1px solid #eee;
+  align-items: center;
+}
+.group {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.btn {
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+}
+.btn.active {
+  background: #e6f0ff;
+  border-color: #c6dcff;
+}
+select {
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+input[type='color'] {
+  width: 36px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+.editable {
+  min-height: 160px;
+  padding: 12px;
+  outline: none;
+  background: white;
+}
+.label {
+  font-size: 12px;
+  color: #666;
+  margin-right: 4px;
+}
+.grow {
+  flex: 1;
+}

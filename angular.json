@@ -50,6 +50,11 @@
               {
                 "glob": "**/*",
                 "input": "projects/demo/public"
+              },
+              {
+                "glob": "**/*",
+                "input": "./projects/page-builder/src/assets/",
+                "output": "/assets/"
               }
             ],
             "styles": ["projects/demo/src/styles.scss"]

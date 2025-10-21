@@ -51,6 +51,9 @@
   background-color: var(--tools-bg);
   color: var(--tools-fg);
   padding: 10px;
+  svg {
+    fill: var(--tools-fg);
+  }
 }
 .components {
   border: none var(--tools-border);
@@ -116,7 +119,7 @@
     outline: 1px dashed #8d8d8d;
     outline-offset: 1px;
     min-width: 50px;
-    min-height: 50px;
+    min-height: 20px;
     &:hover {
       outline-color: #00b3ff;
     }

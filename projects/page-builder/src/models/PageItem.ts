@@ -6,7 +6,7 @@ export class PageItem {
   children: PageItem[] = [];
   tag!: string;
   html?: string;
-  text?: string;
+  content?: string;
   attributes?: Record<string, any> | undefined;
 
   constructor(data?: PageItem | any) {

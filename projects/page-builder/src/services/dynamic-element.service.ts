@@ -18,15 +18,14 @@ import { PageItem } from '../models/PageItem';
 
 @Injectable({ providedIn: 'root' })
 export class DynamicElementService {
-  private renderer: Renderer2;
-
+  renderer!: Renderer2;
   constructor(
     rendererFactory: RendererFactory2,
     private injector: Injector,
     private appRef: ApplicationRef,
     private envInjector: EnvironmentInjector
   ) {
-    this.renderer = rendererFactory.createRenderer(null, null);
+    //this.renderer = rendererFactory.createRenderer(null, null);
   }
 
   /**
@@ -98,7 +97,11 @@ export class DynamicElementService {
     }
     return element;
   }
-
+  updateElementContent(el: HTMLElement, data: PageItem) {
+    this.renderer.setProperty(el, 'innerHTML', data.content);
+    return el;
+  }
+  //--------------------------------------------------------------------------------------------------------------
   private bindOptions(
     element: HTMLElement,
     options?: {
@@ -112,15 +115,27 @@ export class DynamicElementService {
         this.renderer.setAttribute(element, k, v);
       }
     }
+
+    if (options && options.directives?.length) {
+      for (const DirType of options.directives) {
+        this.attachDirective(element, DirType);
+      }
+    }
     if (options?.events) {
       for (const [k, v] of Object.entries(options.events)) {
         this.renderer.listen(element, k, v);
       }
     }
-    if (options && options.directives?.length) {
-      for (const DirType of options.directives) {
-        this.attachDirective(element, DirType);
-      }
+
+    if (element.tagName == 'IMG' && !element.hasAttribute('src')) {
+      element.setAttribute('src', '/assets/default-image.png');
+    }
+    if (
+      element.tagName == 'INPUT' ||
+      element.tagName == 'TEXTAREA' ||
+      element.tagName == 'SELECT'
+    ) {
+      element.setAttribute('readonly', 'true');
     }
     return element;
   }

@@ -27,4 +27,17 @@ export class PageBuilderService {
     }
     this.activeEl.set(undefined);
   }
+
+  writeItemValue(data: PageItem) {
+    this.activeEl.set(data);
+    const index = this.items.findIndex((x) => x.id == data.id);
+    if (index > -1) {
+      this.items[index].el = this.dynamicElementService.updateElementContent(
+        this.items[index].el,
+        data
+      );
+
+      this.items[index] = data;
+    }
+  }
 }

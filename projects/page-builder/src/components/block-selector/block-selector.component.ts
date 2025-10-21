@@ -26,6 +26,8 @@ export class BlockSelectorComponent extends BaseComponent implements OnInit {
   width: number = 0;
   height: number = 0;
   item?: PageItem;
+  showInBottom = false;
+  headerOffset = 30;
   constructor(injector: Injector) {
     super(injector);
     effect(() => {
@@ -43,6 +45,7 @@ export class BlockSelectorComponent extends BaseComponent implements OnInit {
   }
 
   updatePosition() {
+    this.showInBottom = false;
     if (this.item) {
       const foundedElement: HTMLElement | null = this.doc.querySelector(
         `[data-id="${this.item.id}"]`
@@ -53,6 +56,10 @@ export class BlockSelectorComponent extends BaseComponent implements OnInit {
         this.y = window.scrollY + rect.y;
         this.width = rect.width;
         this.height = rect.height;
+
+        if (rect.y < 0 || rect.y - 24 < this.headerOffset) {
+          this.showInBottom = true;
+        }
       }
     }
     // reset => hide
