@@ -2,7 +2,7 @@
 @if(item){
 <p>{{ item.id }}</p>
 <div class="text" (click)="openTextEditor()">
-  <span [innerHTML]="item.content | safeHtml"></span>
+  <span [innerHTML]="item.content | safeHtml" class="content"></span>
 
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512">
     <path

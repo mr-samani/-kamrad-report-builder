@@ -25,6 +25,7 @@
   position: sticky;
   top: var(--toolbar-sticky-offset);
   z-index: 100;
+  user-select: none;
   button {
     outline: none;
     border: none;

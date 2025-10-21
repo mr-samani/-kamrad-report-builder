@@ -48,6 +48,8 @@ input[type='color'] {
   padding: 12px;
   outline: none;
   background: white;
+  max-height: 80vh;
+  overflow: auto;
 }
 .label {
   font-size: 12px;
