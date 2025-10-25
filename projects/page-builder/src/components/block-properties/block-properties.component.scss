@@ -21,3 +21,16 @@
     width: 20px;
   }
 }
+
+/*----------------------------------*/
+.properties-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 20px;
+  tr td:nth-child(1) {
+    width: 40%;
+  }
+  .input-group {
+    display: flex;
+  }
+}

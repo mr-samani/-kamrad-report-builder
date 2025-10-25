@@ -6,6 +6,7 @@ import {
   effect,
   Injector,
   OnInit,
+  ViewEncapsulation,
 } from '@angular/core';
 import { BaseComponent } from '../BaseComponent';
 import { PageItem } from '../../models/PageItem';
@@ -15,6 +16,7 @@ import { SafeHtmlPipe } from '../../pipes/safe-html.pipe';
 import { SpacingControlComponent } from '../../controls/spacing-control/spacing-control.component';
 import { FormsModule } from '@angular/forms';
 import { TypographyControlComponent } from '../../controls/typography-control/typography-control.component';
+import { BackgroundControlComponent } from '../../controls/beckground-control/background-control.component';
 
 @Component({
   selector: 'block-properties',
@@ -27,8 +29,10 @@ import { TypographyControlComponent } from '../../controls/typography-control/ty
     SafeHtmlPipe,
     SpacingControlComponent,
     TypographyControlComponent,
+    BackgroundControlComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
 })
 export class BlockPropertiesComponent extends BaseComponent implements OnInit {
   item?: PageItem;
