@@ -1,0 +1,79 @@
+<table class="spacing-table">
+  <tbody>
+    <tr>
+      <th colspan="2" align="start">Typography:</th>
+    </tr>
+    <tr>
+      <td>
+        <label for="font-family">Font Family:</label>
+      </td>
+      <td>
+        <select id="font-family" [(ngModel)]="fontFamily" (ngModelChange)="update()">
+          <option value="Arial">Arial</option>
+          <option value="Courier New">Courier New</option>
+          <option value="Georgia">Georgia</option>
+          <option value="Times New Roman">Times New Roman</option>
+          <option value="Verdana">Verdana</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <label for="font-size">Font Size:</label>
+      </td>
+      <td>
+        <input id="font-size" type="number" [(ngModel)]="fontSize" (ngModelChange)="update()" />
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <label for="line-height">Line Height:</label>
+      </td>
+      <td>
+        <input id="line-height" type="number" [(ngModel)]="lineHeight" (ngModelChange)="update()" />
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <label for="text-decoration">Text Decoration:</label>
+      </td>
+      <td>
+        <select id="text-decoration" [(ngModel)]="textDecoration" (ngModelChange)="update()">
+          <option value="none">None</option>
+          <option value="underline">Underline</option>
+          <option value="line-through">Line Through</option>
+        </select>
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <label for="text-transform">Text Transform:</label>
+      </td>
+      <td>
+        <select id="text-transform" [(ngModel)]="textTransform" (ngModelChange)="update()">
+          <option value="none">None</option>
+          <option value="uppercase">Uppercase</option>
+          <option value="lowercase">Lowercase</option>
+          <option value="capitalize">Capitalize</option>
+        </select>
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <label for="text-alignment">Text Alignment:</label>
+      </td>
+      <td>
+        <select id="text-alignment" [(ngModel)]="textAlign" (ngModelChange)="update()">
+          <option value="left">Left</option>
+          <option value="center">Center</option>
+          <option value="right">Right</option>
+          <option value="justify">Justify</option>
+        </select>
+      </td>
+    </tr>
+  </tbody>
+</table>

@@ -14,13 +14,20 @@ import { TextEditorComponent } from '../text-editor/text-editor.component';
 import { SafeHtmlPipe } from '../../pipes/safe-html.pipe';
 import { SpacingControlComponent } from '../../controls/spacing-control/spacing-control.component';
 import { FormsModule } from '@angular/forms';
+import { TypographyControlComponent } from '../../controls/typography-control/typography-control.component';
 
 @Component({
   selector: 'block-properties',
   templateUrl: './block-properties.component.html',
   styleUrls: ['./block-properties.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, SafeHtmlPipe, SpacingControlComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    SafeHtmlPipe,
+    SpacingControlComponent,
+    TypographyControlComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BlockPropertiesComponent extends BaseComponent implements OnInit {
