@@ -20,7 +20,7 @@ export class ConfigDialogComponent implements OnInit {
     private dialogRef: MatDialogRef<ConfigDialogComponent>,
     private pageBuilderService: PageBuilderService
   ) {
-    this.configs = pageBuilderService.pageInfo.config;
+    this.configs = Object.assign({}, pageBuilderService.pageInfo.config);
   }
 
   ngOnInit() {}

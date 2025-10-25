@@ -12,13 +12,15 @@ import { PageItem } from '../../models/PageItem';
 import { MatDialog } from '@angular/material/dialog';
 import { TextEditorComponent } from '../text-editor/text-editor.component';
 import { SafeHtmlPipe } from '../../pipes/safe-html.pipe';
+import { SpacingControlComponent } from '../../controls/spacing-control/spacing-control.component';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'block-properties',
   templateUrl: './block-properties.component.html',
   styleUrls: ['./block-properties.component.scss'],
   standalone: true,
-  imports: [CommonModule, SafeHtmlPipe],
+  imports: [CommonModule, FormsModule, SafeHtmlPipe, SpacingControlComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BlockPropertiesComponent extends BaseComponent implements OnInit {
@@ -50,4 +52,6 @@ export class BlockPropertiesComponent extends BaseComponent implements OnInit {
         }
       });
   }
+
+  onChangeProperties() {}
 }
