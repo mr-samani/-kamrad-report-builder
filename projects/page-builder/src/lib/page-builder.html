@@ -24,40 +24,15 @@
         pageBuilderService.pageInfo.config.orientation
       }}"
     >
-      <div class="paper-inner">
-        <table cellspacing="0" cellpadding="0" class="ngx-page-builder">
-          <thead>
-            <tr>
-              <th class="pb-3">
-                <page-header></page-header>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>
-                <!-- ---------------- body ---------------------- -->
-                <div
-                  class="page-body"
-                  #PageContainer
-                  [class.show-outlines]="pageBuilderService.showOutlines"
-                  ngxDropList
-                  [data]="pageBuilderService.currentPageItems"
-                  (drop)="onDrop($event)"
-                >
-                  <div class="placeholder" *ngxPlaceholder></div>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-          <tfoot>
-            <tr>
-              <td>
-                <page-footer></page-footer>
-              </td>
-            </tr>
-          </tfoot>
-        </table>
+      <div
+        class="page-body"
+        #PageContainer
+        [class.show-outlines]="pageBuilderService.showOutlines"
+        ngxDropList
+        [data]="pageBuilderService.currentPageItems"
+        (drop)="onDrop($event)"
+      >
+        <div class="placeholder" *ngxPlaceholder></div>
       </div>
     </div>
   </div>

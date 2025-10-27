@@ -22,7 +22,9 @@ export class PageBuilderService implements OnDestroy {
 
   activeEl = signal<PageItem | undefined>(undefined);
   renderer!: Renderer2;
-  page: Signal<ElementRef<any> | undefined> = signal<ElementRef<any> | undefined>(undefined);
+  page: Signal<ElementRef<HTMLElement> | undefined> = signal<ElementRef<HTMLElement> | undefined>(
+    undefined
+  );
   showOutlines = true;
   pageInfo = new PageBuilderDto();
 
@@ -80,15 +82,19 @@ export class PageBuilderService implements OnDestroy {
         } else {
           this.cleanCanvas(this.currentPageIndex());
           for (let item of this.pageInfo.pages[pageNumber - 1]?.items) {
-            item.el = this.dynamicElementService.createElementFromHTML(item, this.page, {
-              directives: DefaultBlockDirectives,
-              attributes: {
-                class: DefaultBlockClassName,
-              },
-              events: {
-                click: (ev: Event) => this.onSelectBlock(item, ev),
-              },
-            });
+            item.el = this.dynamicElementService.createElementFromHTML(
+              item,
+              this.page()!.nativeElement,
+              {
+                directives: DefaultBlockDirectives,
+                attributes: {
+                  class: DefaultBlockClassName,
+                },
+                events: {
+                  click: (ev: Event) => this.onSelectBlock(item, ev),
+                },
+              }
+            );
           }
 
           this.currentPageIndex.set(pageNumber - 1);

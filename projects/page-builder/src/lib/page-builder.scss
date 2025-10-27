@@ -125,20 +125,6 @@
     }
   }
 
-  .paper-inner {
-    min-height: inherit;
-  }
-  table.ngx-page-builder {
-    width: 100%;
-    border-spacing: 0;
-    border: 0;
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    th {
-      text-align: start;
-    }
-  }
   .page-body {
     min-height: calc(var(--a5-height) / 2);
   }

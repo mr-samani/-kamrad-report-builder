@@ -72,7 +72,7 @@ export class DynamicElementService {
    */
   createElementFromHTML(
     item: PageItem,
-    page: Signal<ElementRef<any> | undefined>,
+    container: HTMLElement,
     options?: {
       attributes?: Record<string, any>;
       events?: Record<string, any>;
@@ -97,10 +97,9 @@ export class DynamicElementService {
     // }
 
     element = this.bindOptions(element, options);
-    const pageRef = page();
-    if (pageRef) {
-      this.renderer.appendChild(pageRef.nativeElement, element);
-    }
+
+    this.renderer.appendChild(container, element);
+
     return element;
   }
   updateElementContent(el: HTMLElement, data: PageItem) {

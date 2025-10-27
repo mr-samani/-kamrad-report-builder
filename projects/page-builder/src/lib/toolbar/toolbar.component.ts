@@ -83,14 +83,12 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
   }
 
   print() {
-    if (this.pageBuilderService.page()) {
-      this.printService.print({
-        html: this.pageBuilderService.page()?.nativeElement,
-        size: 'A4',
-        orientation: 'portrait',
-      });
-    }
+    this.previewService.openPreview(true);
   }
+  preview() {
+    this.previewService.openPreview();
+  }
+
   openConfigDialog() {
     this.matDialog.open(ConfigDialogComponent);
   }
