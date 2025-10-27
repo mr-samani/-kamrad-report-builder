@@ -12,6 +12,7 @@
     </svg>
   </div>
 
+  <display-control [(ngModel)]="item" (change)="onChangeProperties()"></display-control>
   <spacing-control [(ngModel)]="item" (change)="onChangeProperties()"></spacing-control>
   <typography-control [(ngModel)]="item" (change)="onChangeProperties()"></typography-control>
   <background-control [(ngModel)]="item" (change)="onChangeProperties()"></background-control>

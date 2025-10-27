@@ -17,6 +17,7 @@ import { SpacingControlComponent } from '../../controls/spacing-control/spacing-
 import { FormsModule } from '@angular/forms';
 import { TypographyControlComponent } from '../../controls/typography-control/typography-control.component';
 import { BackgroundControlComponent } from '../../controls/beckground-control/background-control.component';
+import { DisplayControlComponent } from '../../controls/display-control/display-control.component';
 
 @Component({
   selector: 'block-properties',
@@ -30,6 +31,7 @@ import { BackgroundControlComponent } from '../../controls/beckground-control/ba
     SpacingControlComponent,
     TypographyControlComponent,
     BackgroundControlComponent,
+    DisplayControlComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,

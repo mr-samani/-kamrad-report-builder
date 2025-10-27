@@ -18,6 +18,8 @@
   --toolbar-bg: #353535;
   --toolbar-fg: #ffffff;
   --tools-fg: #fff;
+  --properties-fg: #fff;
+  --properties-bg: #1f2937;
   --tools-border: 1px solid #eeeeee76;
   --active-button: #0040ff;
   --page-padding: 0px;
@@ -34,11 +36,11 @@
 }
 .properties {
   border: none var(--tools-border);
-  background-color: var(--tools-bg);
-  color: var(--tools-fg);
+  background-color: var(--properties-bg);
+  color: var(--properties-fg);
   padding: 10px;
   svg {
-    fill: var(--tools-fg);
+    fill: var(--properties-fg);
   }
 }
 .components {
