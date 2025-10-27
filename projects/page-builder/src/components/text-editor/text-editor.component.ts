@@ -15,12 +15,14 @@ import { PageItem } from '../../models/PageItem';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer } from '@angular/platform-browser';
+import { DynamicAutocompleteDirective } from '../../directives/ngx-dynamic-data-autocomplete.directive';
+import { DynamicDataStructure } from '../../models/DynamicData';
 
 @Component({
   selector: 'app-text-editor',
   templateUrl: './text-editor.component.html',
   styleUrls: ['./text-editor.component.scss'],
-  imports: [CommonModule, FormsModule, MatDialogClose],
+  imports: [CommonModule, FormsModule, MatDialogClose, DynamicAutocompleteDirective],
 })
 export class TextEditorComponent implements AfterViewInit {
   @ViewChild('editable', { static: true }) editableRef!: ElementRef<HTMLElement>;
@@ -58,6 +60,23 @@ export class TextEditorComponent implements AfterViewInit {
 
   // ✅ نمایش تعداد کاراکترهای انتخاب شده
   selectedCharCount = 0;
+
+  dynamicData: DynamicDataStructure = {
+    personalInfo: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'object',
+          properties: {
+            first: { type: 'value', valueType: 'string' },
+            last: { type: 'value', valueType: 'string' },
+          },
+        },
+        age: { type: 'value', valueType: 'number' },
+        email: { type: 'value', valueType: 'string' },
+      },
+    },
+  };
 
   constructor(
     private sanitizer: DomSanitizer,
@@ -309,6 +328,10 @@ export class TextEditorComponent implements AfterViewInit {
   getValue() {
     const html = this.editableRef.nativeElement.innerHTML;
     return html.replace(/\u200B/g, '').replace(/<span[^>]*>\s*<\/span>/g, '');
+  }
+
+  onInsert(ev: string) {
+    console.log('Inserted:', ev);
   }
 
   ok() {

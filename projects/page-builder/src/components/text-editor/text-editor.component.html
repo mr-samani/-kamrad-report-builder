@@ -65,6 +65,9 @@
     contenteditable="true"
     (keyup)="onKeyUp()"
     spellcheck="true"
+    ngxDynamicAutocomplete
+    [dynamicData]="dynamicData"
+    (inserted)="onInsert($event)"
   ></div>
 
   selected char count:{{ selectedCharCount }}
