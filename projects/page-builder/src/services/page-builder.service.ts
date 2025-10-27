@@ -63,7 +63,14 @@ export class PageBuilderService implements OnDestroy {
       if (index > -1) {
         this.cleanCanvas(index);
         this.pageInfo.pages.splice(index, 1);
-        return this.changePage(index);
+        if (this.pageInfo.pages.length == 0) {
+          return this.addPage();
+        } else {
+          if (index == 0) {
+            index++;
+          }
+          return this.changePage(index);
+        }
       }
       return reject('Invalid page index');
     });
@@ -95,6 +102,7 @@ export class PageBuilderService implements OnDestroy {
   changePage(pageNumber: number): Promise<number> {
     return new Promise((resolve, reject) => {
       try {
+        this.deSelectBlock();
         if (pageNumber == undefined || pageNumber == null) reject('Required page number');
         if (pageNumber < 1 || pageNumber > this.pageInfo.pages.length) {
           reject('Invalid page number');

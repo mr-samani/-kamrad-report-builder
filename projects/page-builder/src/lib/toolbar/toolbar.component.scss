@@ -50,6 +50,7 @@
     background-color: hsl(from var(--toolbar-bg) h s calc(l - 5));
     border-radius: 4px;
     max-width: 100px;
+    text-align: center;
   }
   svg {
     max-height: 100%;

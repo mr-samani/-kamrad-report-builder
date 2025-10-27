@@ -81,7 +81,8 @@ export class DynamicElementService {
   ): HTMLElement | undefined {
     let html = item.html;
     if (!html) {
-      html = '';
+      console.error('Create element: Invalid HTML content', item.id);
+      return undefined;
     }
     const div: HTMLElement = this.renderer.createElement('div');
     html = decodeURIComponent(html);

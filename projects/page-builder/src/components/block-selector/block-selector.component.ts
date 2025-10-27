@@ -55,29 +55,30 @@ export class BlockSelectorComponent extends BaseComponent implements OnDestroy {
   private observeActiveElement() {
     this.disconnectObservers();
 
-    if (!this.item) return;
+    if (this.item) {
+      const el = this.doc.querySelector<HTMLElement>(`[data-id="${this.item.id}"]`);
+      if (!el) return;
 
-    const el = this.doc.querySelector<HTMLElement>(`[data-id="${this.item.id}"]`);
-    if (!el) return;
+      this.currentElement = el;
 
-    this.currentElement = el;
+      // Watch for resize
+      this.resizeObserver = new ResizeObserver(() => {
+        this.updatePosition();
+      });
+      this.resizeObserver.observe(el);
 
-    // Watch for resize
-    this.resizeObserver = new ResizeObserver(() => {
+      // Watch for style/class changes (margin/padding/etc.)
+      this.mutationObserver = new MutationObserver(() => {
+        this.updatePosition();
+      });
+      this.mutationObserver.observe(el, {
+        attributes: true,
+        attributeFilter: ['style', 'class'],
+      });
+
       this.updatePosition();
-    });
-    this.resizeObserver.observe(el);
-
-    // Watch for style/class changes (margin/padding/etc.)
-    this.mutationObserver = new MutationObserver(() => {
-      this.updatePosition();
-    });
-    this.mutationObserver.observe(el, {
-      attributes: true,
-      attributeFilter: ['style', 'class'],
-    });
-
-    this.updatePosition();
+    }
+    this.chdRef.detectChanges();
   }
 
   private disconnectObservers() {

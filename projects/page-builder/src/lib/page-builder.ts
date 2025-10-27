@@ -124,6 +124,7 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
         }
       );
       source.el = html;
+      source.html = html.outerHTML;
       currentPageItems.splice(event.currentIndex, 0, source);
       this.pageBuilderService.onSelectBlock(source);
     } else {
