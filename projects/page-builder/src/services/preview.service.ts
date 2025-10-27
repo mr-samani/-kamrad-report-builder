@@ -129,15 +129,15 @@ export class PreviewService {
     return new Promise((resolve, reject) => {
       try {
         for (let page of pages) {
-          for (let item of page.items) {
+          for (let item of page.bodyItems) {
             item.el = this.dynamicElementService.createElementFromHTML(item, container, {
-              directives: DefaultBlockDirectives,
-              attributes: {
-                class: DefaultBlockClassName,
-              },
-              events: {
-                // click: (ev: Event) => this.onSelectBlock(item, ev),
-              },
+              //directives: DefaultBlockDirectives,
+              //   attributes: {
+              //     class: DefaultBlockClassName,
+              //   },
+              //   events: {
+              //      click: (ev: Event) => this.onSelectBlock(item, ev),
+              //   },
             });
           }
         }

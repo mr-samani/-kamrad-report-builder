@@ -6,7 +6,8 @@ export function preparePageDataForSave(pageInfo: PageBuilderDto): PageBuilderDto
     return new PageBuilderDto();
   }
   for (let page of pageInfo.pages) {
-    for (let item of page.items) {
+    const list = [...page.headerItems, ...page.bodyItems, ...page.footerItems];
+    for (let item of list) {
       //cleanup
       if (item.el) {
         let html = item.el.outerHTML;

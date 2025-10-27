@@ -40,12 +40,14 @@ export class SpacingControlComponent implements OnInit, ControlValueAccessor {
   };
 
   style?: Partial<CSSStyleDeclaration>;
-  onChange = (_: Partial<CSSStyleDeclaration> | undefined) => {};
+  item?: PageItem;
+  onChange = (_: PageItem | undefined) => {};
   onTouched = () => {};
   constructor(private renderer: Renderer2) {}
 
   ngOnInit() {}
   writeValue(item: PageItem): void {
+    this.item = item;
     if (!item || !item.el) return;
     this.el = item.el;
     let val = getComputedStyle(item.el);
@@ -60,9 +62,6 @@ export class SpacingControlComponent implements OnInit, ControlValueAccessor {
       margin: parseSpacingValues(val?.margin, defaultSpacing.margin),
       padding: parseSpacingValues(val?.padding, defaultSpacing.padding),
     };
-
-    this.onChange(this.style);
-    this.change.emit(this.style);
   }
 
   registerOnChange(fn: any): void {
@@ -91,7 +90,7 @@ export class SpacingControlComponent implements OnInit, ControlValueAccessor {
     this.style.margin = SpacingFormatter.formatSpacingToCSS(validatedMargin);
     this.renderer.setStyle(this.el, 'padding', this.style.padding);
     this.renderer.setStyle(this.el, 'margin', this.style.margin);
-    this.onChange(this.style);
+    this.onChange(this.item);
     this.change.emit(this.style);
   }
 }

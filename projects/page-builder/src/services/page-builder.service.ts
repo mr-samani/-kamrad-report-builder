@@ -5,6 +5,7 @@ import {
   OnDestroy,
   Renderer2,
   Signal,
+  WritableSignal,
   signal,
 } from '@angular/core';
 import { PageItem } from '../models/PageItem';
@@ -19,12 +20,17 @@ import { DefaultBlockDirectives, DefaultBlockClassName } from '../consts/defauls
 })
 export class PageBuilderService implements OnDestroy {
   currentPageIndex = signal<number>(-1);
-
-  activeEl = signal<PageItem | undefined>(undefined);
   renderer!: Renderer2;
-  page: Signal<ElementRef<HTMLElement> | undefined> = signal<ElementRef<HTMLElement> | undefined>(
-    undefined
-  );
+  activeEl = signal<PageItem | undefined>(undefined);
+  pageBody: Signal<ElementRef<HTMLElement> | undefined> = signal<
+    ElementRef<HTMLElement> | undefined
+  >(undefined);
+  pageHeader: Signal<ElementRef<HTMLElement> | undefined> = signal<
+    ElementRef<HTMLElement> | undefined
+  >(undefined);
+  pageFooter: Signal<ElementRef<HTMLElement> | undefined> = signal<
+    ElementRef<HTMLElement> | undefined
+  >(undefined);
   showOutlines = true;
   pageInfo = new PageBuilderDto();
 
@@ -40,14 +46,14 @@ export class PageBuilderService implements OnDestroy {
     this._changed$.next(arg0);
   }
 
-  public get currentPageItems(): PageItem[] {
-    return this.pageInfo.pages[this.currentPageIndex()]?.items || [];
+  public get currentPage(): Page {
+    return this.pageInfo.pages[this.currentPageIndex()] ?? new Page();
   }
-  public set currentPageItems(items: PageItem[]) {
+  public set currentPage(page: Page) {
     if (!this.pageInfo.pages[this.currentPageIndex()]) {
       throw new Error('Current page does not exist');
     }
-    this.pageInfo.pages[this.currentPageIndex()].items = items;
+    this.pageInfo.pages[this.currentPageIndex()] = page;
   }
 
   addPage(): Promise<number> {
@@ -108,21 +114,10 @@ export class PageBuilderService implements OnDestroy {
           reject('Invalid page number');
         } else {
           this.cleanCanvas(this.currentPageIndex());
-          for (let item of this.pageInfo.pages[pageNumber - 1]?.items) {
-            item.el = this.dynamicElementService.createElementFromHTML(
-              item,
-              this.page()!.nativeElement,
-              {
-                directives: DefaultBlockDirectives,
-                attributes: {
-                  class: DefaultBlockClassName,
-                },
-                events: {
-                  click: (ev: Event) => this.onSelectBlock(item, ev),
-                },
-              }
-            );
-          }
+          const { headerItems, bodyItems, footerItems } = this.pageInfo.pages[pageNumber - 1];
+          headerItems.map((m) => (m.el = this.createElement(m, this.pageHeader()!.nativeElement)));
+          bodyItems.map((m) => (m.el = this.createElement(m, this.pageBody()!.nativeElement)));
+          footerItems.map((m) => (m.el = this.createElement(m, this.pageFooter()!.nativeElement)));
 
           this.currentPageIndex.set(pageNumber - 1);
           resolve(this.currentPageIndex());
@@ -130,6 +125,18 @@ export class PageBuilderService implements OnDestroy {
       } catch (error) {
         console.error('Error changing page:', error);
       }
+    });
+  }
+
+  private createElement(item: PageItem, container: HTMLElement) {
+    return this.dynamicElementService.createElementFromHTML(item, container, {
+      directives: DefaultBlockDirectives,
+      attributes: {
+        class: DefaultBlockClassName,
+      },
+      events: {
+        click: (ev: Event) => this.onSelectBlock(item, ev),
+      },
     });
   }
 
@@ -143,13 +150,27 @@ export class PageBuilderService implements OnDestroy {
     const page = this.pageInfo.pages[pageIndex];
     if (!page) return;
 
-    for (let item of page.items) {
+    for (let item of page.bodyItems) {
       if (item.el) {
         this.dynamicElementService.destroyDirective(item.el);
         this.renderer.removeChild(this.renderer.parentNode(item.el), item.el);
       }
     }
-    this.page()!.nativeElement.innerHTML = '';
+    for (let item of page.headerItems) {
+      if (item.el) {
+        this.dynamicElementService.destroyDirective(item.el);
+        this.renderer.removeChild(this.renderer.parentNode(item.el), item.el);
+      }
+    }
+    for (let item of page.footerItems) {
+      if (item.el) {
+        this.dynamicElementService.destroyDirective(item.el);
+        this.renderer.removeChild(this.renderer.parentNode(item.el), item.el);
+      }
+    }
+    this.pageBody()!.nativeElement.innerHTML = '';
+    this.pageHeader()!.nativeElement.innerHTML = '';
+    this.pageFooter()!.nativeElement.innerHTML = '';
   }
 
   onSelectBlock(c: PageItem, ev?: Event) {
@@ -161,30 +182,38 @@ export class PageBuilderService implements OnDestroy {
     this.activeEl.set(undefined);
   }
   removeBlock(item: PageItem) {
-    let page = this.pageInfo.pages[this.currentPageIndex()];
-    if (!page || !item) return;
+    const list = this.findBlockList(item);
+    if (!item || !list || !list.length) return;
 
-    const index = page.items.findIndex((i) => i.id === item.id);
+    const index = list.findIndex((i) => i.id === item.id);
     if (index !== -1 && item.el) {
-      page.items.splice(index, 1);
+      list.splice(index, 1);
       this.dynamicElementService.destroyDirective(item.el);
       this.renderer.removeChild(this.renderer.parentNode(item.el), item.el);
     }
     this.activeEl.set(undefined);
   }
 
-  writeItemValue(data: PageItem) {
-    let page = this.pageInfo.pages[this.currentPageIndex()];
-    if (!page || !data) return;
-    this.activeEl.set(data);
-    const index = page.items.findIndex((x) => x.id == data.id);
-    if (index > -1 && page.items[index].el) {
-      page.items[index].el = this.dynamicElementService.updateElementContent(
-        page.items[index].el,
-        data
-      );
+  private findBlockList(block: PageItem): PageItem[] | undefined {
+    const { headerItems, bodyItems, footerItems } = this.pageInfo.pages[this.currentPageIndex()];
+    for (let item of headerItems) if (item.id === block.id) return headerItems;
 
-      page.items[index] = data;
+    for (let item of bodyItems) if (item.id === block.id) return bodyItems;
+
+    for (let item of footerItems) if (item.id === block.id) return footerItems;
+
+    return [];
+  }
+
+  writeItemValue(data: PageItem) {
+    const list = this.findBlockList(data);
+    if (!data || !list || !list.length) return;
+    this.activeEl.set(data);
+    const index = list.findIndex((x) => x.id == data.id);
+    if (index > -1 && list[index].el) {
+      list[index].el = this.dynamicElementService.updateElementContent(list[index].el, data);
+
+      list[index] = data;
     }
   }
 }

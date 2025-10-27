@@ -39,12 +39,14 @@ export class TypographyControlComponent implements OnInit, ControlValueAccessor 
   textTransform: string = 'none';
   textAlign: string = '';
   style?: Partial<CSSStyleDeclaration>;
-  onChange = (_: Partial<CSSStyleDeclaration> | undefined) => {};
+  item?: PageItem;
+  onChange = (_: PageItem | undefined) => {};
   onTouched = () => {};
   constructor(private renderer: Renderer2) {}
 
   ngOnInit() {}
   writeValue(item: PageItem): void {
+    this.item = item;
     if (!item || !item.el) return;
     this.el = item.el;
     let val = getComputedStyle(item.el);
@@ -63,8 +65,6 @@ export class TypographyControlComponent implements OnInit, ControlValueAccessor 
       textTransform: this.textTransform,
       textAlign: this.textAlign,
     };
-    this.onChange(this.style);
-    this.change.emit(this.style);
   }
 
   registerOnChange(fn: any): void {
@@ -91,7 +91,7 @@ export class TypographyControlComponent implements OnInit, ControlValueAccessor 
       textTransform: this.textTransform,
       textAlign: this.textAlign,
     };
-    this.onChange(this.style);
+    this.onChange(this.item);
     this.change.emit(this.style);
   }
 }

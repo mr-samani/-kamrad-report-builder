@@ -65,8 +65,8 @@ export class BackgroundControlComponent implements OnInit, ControlValueAccessor 
   ];
   style?: Partial<CSSStyleDeclaration>;
   isImageTag = false;
-
-  onChange = (_: Partial<CSSStyleDeclaration> | undefined) => {};
+  item?: PageItem;
+  onChange = (_: PageItem | undefined) => {};
   onTouched = () => {};
 
   constructor(
@@ -80,28 +80,30 @@ export class BackgroundControlComponent implements OnInit, ControlValueAccessor 
   ngOnInit() {}
 
   writeValue(item: PageItem): void {
+    this.item = item;
     this.el = item?.el;
-    if (!item || !this.el) return;
+    if (item && this.el) {
+      const val = getComputedStyle(this.el);
+      const backgroundFull = val.background;
+      const parsed = parseBackground(backgroundFull);
 
-    const val = getComputedStyle(this.el);
-    const backgroundFull = val.background;
-    const parsed = parseBackground(backgroundFull);
-
-    this.backgroundColor = parsed.color ?? val.backgroundColor;
-    this.backgroundGradient = parsed.gradient ?? '';
-    this.backgroundImage = parsed.image ?? val.backgroundImage;
-    this.backgroundRepeat = val.backgroundRepeat;
-    this.backgroundSize = val.backgroundSize;
-    this.backgroundPosition = val.backgroundPosition;
-    this.backgroundAttachment = val.backgroundAttachment;
-    this.backgroundOrigin = val.backgroundOrigin;
-    this.backgroundClip = val.backgroundClip;
-    this.isImageTag = this.el.tagName === 'IMG';
-    if (this.isImageTag) {
-      this.imageUrl = this.el.getAttribute('src') ?? '';
+      this.backgroundColor = parsed.color ?? val.backgroundColor;
+      this.backgroundGradient = parsed.gradient ?? '';
+      this.backgroundImage = parsed.image ?? val.backgroundImage;
+      this.backgroundRepeat = val.backgroundRepeat;
+      this.backgroundSize = val.backgroundSize;
+      this.backgroundPosition = val.backgroundPosition;
+      this.backgroundAttachment = val.backgroundAttachment;
+      this.backgroundOrigin = val.backgroundOrigin;
+      this.backgroundClip = val.backgroundClip;
+      this.isImageTag = this.el.tagName === 'IMG';
+      if (this.isImageTag) {
+        this.imageUrl = this.el.getAttribute('src') ?? '';
+      }
+      this.detectMode();
+      this.update();
     }
-    this.detectMode();
-    this.update();
+    this.cdr.detectChanges();
   }
 
   registerOnChange(fn: any): void {
@@ -176,7 +178,7 @@ export class BackgroundControlComponent implements OnInit, ControlValueAccessor 
     };
 
     this.cdr.detectChanges();
-    this.onChange(this.style);
+    this.onChange(this.item);
     this.change.emit(this.style);
   }
 

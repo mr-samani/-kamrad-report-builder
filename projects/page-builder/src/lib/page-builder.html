@@ -2,9 +2,10 @@
   <toolbar></toolbar>
   <div
     class="components"
+    id="blockSourceList"
     ngxDropList
     [data]="sources"
-    [connectedTo]="[PageContainer]"
+    [connectedTo]="[PageBody, PageHeader, PageFooter]"
     [disableSort]="true"
   >
     @for (item of sources; track $index) {
@@ -25,12 +26,33 @@
       }}"
     >
       <div
-        class="page-body"
-        #PageContainer
+        class="page-header"
+        #PageHeader
         [class.show-outlines]="pageBuilderService.showOutlines"
         ngxDropList
-        [data]="pageBuilderService.currentPageItems"
-        (drop)="onDrop($event)"
+        [data]="pageBuilderService.currentPage.headerItems"
+        (drop)="onDrop($event, 'header')"
+      >
+        <div class="placeholder" *ngxPlaceholder></div>
+      </div>
+
+      <div
+        class="page-body"
+        #PageBody
+        [class.show-outlines]="pageBuilderService.showOutlines"
+        ngxDropList
+        [data]="pageBuilderService.currentPage.bodyItems"
+        (drop)="onDrop($event, 'body')"
+      >
+        <div class="placeholder" *ngxPlaceholder></div>
+      </div>
+      <div
+        class="page-footer"
+        #PageFooter
+        [class.show-outlines]="pageBuilderService.showOutlines"
+        ngxDropList
+        [data]="pageBuilderService.currentPage.footerItems"
+        (drop)="onDrop($event, 'footer')"
       >
         <div class="placeholder" *ngxPlaceholder></div>
       </div>

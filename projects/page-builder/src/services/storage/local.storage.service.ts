@@ -12,10 +12,14 @@ export class LocalStorageService implements IStorageService {
     return new Promise<PageBuilderDto>((resolve, reject) => {
       try {
         const pageDto = localStorage.getItem(LOCAL_STORAGE_SAVE_KEY) || '';
+        if (pageDto == '') {
+          resolve(new PageBuilderDto());
+          return;
+        }
         const parsed = JSON.parse(pageDto);
         resolve(new PageBuilderDto(parsed));
       } catch (error) {
-        console.log('Error loading page data:', error);
+        console.error('Error loading page data:', error);
         reject(error);
       }
     });

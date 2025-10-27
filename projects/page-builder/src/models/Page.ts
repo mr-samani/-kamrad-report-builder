@@ -1,7 +1,9 @@
 import { PageItem } from './PageItem';
 
 export class Page {
-  items: PageItem[] = [];
+  headerItems: PageItem[] = [];
+  bodyItems: PageItem[] = [];
+  footerItems: PageItem[] = [];
   config: PageConfig = new PageConfig();
   constructor(data?: Page | any) {
     if (data) {
