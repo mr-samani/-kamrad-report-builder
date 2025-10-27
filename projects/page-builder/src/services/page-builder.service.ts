@@ -69,6 +69,25 @@ export class PageBuilderService implements OnDestroy {
     });
   }
 
+  nextPage(): Promise<number> {
+    return new Promise((resolve, reject) => {
+      let index = this.currentPageIndex();
+      if (index < this.pageInfo.pages.length - 1) {
+        return this.changePage(index + 2);
+      }
+      return reject('No next page');
+    });
+  }
+  previousPage(): Promise<number> {
+    return new Promise((resolve, reject) => {
+      let index = this.currentPageIndex();
+      if (index > 0) {
+        return this.changePage(index);
+      }
+      return reject('No previous page');
+    });
+  }
+
   /**
    * Change the current page
    * @param pageNumber start from 1
