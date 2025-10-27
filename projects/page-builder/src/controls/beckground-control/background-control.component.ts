@@ -1,9 +1,12 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   forwardRef,
+  Inject,
   OnInit,
+  Optional,
   Output,
   Renderer2,
 } from '@angular/core';
@@ -11,6 +14,10 @@ import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/f
 import { CommonModule } from '@angular/common';
 import { NgxInputColorModule, NgxInputGradientModule } from 'ngx-input-color';
 import { parseBackground } from '../../utiles/parseBackground';
+import { IPageBuilderFilePicker } from '../../services/file-picker/IFilePicker';
+import { NGX_PAGE_BUILDER_FILE_PICKER } from '../../services/file-picker/token.filepicker';
+import { DEFAULT_IMAGE_URL } from '../../consts/defauls';
+import { PageItem } from '../../models/PageItem';
 
 export type BackgroundMode = 'color' | 'gradient' | 'image' | 'color+gradient' | 'color+image';
 
@@ -32,12 +39,15 @@ export type BackgroundMode = 'color' | 'gradient' | 'image' | 'color+gradient' |
 export class BackgroundControlComponent implements OnInit, ControlValueAccessor {
   @Output() change = new EventEmitter<Partial<CSSStyleDeclaration>>();
 
-  el: HTMLElement | null = null;
+  el?: HTMLElement;
   isDisabled = false;
 
   backgroundColor = '';
   backgroundGradient = '';
+  /** css bacground-image  */
   backgroundImage = '';
+  /** img tag src url */
+  imageUrl = '';
   backgroundRepeat = '';
   backgroundSize = '';
   backgroundPosition = '';
@@ -54,19 +64,26 @@ export class BackgroundControlComponent implements OnInit, ControlValueAccessor 
     { value: 'color+image', label: 'Color + Image', icon: 'mix' },
   ];
   style?: Partial<CSSStyleDeclaration>;
+  isImageTag = false;
 
   onChange = (_: Partial<CSSStyleDeclaration> | undefined) => {};
   onTouched = () => {};
 
-  constructor(private renderer: Renderer2) {}
+  constructor(
+    private renderer: Renderer2,
+    @Optional()
+    @Inject(NGX_PAGE_BUILDER_FILE_PICKER)
+    private filePicker: IPageBuilderFilePicker | null,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {}
 
-  writeValue(item: any): void {
-    if (!item || !item.el) return;
-    this.el = item.el;
+  writeValue(item: PageItem): void {
+    this.el = item?.el;
+    if (!item || !this.el) return;
 
-    const val = getComputedStyle(item.el);
+    const val = getComputedStyle(this.el);
     const backgroundFull = val.background;
     const parsed = parseBackground(backgroundFull);
 
@@ -79,9 +96,11 @@ export class BackgroundControlComponent implements OnInit, ControlValueAccessor 
     this.backgroundAttachment = val.backgroundAttachment;
     this.backgroundOrigin = val.backgroundOrigin;
     this.backgroundClip = val.backgroundClip;
-
+    this.isImageTag = this.el.tagName === 'IMG';
+    if (this.isImageTag) {
+      this.imageUrl = this.el.getAttribute('src') ?? '';
+    }
     this.detectMode();
-
     this.update();
   }
 
@@ -114,7 +133,6 @@ export class BackgroundControlComponent implements OnInit, ControlValueAccessor 
   }
   update() {
     if (!this.el) return;
-    debugger;
     // Apply only relevant styles
     if (this.mode.includes('color')) {
       this.renderer.setStyle(this.el, 'background-color', this.backgroundColor);
@@ -135,6 +153,14 @@ export class BackgroundControlComponent implements OnInit, ControlValueAccessor 
     this.renderer.setStyle(this.el, 'background-origin', this.backgroundOrigin);
     this.renderer.setStyle(this.el, 'background-clip', this.backgroundClip);
 
+    if (this.isImageTag) {
+      if (this.imageUrl) {
+        this.renderer.setAttribute(this.el, 'src', this.imageUrl);
+      } else {
+        this.renderer.setAttribute(this.el, 'src', DEFAULT_IMAGE_URL);
+      }
+    }
+
     this.style = {
       backgroundColor: this.backgroundColor,
       backgroundImage:
@@ -149,7 +175,32 @@ export class BackgroundControlComponent implements OnInit, ControlValueAccessor 
       backgroundClip: this.backgroundClip,
     };
 
+    this.cdr.detectChanges();
     this.onChange(this.style);
     this.change.emit(this.style);
+  }
+
+  openImagePicker() {
+    if (!this.filePicker) {
+      console.warn('Provider for file picker is not available');
+      return;
+    }
+    this.filePicker.openFilePicker('image').then((result) => {
+      // TODO base address must be set with pipe
+      this.backgroundImage = `url(${this.filePicker?.baseUrlAddress + result})`;
+      this.update();
+    });
+  }
+
+  onChangeSrcImage() {
+    if (!this.filePicker) {
+      console.warn('Provider for file picker is not available');
+      return;
+    }
+    this.filePicker.openFilePicker('image').then((result) => {
+      // TODO base address must be set with pipe
+      this.imageUrl = this.filePicker?.baseUrlAddress + result;
+      this.update();
+    });
   }
 }

@@ -15,6 +15,7 @@ import {
 } from '@angular/core';
 import 'reflect-metadata';
 import { PageItem } from '../models/PageItem';
+import { DEFAULT_IMAGE_URL } from '../consts/defauls';
 
 @Injectable({ providedIn: 'root' })
 export class DynamicElementService {
@@ -133,7 +134,7 @@ export class DynamicElementService {
     }
 
     if (element.tagName == 'IMG' && !element.hasAttribute('src')) {
-      element.setAttribute('src', '/assets/default-image.png');
+      element.setAttribute('src', DEFAULT_IMAGE_URL);
     }
     if (
       element.tagName == 'INPUT' ||
