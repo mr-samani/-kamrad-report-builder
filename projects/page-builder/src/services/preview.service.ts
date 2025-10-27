@@ -38,9 +38,8 @@ export class PreviewService {
     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">
     <title>Print Preview</title>
     <style>
-      @page { 
-        size: auto;
-        margin: 15mm; 
+      @page {   
+        margin: 0px 0px 20px 0px; 
         size: ${size};
         orientation: ${orientation}; 
       }

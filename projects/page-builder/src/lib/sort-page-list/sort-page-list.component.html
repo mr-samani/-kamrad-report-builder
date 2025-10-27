@@ -1,0 +1,14 @@
+<h2 mat-dialog-title>Sort Pages</h2>
+<mat-dialog-content>
+  <p>Drag and drop to reorder pages</p>
+
+  <div class="list-container" ngxDropList (drop)="onDrop($event)">
+    @for(page of pageList; track $index) {
+    <div class="list-item" ngxDraggable>#Page {{ page.order + 1 }}</div>
+    }
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button matButton mat-dialog-close>Cancel</button>
+  <button matButton (click)="ok()">Ok</button>
+</mat-dialog-actions>

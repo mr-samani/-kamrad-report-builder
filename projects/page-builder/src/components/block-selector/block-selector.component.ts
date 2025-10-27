@@ -95,7 +95,7 @@ export class BlockSelectorComponent extends BaseComponent implements OnDestroy {
   }
 
   updatePosition() {
-    console.log('Updating position for:', `[data-id="${this.item?.id}"]`);
+    // console.log('Updating position for:', `[data-id="${this.item?.id}"]`);
     if (!this.item) {
       this.x = this.y = this.width = this.height = 0;
       this.chdRef.detectChanges();

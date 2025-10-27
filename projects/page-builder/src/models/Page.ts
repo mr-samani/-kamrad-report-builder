@@ -5,6 +5,7 @@ export class Page {
   bodyItems: PageItem[] = [];
   footerItems: PageItem[] = [];
   config: PageConfig = new PageConfig();
+  order: number = 0;
   constructor(data?: Page | any) {
     if (data) {
       for (var property in data) {

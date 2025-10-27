@@ -21,6 +21,7 @@ export function preparePageDataForSave(pageInfo: PageBuilderDto): PageBuilderDto
       }
     }
   }
+  pageInfo.pages.map((m, index) => (m.order = index));
 
   const sanitized = sanitizeForStorage(pageInfo);
   return sanitized;

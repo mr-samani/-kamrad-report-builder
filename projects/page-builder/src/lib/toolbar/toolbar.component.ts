@@ -13,6 +13,7 @@ import { STORAGE_SERVICE } from '../../services/storage/token.storage';
 import { IStorageService } from '../../services/storage/IStorageService';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfigDialogComponent } from '../config-dialog/config-dialog.component';
+import { SortPageListComponent } from '../sort-page-list/sort-page-list.component';
 
 @Component({
   selector: 'toolbar',
@@ -99,6 +100,16 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
     this.previewService.openPreview();
   }
 
+  sortPages() {
+    this.matDialog
+      .open(SortPageListComponent)
+      .afterClosed()
+      .subscribe((result) => {
+        if (result) {
+          this.pageBuilderService.reloadCurrentPage();
+        }
+      });
+  }
   openConfigDialog() {
     this.matDialog.open(ConfigDialogComponent);
   }

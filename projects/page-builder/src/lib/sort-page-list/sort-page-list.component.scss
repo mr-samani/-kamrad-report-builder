@@ -1,0 +1,18 @@
+.list-container {
+  position: relative;
+  border: 1px #8383838a solid;
+  border-radius: 5px;
+  padding: 10px;
+  .list-item {
+    position: relative;
+    border: 1px #8383838a solid;
+    border-radius: 5px;
+    padding: 10px;
+    background: white;
+    transition: all 0.3s ease;
+    cursor: grab;
+    &:hover {
+      background: rgb(191, 191, 246);
+    }
+  }
+}

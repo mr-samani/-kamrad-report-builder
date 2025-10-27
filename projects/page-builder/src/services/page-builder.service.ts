@@ -127,7 +127,9 @@ export class PageBuilderService implements OnDestroy {
       }
     });
   }
-
+  reloadCurrentPage() {
+    this.changePage(this.currentPageIndex() + 1);
+  }
   private createElement(item: PageItem, container: HTMLElement) {
     return this.dynamicElementService.createElementFromHTML(item, container, {
       directives: DefaultBlockDirectives,

@@ -109,6 +109,10 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
 
   async onDrop(event: IDropEvent, listName = '') {
     console.log('Dropped:', event);
+    if (event.container == event.previousContainer && event.currentIndex == event.previousIndex) {
+      return;
+    }
+
     this.pageBuilderService.activeEl.set(undefined);
     if (event.previousContainer.el.id == 'blockSourceList') {
       // انتقال از یک container به container دیگه
