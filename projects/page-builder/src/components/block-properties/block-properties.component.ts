@@ -56,7 +56,6 @@ export class BlockPropertiesComponent extends BaseComponent implements OnInit {
       })
       .afterClosed()
       .subscribe((result) => {
-        debugger;
         if (result && this.item) {
           this.item.content = result;
           this.pageBuilderService.writeItemValue(this.item);

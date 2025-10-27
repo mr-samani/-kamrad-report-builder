@@ -19,8 +19,15 @@ export class PreviewService {
       alert('Popup blocked! Please allow popups for printing.');
       return;
     }
-    const container = document.createElement('div');
-    this.loadAllPages(container, this.pageBuilderService.pageInfo.pages).then((content) => {
+    const hContainer = document.createElement('div');
+    const bContainer = document.createElement('div');
+    const fContainer = document.createElement('div');
+    this.loadAllPages(
+      hContainer,
+      bContainer,
+      fContainer,
+      this.pageBuilderService.pageInfo.pages
+    ).then((content) => {
       try {
         // محتوای کامل HTML برای پرینت
         const fullHtml = `
@@ -65,7 +72,7 @@ export class PreviewService {
           <thead>
             <tr>
               <th class="pb-3">
-                <page-header></page-header>
+                ${content.header}
               </th>
             </tr>
           </thead>
@@ -74,7 +81,7 @@ export class PreviewService {
               <td>
                 <!-- ---------------- body ---------------------- -->
                 <div class="page-body">
-                     ${content}
+                     ${content.body}
                 </div>
               </td>
             </tr>
@@ -82,7 +89,7 @@ export class PreviewService {
           <tfoot>
             <tr>
               <td>
-                <page-footer></page-footer>
+                ${content.footer}
               </td>
             </tr>
           </tfoot>
@@ -125,23 +132,30 @@ export class PreviewService {
     });
   }
 
-  private loadAllPages(container: HTMLElement, pages: Page[]) {
-    return new Promise((resolve, reject) => {
+  private loadAllPages(
+    hContainer: HTMLElement,
+    bContainer: HTMLElement,
+    fContainer: HTMLElement,
+    pages: Page[]
+  ) {
+    return new Promise<{ header: string; body: string; footer: string }>((resolve, reject) => {
       try {
         for (let page of pages) {
-          for (let item of page.bodyItems) {
-            item.el = this.dynamicElementService.createElementFromHTML(item, container, {
-              //directives: DefaultBlockDirectives,
-              //   attributes: {
-              //     class: DefaultBlockClassName,
-              //   },
-              //   events: {
-              //      click: (ev: Event) => this.onSelectBlock(item, ev),
-              //   },
-            });
-          }
+          page.headerItems.map(
+            (m) => (m.el = this.dynamicElementService.createElementFromHTML(m, hContainer))
+          );
+          page.bodyItems.map(
+            (m) => (m.el = this.dynamicElementService.createElementFromHTML(m, bContainer))
+          );
+          page.footerItems.map(
+            (m) => (m.el = this.dynamicElementService.createElementFromHTML(m, fContainer))
+          );
         }
-        resolve(container.innerHTML);
+        resolve({
+          header: hContainer.innerHTML,
+          body: bContainer.innerHTML,
+          footer: fContainer.innerHTML,
+        });
       } catch (error) {
         console.error('Error changing page:', error);
         reject(error);
