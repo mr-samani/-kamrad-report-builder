@@ -9,7 +9,13 @@ import {
   Output,
   OnDestroy,
 } from '@angular/core';
-import { DynamicDataStructure, DynamicNode, DynamicObjectNode } from '../models/DynamicData';
+import {
+  DynamicDataStructure,
+  DynamicNode,
+  DynamicObjectNode,
+  DynamicArrayNode,
+  DynamicValueNode,
+} from '../models/DynamicData';
 
 @Directive({
   selector: '[ngxDynamicAutocomplete]',
@@ -24,6 +30,7 @@ export class DynamicAutocompleteDirective implements OnDestroy {
   private activeIndex = 0;
   private showPopup = false;
 
+  // close popup when clicking outside
   private onDocClick = (e: MouseEvent) => {
     if (!this.popupEl) return;
     if (
@@ -43,13 +50,16 @@ export class DynamicAutocompleteDirective implements OnDestroy {
     this.closePopup();
   }
 
-  // === Key handling ===
+  // -------------------------
+  // Key handling
+  // -------------------------
   @HostListener('keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
-    // open suggestions
+    // open suggestions via Ctrl+Space or Ctrl+Shift+Space or just Ctrl+Space
     if (event.ctrlKey && (event.code === 'Space' || event.key === ' ')) {
       event.preventDefault();
-      this.openSuggestionsAtCursor();
+      // open after browser updates input (not strictly necessary but safe)
+      setTimeout(() => this.openSuggestionsAtCursor(), 0);
       return;
     }
 
@@ -78,25 +88,24 @@ export class DynamicAutocompleteDirective implements OnDestroy {
     }
 
     // If user types '.' we re-open suggestions relative to the new path.
+    // Wait a tick so '.' is inserted into the editable before computing path.
     if (event.key === '.') {
-      // allow '.' to be inserted first, then compute path and open
-      // use setTimeout 0 to run after the '.' is inserted by browser
       setTimeout(() => this.openSuggestionsAtCursor(), 0);
       return;
     }
 
-    // if user deletes/backspaces or types normal chars we recompute suggestions or close
-    // use setTimeout to let input update
+    // For normal typing / deletion, if popup is open we recompute suggestions.
+    // Wait a tick to allow input to update.
     setTimeout(() => {
       if (this.showPopup) {
         const path = this.computePathBeforeCursor();
-        // if path became invalid or suggestions empty -> close
         const sugg = this.getSuggestionsForPath(path);
-        if (!sugg.length) this.closePopup();
-        else {
+        if (!sugg.length) {
+          this.closePopup();
+        } else {
           this.suggestions = sugg;
           this.activeIndex = Math.min(this.activeIndex, this.suggestions.length - 1);
-          this.updatePopupItems(); // update list contents
+          this.updatePopupItems();
           const r = this.getCaretRect();
           this.setPosition(r.left, r.bottom);
         }
@@ -106,15 +115,20 @@ export class DynamicAutocompleteDirective implements OnDestroy {
 
   @HostListener('blur')
   onBlur() {
-    // give click handlers a chance; close on next tick
-    setTimeout(() => this.closePopup(), 100);
+    // slight delay to allow click on suggestion to be processed
+    setTimeout(() => this.closePopup(), 150);
   }
 
-  // === Opening & computing ===
+  // -------------------------
+  // Opening & computing
+  // -------------------------
   private openSuggestionsAtCursor() {
     const path = this.computePathBeforeCursor();
     const suggestions = this.getSuggestionsForPath(path);
-    if (!suggestions.length) return;
+    if (!suggestions || !suggestions.length) {
+      this.closePopup();
+      return;
+    }
     this.suggestions = suggestions;
     this.activeIndex = 0;
     this.createOrUpdatePopup();
@@ -123,20 +137,52 @@ export class DynamicAutocompleteDirective implements OnDestroy {
     this.showPopup = true;
   }
 
-  // compute path like ['personalInfo','name'] from text before cursor.
-  // robust for inputs, textarea and contenteditable.
+  /**
+   * computePathBeforeCursor
+   * - returns segments array
+   * - if text ends with '.' the last segment is '' (empty) to indicate "list children"
+   *
+   * Examples:
+   *  "" -> []
+   *  "personalInfo" -> ["personalInfo"]
+   *  "personalInfo." -> ["personalInfo",""]
+   *  "personalInfo.name.fi" -> ["personalInfo","name","fi"]
+   */
   private computePathBeforeCursor(): string[] {
     const textBefore = this.getTextBeforeCursor();
     if (!textBefore) return [];
-    // match chain like: word(.word|.[index])*
+
+    // match the last chain that contains words or [index] separated by dots
+    // this match finds the chain at the end of textBefore
     const chainMatch = textBefore.match(/(?:[\w$]+|\[index\])(?:\.(?:[\w$]+|\[index\]))*$/);
-    if (!chainMatch) return [];
+    if (!chainMatch) {
+      // if text ends with '.' but chainMatch failed (rare), check explicitly
+      if (textBefore.endsWith('.')) {
+        const prev = textBefore
+          .slice(0, -1)
+          .match(/(?:[\w$]+|\[index\])(?:\.(?:[\w$]+|\[index\]))*$/);
+        if (prev) {
+          const segs = prev[0].split('.');
+          segs.push('');
+          return segs;
+        }
+      }
+      return [];
+    }
+
     const chain = chainMatch[0];
-    // split by '.' but keep [index] as segment
-    return chain.split('.').filter(Boolean);
+    const segments = chain.split('.');
+
+    // if original text ended with '.' then we want an extra empty segment
+    if (textBefore.endsWith('.')) {
+      segments.push('');
+    }
+
+    // normalize: keep empty last segment only (used to show children)
+    return segments;
   }
 
-  // get current token (last segment) using the improved regex you suggested
+  // get current token (last alphanumeric token before caret) — uses the improved regex you suggested
   private getCurrentToken(): string {
     const textBefore = this.getTextBeforeCursor();
     if (!textBefore) return '';
@@ -152,7 +198,6 @@ export class DynamicAutocompleteDirective implements OnDestroy {
       if (!sel || !sel.rangeCount) return '';
       const range = sel.getRangeAt(0).cloneRange();
       range.collapse(true);
-      // create range from start of element to caret
       const preRange = document.createRange();
       preRange.selectNodeContents(el);
       preRange.setEnd(range.endContainer, range.endOffset);
@@ -164,65 +209,79 @@ export class DynamicAutocompleteDirective implements OnDestroy {
     return '';
   }
 
-  // === Suggestions computation (fixed traversal checks) ===
+  // -------------------------
+  // Suggestions computation
+  // -------------------------
   private getSuggestionsForPath(path: string[]): string[] {
-    // start from root object that represents dynamicData
-    let current: DynamicNode | undefined = undefined;
-    // if path empty, we want top-level keys
-    if (path.length === 0) {
-      // top-level "object" built from dynamicData
-      return Object.keys(this.dynamicData ?? {});
+    const root = this.dynamicData ?? {};
+
+    // empty path -> top-level keys
+    if (!path || path.length === 0) {
+      return Object.keys(root);
     }
 
-    // traverse
-    current = { type: 'object', properties: this.dynamicData } as DynamicObjectNode;
-    for (const segment of path.slice(0, -1)) {
-      // walk through all but the last segment to reach parent of current token
-      if (current.type === 'object' && current.properties && segment in current.properties) {
-        current = current.properties[segment];
-      } else if (current.type === 'array' && segment === '[index]') {
-        current = current.items;
+    // We will traverse to parent (everything except last segment)
+    const parentPath = path.slice(0, -1);
+    const currentToken = path[path.length - 1]; // may be '' when user typed '.' just now
+
+    // Start from a synthetic root object wrapping dynamicData
+    let current: DynamicNode = { type: 'object', properties: root } as DynamicObjectNode;
+
+    // traverse parentPath
+    for (const seg of parentPath) {
+      if (!current) return [];
+      if (current.type === 'object') {
+        if (current.properties && seg in current.properties) {
+          current = current.properties[seg];
+        } else {
+          return [];
+        }
+      } else if (current.type === 'array') {
+        // If seg is [index] -> go into items, otherwise allow direct drill into items as well
+        if (seg === '[index]') {
+          current = current.items;
+        } else {
+          // treat unknown segment as attempt to access items properties
+          current = current.items;
+        }
       } else {
-        // invalid path -> no suggestions
         return [];
       }
     }
 
-    // now handle suggestions for the last segment (partial token)
-    const lastSegment = path[path.length - 1];
-    // if lastSegment is empty (e.g. just typed dot) then we should list children of parent
-    if (lastSegment === '' || lastSegment === undefined) {
-      if (current.type === 'object') return Object.keys(current.properties);
-      if (current.type === 'array') {
-        // for array suggest index token or properties of item
-        // suggest [index] so user can then type .property
-        if (current.items.type === 'object') {
-          return ['[index]', ...Object.keys(current.items.properties)];
-        }
-        return ['[index]'];
-      }
-      return [];
-    }
+    // Now current refers to the parent node where we want to list children for currentToken
+    if (!current) return [];
 
-    // if parent is object -> filter its properties by prefix
     if (current.type === 'object') {
-      return Object.keys(current.properties).filter((k) => k.startsWith(lastSegment));
+      const keys = Object.keys(current.properties || {});
+      if (currentToken === '' || currentToken === undefined) {
+        // user typed '.' -> show all children
+        return keys;
+      }
+      // filter by prefix
+      return keys.filter((k) => k.startsWith(currentToken));
     }
 
     if (current.type === 'array') {
-      // suggest index token or properties of array item that match prefix
-      const item = current.items;
-      const props = item.type === 'object' ? Object.keys(item.properties) : [];
-      const results = [];
-      if ('[index]'.startsWith(lastSegment)) results.push('[index]');
-      results.push(...props.filter((p) => p.startsWith(lastSegment)));
-      return results;
+      const suggestions: string[] = [];
+      // suggest [index]
+      if (!currentToken || '[index]'.startsWith(currentToken)) suggestions.push('[index]');
+      // if items is object, suggest its props
+      if (current.items && current.items.type === 'object') {
+        const itemKeys = Object.keys(current.items.properties || {});
+        if (!currentToken) suggestions.push(...itemKeys);
+        else suggestions.push(...itemKeys.filter((k) => k.startsWith(currentToken)));
+      }
+      return suggestions;
     }
 
+    // value node has no children
     return [];
   }
 
-  // === Popup DOM ===
+  // -------------------------
+  // Popup DOM helpers
+  // -------------------------
   private createOrUpdatePopup() {
     if (!this.popupEl) {
       const popup = this.renderer.createElement('ul');
@@ -270,7 +329,6 @@ export class DynamicAutocompleteDirective implements OnDestroy {
       this.renderer.setStyle(c, 'background', i === this.activeIndex ? '#0078d7' : '');
       this.renderer.setStyle(c, 'color', i === this.activeIndex ? '#fff' : '#000');
     });
-    // ensure active item visible
     const activeEl = children[this.activeIndex] as HTMLElement | undefined;
     if (activeEl) activeEl.scrollIntoView({ block: 'nearest' });
   }
@@ -298,10 +356,12 @@ export class DynamicAutocompleteDirective implements OnDestroy {
     this.activeIndex = 0;
   }
 
-  // === Insert logic ===
+  // -------------------------
+  // Insert logic
+  // -------------------------
   private select(value: string) {
-    // insert selected segment. If user wants full placeholder, change here.
-    // We will replace the current token (chain's last segment) with the selected value.
+    // Insert the selected segment in place of the chain's last segment.
+    // If you prefer inserting placeholder format like [%@data.path%], change here.
     this.replaceCurrentTokenWith(value);
     this.inserted.emit(value);
     this.closePopup();
@@ -309,49 +369,25 @@ export class DynamicAutocompleteDirective implements OnDestroy {
 
   private replaceCurrentTokenWith(textToInsert: string) {
     const el = this.el.nativeElement;
+    // For contenteditable we reconstruct text (innerText) and set caret by char index
     if ((el as HTMLElement).isContentEditable) {
-      const sel = window.getSelection();
-      if (!sel || !sel.rangeCount) return;
-      const range = sel.getRangeAt(0);
-
-      // compute range covering the matched chain before cursor
-      const beforeText = this.getTextBeforeCursor();
-      const chainMatch = beforeText.match(/(?:[\w$]+|\[index\])(?:\.(?:[\w$]+|\[index\]))*$/);
-      if (chainMatch) {
-        const chain = chainMatch[0];
-        // create a range that covers the chain length backwards
-        const newRange = range.cloneRange();
-        // move start backward by chain.length characters within the same container/DOM
-        // easiest: collapse to caret, then expand start by chain.length using Range APIs
-        newRange.setStart(range.endContainer, range.endOffset);
-        // walk backwards to set start (robust but simple approach: remove characters via string)
-        // We'll replace by deleting the chain text using execCommand (works for contenteditable)
-        // but execCommand deprecated — fallback: do manual approach
-        // Simpler and robust: delete last chain chars by moving a temp range from caret-left
-        const walkRange = document.createRange();
-        // create a start point by walking nodes; easiest: use text nodes only by searching backward from container
-        // For brevity and robustness: we'll delete using selection modify (available in browsers)
-        try {
-          // select backward by word/character chain.length (selection.modify may not be available everywhere)
-          // fallback: delete last token using execCommand
-          document.execCommand('insertText', false, ''); // noop ensure support
-        } catch {}
-      }
-      // Simpler approach: insert text and then remove the previous token by searching in parent text
-      // So we'll replace by reconstructing the whole text content of the editable element:
-      const full = el.innerText || el.textContent || '';
+      const full = el.innerText ?? el.textContent ?? '';
       const caretIndex = this.getCaretIndexInContentEditable();
       const before = full.slice(0, caretIndex);
       const after = full.slice(caretIndex);
-      const chainMatch2 = before.match(/(?:[\w$]+|\[index\])(?:\.(?:[\w$]+|\[index\]))*$/);
-      if (chainMatch2) {
-        const start = caretIndex - chainMatch2[0].length;
+      const chainMatch = before.match(/(?:[\w$]+|\[index\])(?:\.(?:[\w$]+|\[index\]))*$/);
+      if (chainMatch) {
+        const start = caretIndex - chainMatch[0].length;
         const newText = before.slice(0, start) + textToInsert + after;
+        // set new text (note: this loses inner HTML formatting; if you need to keep HTML use more advanced approach)
         el.innerText = newText;
         // set caret after inserted text
         this.setCaretInContentEditable(start + textToInsert.length);
       } else {
-        // fallback: simple insert at caret
+        // fallback: insert at caret
+        const sel = window.getSelection();
+        if (!sel || !sel.rangeCount) return;
+        const range = sel.getRangeAt(0);
         range.deleteContents();
         range.insertNode(document.createTextNode(textToInsert));
         range.collapse(false);
@@ -366,16 +402,16 @@ export class DynamicAutocompleteDirective implements OnDestroy {
         el.value = el.value.slice(0, s) + textToInsert + el.value.slice(start);
         const pos = s + textToInsert.length;
         el.setSelectionRange(pos, pos);
-        el.dispatchEvent(new Event('input'));
+        el.dispatchEvent(new Event('input', { bubbles: true }));
       } else {
-        // just insert
+        // insert normally
         el.setRangeText(textToInsert, el.selectionStart ?? 0, el.selectionEnd ?? 0, 'end');
-        el.dispatchEvent(new Event('input'));
+        el.dispatchEvent(new Event('input', { bubbles: true }));
       }
     }
   }
 
-  // helper: get caret index inside contenteditable as character offset (approx)
+  // helper: get caret index inside contenteditable as character offset
   private getCaretIndexInContentEditable(): number {
     const sel = window.getSelection();
     if (!sel || !sel.rangeCount) return 0;
@@ -420,7 +456,9 @@ export class DynamicAutocompleteDirective implements OnDestroy {
     }
   }
 
-  // === caret rect calculation ===
+  // -------------------------
+  // caret rect calculation
+  // -------------------------
   private getCaretRect(): DOMRect {
     const el = this.el.nativeElement;
     if ((el as HTMLElement).isContentEditable) {
@@ -432,10 +470,13 @@ export class DynamicAutocompleteDirective implements OnDestroy {
       if (rects.length) return rects[0];
       return el.getBoundingClientRect();
     } else if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
-      // approximate: compute caret position using a mirror technique is best but long.
-      // here we approximate near element's top-left + padding + caret index
+      // a simple approximation for inputs/textarea caret position
+      // For pixel-perfect placement use the "mirror" technique (I can add it on request)
       const rect = el.getBoundingClientRect();
-      return new DOMRect(rect.left + 8, rect.top + 18, 0, 0);
+      // try to approximate vertical position using line-height or font-size
+      const style = window.getComputedStyle(el);
+      const lineHeight = parseFloat(style.lineHeight || style.fontSize || '16');
+      return new DOMRect(rect.left + 8, rect.top + Math.min(24, lineHeight + 8), 0, 0);
     }
     return new DOMRect();
   }

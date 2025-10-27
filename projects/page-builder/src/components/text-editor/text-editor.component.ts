@@ -76,6 +76,16 @@ export class TextEditorComponent implements AfterViewInit {
         email: { type: 'value', valueType: 'string' },
       },
     },
+    jobData: {
+      type: 'object',
+      properties: {
+        title: { type: 'value', valueType: 'string' },
+        company: { type: 'value', valueType: 'string' },
+        location: { type: 'value', valueType: 'string' },
+        startDate: { type: 'value', valueType: 'date' },
+        endDate: { type: 'value', valueType: 'date' },
+      },
+    },
   };
 
   constructor(
