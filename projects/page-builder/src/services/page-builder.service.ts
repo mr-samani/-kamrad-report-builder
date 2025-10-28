@@ -137,7 +137,8 @@ export class PageBuilderService implements OnDestroy {
     this.changePage(this.currentPageIndex() + 1);
   }
   private createElement(item: PageItem, container: HTMLElement) {
-    return this.dynamicElementService.createElementFromHTML(item, container, {
+    item.options = {
+      ...item.options,
       directives: DefaultBlockDirectives,
       attributes: {
         class: DefaultBlockClassName,
@@ -145,7 +146,8 @@ export class PageBuilderService implements OnDestroy {
       events: {
         click: (ev: Event) => this.onSelectBlock(item, ev),
       },
-    });
+    };
+    return this.dynamicElementService.createElementFromHTML(item, container);
   }
 
   /**

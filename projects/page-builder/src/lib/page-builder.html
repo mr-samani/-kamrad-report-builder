@@ -20,7 +20,11 @@
       }
     </div>
   </div>
-  <div class="page-container" (click)="pageBuilderService.deSelectBlock()">
+  <div
+    class="page-container full-height"
+    (click)="pageBuilderService.deSelectBlock()"
+    (scroll)="blockSelector.updatePosition()"
+  >
     <div
       [hidden]="pageBuilderService.currentPageIndex() < 0"
       class="paper {{ pageBuilderService.pageInfo.config.size }} {{
@@ -61,8 +65,8 @@
         <div class="placeholder" *ngxPlaceholder></div>
       </div>
     </div>
+    <block-selector #blockSelector />
   </div>
 
   <block-properties class="properties"></block-properties>
 </div>
-<block-selector />

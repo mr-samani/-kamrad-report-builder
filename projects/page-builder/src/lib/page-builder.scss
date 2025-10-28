@@ -1,14 +1,9 @@
 @use '../styles/paper.scss';
 
-.sticky-top {
-  position: sticky !important;
-  top: var(--toolbar-height);
-}
 .properties {
   border: none var(--tools-border);
   background-color: var(--properties-bg);
   color: var(--properties-fg);
-  padding: 10px;
   svg {
     fill: var(--properties-fg);
   }
@@ -99,4 +94,12 @@
 }
 .page-footer.is-empty::after {
   content: 'Footer';
+}
+.sticky-top {
+  position: sticky !important;
+  top: var(--toolbar-height);
+}
+.full-height {
+  max-height: calc(100vh - var(--toolbar-height));
+  overflow: auto;
 }

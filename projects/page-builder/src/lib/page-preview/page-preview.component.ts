@@ -116,7 +116,7 @@ export class NgxPagePreviewComponent implements OnInit {
   }
 
   private createElement(item: PageItem, container: HTMLElement) {
-    return this.dynamicElementService.createElementFromHTML(item, container, {});
+    return this.dynamicElementService.createElementFromHTML(item, container);
   }
 
   private setPrintStyle() {

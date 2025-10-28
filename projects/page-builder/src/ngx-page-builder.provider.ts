@@ -30,7 +30,6 @@ export function providePageBuilder(config: PageBuilderConfiguration) {
   if (!config.customSources || !Array.isArray(config.customSources)) {
     config.customSources = [];
   }
-
   LibConsts.SourceItemList = [
     ...SOURCE_ITEMS,
     ...(config.customSources ?? []).map((item) => new SourceItem(item)),

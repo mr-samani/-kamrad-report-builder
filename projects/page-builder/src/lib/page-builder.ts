@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   ElementRef,
   Inject,
@@ -19,20 +18,14 @@ import {
   transferArrayItem,
 } from 'ngx-drag-drop-kit';
 import { PageItem } from '../models/PageItem';
-import { SOURCE_ITEMS, SourceItem } from '../models/SourceItem';
-import {
-  DefaultBlockClassName,
-  DefaultBlockDirectives,
-  LibConsts,
-  LOCAL_STORAGE_SAVE_KEY,
-} from '../consts/defauls';
+import { SourceItem } from '../models/SourceItem';
+import { DefaultBlockClassName, DefaultBlockDirectives, LibConsts } from '../consts/defauls';
 import { SafeHtmlPipe } from '../pipes/safe-html.pipe';
 import { BlockSelectorComponent } from '../components/block-selector/block-selector.component';
 import { generateUUID } from '../utiles/generateUUID';
 import { BlockPropertiesComponent } from '../components/block-properties/block-properties.component';
 import { ToolbarComponent } from './toolbar/toolbar.component';
 import { PageBuilderBaseComponent } from './page-builder-base-component';
-import { Page } from '../models/Page';
 import { IStorageService } from '../services/storage/IStorageService';
 import { STORAGE_SERVICE } from '../services/storage/token.storage';
 import { PAGE_BUILDER_CONFIGURATION, PageBuilderConfiguration } from '../ngx-page-builder.provider';
@@ -101,6 +94,9 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
     if (event.container == event.previousContainer && event.currentIndex == event.previousIndex) {
       return;
     }
+    if (!event.previousContainer.data[event.previousIndex]) {
+      return;
+    }
 
     this.pageBuilderService.activeEl.set(undefined);
     if (event.previousContainer.el.id == 'blockSourceList') {
@@ -117,12 +113,12 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
           text: source.content,
           directives: DefaultBlockDirectives,
           attributes: {
-            ...source.attributes,
             class: DefaultBlockClassName,
           },
           events: {
             click: (ev: Event) => this.pageBuilderService.onSelectBlock(source, ev),
           },
+          ...source.options,
         }
       );
       source.el = html;

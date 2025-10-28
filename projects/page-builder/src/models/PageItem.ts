@@ -1,5 +1,6 @@
 import { Type } from '@angular/core';
 import { generateUUID } from '../utiles/generateUUID';
+import { ISourceOptions } from './SourceItem';
 
 export class PageItem {
   id: string = generateUUID();
@@ -8,9 +9,9 @@ export class PageItem {
   tag!: string;
   html?: string;
   content?: string;
-  attributes?: Record<string, any> | undefined;
   component?: Type<any>;
   componentKey?: string;
+  options?: ISourceOptions;
   constructor(data?: PageItem | any) {
     if (data) {
       for (var property in data) {

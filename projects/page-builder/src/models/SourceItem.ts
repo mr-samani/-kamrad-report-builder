@@ -1,14 +1,76 @@
 import { Type } from '@angular/core';
 import { randomNumber } from '../utiles/randomNumber';
 
-export class SourceItem {
-  tag?: 'div' | 'span' | 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'img' | 'input' = 'div';
-  title: string = 'Div';
-  icon: string = '';
-  component?: Type<any>;
-  content?: string;
+export interface ISourceOptions {
+  text?: string;
+  events?: Record<string, (event: any) => boolean | void>;
+  directives?: Type<any>[];
+
+  /**
+   * Html attributs
+   * @example
+   * {
+   *   "class": "my-class",
+   *   "id": "my-id"
+   * }
+   */
   attributes?: Record<string, any> | undefined;
-  componentKey?: string;
+  /**
+   * Component inputs
+   * - @Input()
+   * @example
+   * {
+   *   "input1": "value1",
+   *   "input2": "value2"
+   * }
+   */
+  inputs?: Record<string, any> | undefined;
+  /**
+   * Component outputs
+   * - @Output()
+   * @example
+   * {
+   *   "output1": ($event)=>{ console.log($event); },
+   * }
+   */
+  outputs?: Record<string, Function> | undefined;
+}
+
+export class SourceItem {
+  /**
+   * Html tags
+   * @example 'div'
+   * */
+  tag?: 'div' | 'span' | 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'img' | 'input' = 'div';
+  /**
+   *  Display title
+   * @example 'My Chart'
+   * */
+  title: string = 'Div';
+  /**
+   * Block icon
+   * @example <svg>...</svg>
+   */
+  icon: string = '';
+
+  /**
+   * Component reference
+   * @example MyChartComponent
+   */
+  component?: Type<any>;
+  /**
+   * Text content of html tags
+   */
+  content?: string;
+
+  /**
+   * Component key
+   * - name of component
+   * @readonly Set by library
+   */
+  readonly componentKey?: string;
+
+  options?: ISourceOptions;
   constructor(data?: SourceItem | any) {
     if (data) {
       for (var property in data) {
@@ -84,10 +146,12 @@ export const SOURCE_ITEMS: SourceItem[] = [
     tag: 'input',
     title: 'Input',
     icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M0 64C0 28.65 28.65 0 64 0H448c35.35 0 64 28.65 64 64v384c0 35.35-28.65 64-64 64H64c-35.35 0-64-28.65-64-64V64zm64 32v384h384V96H64z"/></svg>',
-    attributes: {
-      name: 'input-field-' + randomNumber(3),
-      type: 'text',
-      placeholder: 'Enter text',
+    options: {
+      attributes: {
+        name: 'input-field-' + randomNumber(3),
+        type: 'text',
+        placeholder: 'Enter text',
+      },
     },
   },
 ];

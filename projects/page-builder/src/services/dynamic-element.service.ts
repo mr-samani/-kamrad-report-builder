@@ -11,10 +11,12 @@ import {
   ViewContainerRef,
   runInInjectionContext,
   createComponent,
+  EventEmitter,
 } from '@angular/core';
 import 'reflect-metadata';
 import { PageItem } from '../models/PageItem';
 import { DEFAULT_IMAGE_URL, LibConsts } from '../consts/defauls';
+import { ISourceOptions } from '../public-api';
 
 @Injectable({ providedIn: 'root' })
 export class DynamicElementService {
@@ -37,12 +39,7 @@ export class DynamicElementService {
     tag: string,
     id: string,
     component: Type<any> | undefined,
-    options?: {
-      text?: string;
-      attributes?: Record<string, any>;
-      events?: Record<string, any>;
-      directives?: Type<any>[];
-    }
+    options?: ISourceOptions
   ): HTMLElement {
     if (component) {
       return this.createComponentElement(container, component, id, options);
@@ -73,24 +70,18 @@ export class DynamicElementService {
   /**
    * create html element from PageItem (Saved data)
    */
-  createElementFromHTML(
-    item: PageItem,
-    container: HTMLElement,
-    options?: {
-      attributes?: Record<string, any>;
-      events?: Record<string, any>;
-      directives?: Type<any>[];
-    }
-  ): HTMLElement | undefined {
+  createElementFromHTML(item: PageItem, container: HTMLElement): HTMLElement | undefined {
     if (item.componentKey) {
-      item.component = LibConsts.SourceItemList.find(
-        (x) => x.componentKey === item.componentKey
-      )?.component;
-      if (!item.component) {
+      debugger;
+      let CustomSource = LibConsts.SourceItemList.find((x) => x.componentKey === item.componentKey);
+      if (!CustomSource || !CustomSource.component) {
         console.error('component not found', item.componentKey);
         return;
       }
-      return this.createComponentElement(container, item.component, item.id, options);
+      item.component = CustomSource.component;
+      item.options = CustomSource.options;
+
+      return this.createComponentElement(container, item.component, item.id, item.options);
     }
     let html = item.html;
     if (!html) {
@@ -110,7 +101,7 @@ export class DynamicElementService {
     //   element.contentEditable = 'true';
     // }
 
-    element = this.bindOptions(element, options);
+    element = this.bindOptions(element, item.options);
 
     this.renderer.appendChild(container, element);
 
@@ -125,12 +116,7 @@ export class DynamicElementService {
     container: HTMLElement | ViewContainerRef,
     component: Type<any>,
     id: string,
-    options?: {
-      text?: string;
-      attributes?: Record<string, any>;
-      events?: Record<string, any>;
-      directives?: Type<any>[];
-    }
+    options?: ISourceOptions
   ): HTMLElement {
     if (!component) throw new Error('SourceItem.component not defined');
 
@@ -143,7 +129,7 @@ export class DynamicElementService {
     this.appRef.attachView(compRef.hostView);
 
     // گرفتن المنت خود کامپوننت
-    const element = compRef.location.nativeElement as HTMLElement;
+    let element = compRef.location.nativeElement as HTMLElement;
 
     // افزودن به DOM
     const parentEl =
@@ -156,21 +142,35 @@ export class DynamicElementService {
     // dataset id
     element.dataset['id'] = id;
 
-    // بایند کردن attribute / event / directive
-    this.bindOptions(element, options);
+    element = this.bindOptions(element, options);
+    const instance = compRef.instance;
+    // ✅ Inputs
+    if (options?.inputs) {
+      for (const [key, val] of Object.entries(options.inputs)) {
+        if (key in instance) {
+          instance[key] = val;
+        } else {
+          this.renderer.setAttribute(element, key, val);
+        }
+      }
+    }
 
+    // ✅ Outputs
+    if (options?.outputs) {
+      for (const [key, handler] of Object.entries(options.outputs)) {
+        const emitter = (instance as any)[key];
+        if (emitter instanceof EventEmitter) {
+          emitter.subscribe((value: any) => handler(value));
+        } else {
+          console.warn(`⚠️ '${key}' is not an EventEmitter on ${component.name}`);
+        }
+      }
+    }
     return element;
   }
 
   //--------------------------------------------------------------------------------------------------------------
-  private bindOptions(
-    element: HTMLElement,
-    options?: {
-      attributes?: Record<string, any>;
-      events?: Record<string, any>;
-      directives?: Type<any>[];
-    }
-  ): HTMLElement {
+  private bindOptions(element: HTMLElement, options?: ISourceOptions): HTMLElement {
     if (options?.attributes) {
       for (const [k, v] of Object.entries(options.attributes)) {
         this.renderer.setAttribute(element, k, v);
