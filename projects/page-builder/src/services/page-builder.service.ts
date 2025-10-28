@@ -154,19 +154,19 @@ export class PageBuilderService implements OnDestroy {
 
     for (let item of page.bodyItems) {
       if (item.el) {
-        this.dynamicElementService.destroyDirective(item.el);
+        this.dynamicElementService.destroy(item);
         this.renderer.removeChild(this.renderer.parentNode(item.el), item.el);
       }
     }
     for (let item of page.headerItems) {
       if (item.el) {
-        this.dynamicElementService.destroyDirective(item.el);
+        this.dynamicElementService.destroy(item);
         this.renderer.removeChild(this.renderer.parentNode(item.el), item.el);
       }
     }
     for (let item of page.footerItems) {
       if (item.el) {
-        this.dynamicElementService.destroyDirective(item.el);
+        this.dynamicElementService.destroy(item);
         this.renderer.removeChild(this.renderer.parentNode(item.el), item.el);
       }
     }
@@ -190,7 +190,7 @@ export class PageBuilderService implements OnDestroy {
     const index = list.findIndex((i) => i.id === item.id);
     if (index !== -1 && item.el) {
       list.splice(index, 1);
-      this.dynamicElementService.destroyDirective(item.el);
+      this.dynamicElementService.destroy(item);
       this.renderer.removeChild(this.renderer.parentNode(item.el), item.el);
     }
     this.activeEl.set(undefined);

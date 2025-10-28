@@ -1,9 +1,11 @@
+import { Type } from '@angular/core';
 import { randomNumber } from '../utiles/randomNumber';
 
 export class SourceItem {
-  tag: 'div' | 'span' | 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'img' | 'input' = 'div';
+  tag?: 'div' | 'span' | 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'img' | 'input' = 'div';
   title: string = 'Div';
   icon: string = '';
+  component?: Type<any>;
   content?: string;
   attributes?: Record<string, any> | undefined;
 }

@@ -4,9 +4,11 @@ import { StorageType } from './services/storage/storage-type';
 import { IStorageService } from './services/storage/IStorageService';
 import { HttpStorageService } from './services/storage/http.storage.service';
 import { STORAGE_SERVICE } from './services/storage/token.storage';
+import { SourceItem } from './models/SourceItem';
 
 export class PageBuilderConfiguration {
   storageType: StorageType = StorageType.LocalStorage;
+  customSources?: SourceItem[];
 }
 export const PAGE_BUILDER_CONFIGURATION = new InjectionToken<PageBuilderConfiguration>(
   'PAGE_BUILDER_CONFIGURATION'
@@ -24,6 +26,9 @@ export function providePageBuilder(config: PageBuilderConfiguration) {
       break;
     default:
       throw new Error('Invalid storage type');
+  }
+  if (!config.customSources || !Array.isArray(config.customSources)) {
+    config.customSources = [];
   }
   return [
     {

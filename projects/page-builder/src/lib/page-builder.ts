@@ -34,6 +34,7 @@ import { PageBuilderBaseComponent } from './page-builder-base-component';
 import { Page } from '../models/Page';
 import { IStorageService } from '../services/storage/IStorageService';
 import { STORAGE_SERVICE } from '../services/storage/token.storage';
+import { PAGE_BUILDER_CONFIGURATION, PageBuilderConfiguration } from '../ngx-page-builder.provider';
 
 @Component({
   selector: 'ngx-page-builder',
@@ -52,16 +53,18 @@ import { STORAGE_SERVICE } from '../services/storage/token.storage';
 })
 export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
   private renderer = inject(Renderer2);
-  sources: SourceItem[] = SOURCE_ITEMS;
+  sources: SourceItem[] = [];
   private _pageBody = viewChild<ElementRef<HTMLElement>>('PageBody');
   private _pageHeader = viewChild<ElementRef<HTMLElement>>('PageHeader');
   private _pageFooter = viewChild<ElementRef<HTMLElement>>('PageFooter');
 
   constructor(
     injector: Injector,
+    @Inject(PAGE_BUILDER_CONFIGURATION) private mainConfig: PageBuilderConfiguration,
     @Inject(STORAGE_SERVICE) private storageService: IStorageService
   ) {
     super(injector);
+    this.sources = [...SOURCE_ITEMS, ...(this.mainConfig.customSources ?? [])];
     this.dynamicElementService.renderer = this.renderer;
     this.pageBuilderService.renderer = this.renderer;
     this.pageBuilderService.pageBody = this._pageBody;
@@ -123,6 +126,7 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
         event.currentIndex,
         source.tag,
         source.id,
+        source.component,
         {
           text: source.content,
           directives: DefaultBlockDirectives,

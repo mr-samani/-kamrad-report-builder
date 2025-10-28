@@ -51,8 +51,8 @@
 
   .tool {
     padding: 6px;
-    border: var(--tools-border);
-    border-radius: 3px;
+    border-bottom: var(--tools-border);
+    border-radius: 0px;
     height: 40px;
     width: 40px;
     margin: 1px;

@@ -1,3 +1,4 @@
+import { Type } from '@angular/core';
 import { generateUUID } from '../utiles/generateUUID';
 
 export class PageItem {
@@ -8,7 +9,7 @@ export class PageItem {
   html?: string;
   content?: string;
   attributes?: Record<string, any> | undefined;
-
+  component?: Type<any>;
   constructor(data?: PageItem | any) {
     if (data) {
       for (var property in data) {

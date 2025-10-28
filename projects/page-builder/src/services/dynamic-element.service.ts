@@ -12,10 +12,12 @@ import {
   ViewContainerRef,
   runInInjectionContext,
   createEnvironmentInjector,
+  createComponent,
 } from '@angular/core';
 import 'reflect-metadata';
 import { PageItem } from '../models/PageItem';
 import { DEFAULT_IMAGE_URL } from '../consts/defauls';
+import { SourceItem } from '../models/SourceItem';
 
 @Injectable({ providedIn: 'root' })
 export class DynamicElementService {
@@ -31,12 +33,14 @@ export class DynamicElementService {
 
   /**
    * create html element on droped to page
+   * ایجاد المنت از روی سورس ها در هنگام افزودن با درگ اند دراپ
    */
   createElement(
     container: HTMLElement | ViewContainerRef,
     index: number,
     tag: string,
     id: string,
+    component: Type<any> | undefined,
     options?: {
       text?: string;
       attributes?: Record<string, any>;
@@ -44,6 +48,9 @@ export class DynamicElementService {
       directives?: Type<any>[];
     }
   ): HTMLElement {
+    if (component) {
+      return this.createComponentElement(container, component, id, options);
+    }
     let element = this.renderer.createElement(tag);
     element.dataset['id'] = id;
 
@@ -107,6 +114,48 @@ export class DynamicElementService {
     this.renderer.setProperty(el, 'innerHTML', data.content);
     return el;
   }
+
+  private createComponentElement(
+    container: HTMLElement | ViewContainerRef,
+    component: Type<any>,
+    id: string,
+    options?: {
+      text?: string;
+      attributes?: Record<string, any>;
+      events?: Record<string, any>;
+      directives?: Type<any>[];
+    }
+  ): HTMLElement {
+    if (!component) throw new Error('SourceItem.component not defined');
+
+    // ساخت کامپوننت در محیط Angular
+    const compRef = createComponent(component, {
+      environmentInjector: this.envInjector,
+    });
+
+    // اتصال view به برنامه Angular
+    this.appRef.attachView(compRef.hostView);
+
+    // گرفتن المنت خود کامپوننت
+    const element = compRef.location.nativeElement as HTMLElement;
+
+    // افزودن به DOM
+    const parentEl =
+      container instanceof ViewContainerRef ? container.element.nativeElement : container;
+    this.renderer.appendChild(parentEl, element);
+
+    // ذخیره برای cleanup
+    (element as any).__componentRef__ = compRef;
+
+    // dataset id
+    element.dataset['id'] = id;
+
+    // بایند کردن attribute / event / directive
+    this.bindOptions(element, options);
+
+    return element;
+  }
+
   //--------------------------------------------------------------------------------------------------------------
   private bindOptions(
     element: HTMLElement,
@@ -235,8 +284,18 @@ export class DynamicElementService {
     return dirInstance;
   }
 
+  public destroy(item: PageItem) {
+    if (!item.el) {
+      return;
+    } else if (item.component) {
+      return this.destroyComponent(item.el);
+    } else {
+      return this.destroyDirective(item.el);
+    }
+  }
+
   // متد برای cleanup دستی اگر لازم شد
-  destroyDirective(element: HTMLElement) {
+  private destroyDirective(element: HTMLElement) {
     const directiveInstances = (element as any).__ngDirectives__;
     if (Array.isArray(directiveInstances)) {
       for (const d of directiveInstances) {
@@ -245,6 +304,15 @@ export class DynamicElementService {
         }
       }
       delete (element as any).__ngDirectives__;
+    }
+  }
+
+  private destroyComponent(element: HTMLElement) {
+    const compRef = (element as any).__componentRef__;
+    if (compRef) {
+      this.appRef.detachView(compRef.hostView);
+      compRef.destroy();
+      delete (element as any).__componentRef__;
     }
   }
 
