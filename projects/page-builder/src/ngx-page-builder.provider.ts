@@ -1,10 +1,10 @@
 import { EnvironmentProviders, InjectionToken } from '@angular/core';
 import { LocalStorageService } from './services/storage/local.storage.service';
 import { StorageType } from './services/storage/storage-type';
-import { IStorageService } from './services/storage/IStorageService';
 import { HttpStorageService } from './services/storage/http.storage.service';
 import { STORAGE_SERVICE } from './services/storage/token.storage';
-import { SourceItem } from './models/SourceItem';
+import { SOURCE_ITEMS, SourceItem } from './models/SourceItem';
+import { LibConsts } from './consts/defauls';
 
 export class PageBuilderConfiguration {
   storageType: StorageType = StorageType.LocalStorage;
@@ -30,6 +30,11 @@ export function providePageBuilder(config: PageBuilderConfiguration) {
   if (!config.customSources || !Array.isArray(config.customSources)) {
     config.customSources = [];
   }
+
+  LibConsts.SourceItemList = [
+    ...SOURCE_ITEMS,
+    ...(config.customSources ?? []).map((item) => new SourceItem(item)),
+  ];
   return [
     {
       provide: STORAGE_SERVICE,

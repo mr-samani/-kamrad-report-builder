@@ -23,6 +23,7 @@ import { SOURCE_ITEMS, SourceItem } from '../models/SourceItem';
 import {
   DefaultBlockClassName,
   DefaultBlockDirectives,
+  LibConsts,
   LOCAL_STORAGE_SAVE_KEY,
 } from '../consts/defauls';
 import { SafeHtmlPipe } from '../pipes/safe-html.pipe';
@@ -53,7 +54,7 @@ import { PAGE_BUILDER_CONFIGURATION, PageBuilderConfiguration } from '../ngx-pag
 })
 export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
   private renderer = inject(Renderer2);
-  sources: SourceItem[] = [];
+  sources: SourceItem[] = LibConsts.SourceItemList;
   private _pageBody = viewChild<ElementRef<HTMLElement>>('PageBody');
   private _pageHeader = viewChild<ElementRef<HTMLElement>>('PageHeader');
   private _pageFooter = viewChild<ElementRef<HTMLElement>>('PageFooter');
@@ -64,7 +65,6 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
     @Inject(STORAGE_SERVICE) private storageService: IStorageService
   ) {
     super(injector);
-    this.sources = [...SOURCE_ITEMS, ...(this.mainConfig.customSources ?? [])];
     this.dynamicElementService.renderer = this.renderer;
     this.pageBuilderService.renderer = this.renderer;
     this.pageBuilderService.pageBody = this._pageBody;

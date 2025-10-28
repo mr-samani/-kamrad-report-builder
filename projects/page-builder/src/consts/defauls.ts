@@ -1,4 +1,15 @@
 import { NgxDraggableDirective, NgxResizableDirective } from 'ngx-drag-drop-kit';
+import { SourceItem } from '../models/SourceItem';
+
+/** loaded from initial provider
+ *
+ * - merge SOURCE_ITEMS with custom sources
+ */
+export const LibConsts: {
+  SourceItemList: SourceItem[];
+} = {
+  SourceItemList: [],
+};
 
 export const DefaultBlockDirectives = [NgxDraggableDirective];
 

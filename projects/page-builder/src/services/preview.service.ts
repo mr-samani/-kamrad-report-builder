@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { PageBuilderService } from './page-builder.service';
 import { DynamicElementService } from './dynamic-element.service';
-import { DefaultBlockClassName, DefaultBlockDirectives } from '../consts/defauls';
 import { Page } from '../models/Page';
 
 @Injectable({ providedIn: 'root' })

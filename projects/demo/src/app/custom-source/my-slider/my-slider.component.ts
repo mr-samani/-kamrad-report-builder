@@ -6,7 +6,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
   template: `
     <div class="slider">
       <input type="range" [value]="value" (input)="onInput($event)" />
-      <span>{{ value }}</span>
+      <span>range:{{ value }}</span>
     </div>
   `,
 })
@@ -18,5 +18,6 @@ export class MySliderComponent {
     const val = +event.target.value;
     this.value = val;
     this.valueChange.emit(val);
+    console.log('slider :', val);
   }
 }

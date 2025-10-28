@@ -10,11 +10,16 @@ export class PageItem {
   content?: string;
   attributes?: Record<string, any> | undefined;
   component?: Type<any>;
+  componentKey?: string;
   constructor(data?: PageItem | any) {
     if (data) {
       for (var property in data) {
         if (this.hasOwnProperty(property)) (<any>this)[property] = (<any>data)[property];
       }
+    }
+    debugger;
+    if (this.component && typeof this.component === 'function') {
+      this.componentKey = this.component.name || 'UnknownComponent';
     }
   }
 }

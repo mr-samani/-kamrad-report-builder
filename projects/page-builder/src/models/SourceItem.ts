@@ -8,6 +8,18 @@ export class SourceItem {
   component?: Type<any>;
   content?: string;
   attributes?: Record<string, any> | undefined;
+  componentKey?: string;
+  constructor(data?: SourceItem | any) {
+    if (data) {
+      for (var property in data) {
+        if (this.hasOwnProperty(property)) (<any>this)[property] = (<any>data)[property];
+      }
+    }
+    debugger;
+    if (this.component && typeof this.component === 'function') {
+      this.componentKey = this.component.name || 'UnknownComponent';
+    }
+  }
 }
 
 export const SOURCE_ITEMS: SourceItem[] = [

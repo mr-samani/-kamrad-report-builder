@@ -16,7 +16,7 @@ import {
 } from '@angular/core';
 import 'reflect-metadata';
 import { PageItem } from '../models/PageItem';
-import { DEFAULT_IMAGE_URL } from '../consts/defauls';
+import { DEFAULT_IMAGE_URL, LibConsts } from '../consts/defauls';
 import { SourceItem } from '../models/SourceItem';
 
 @Injectable({ providedIn: 'root' })
@@ -86,6 +86,17 @@ export class DynamicElementService {
       directives?: Type<any>[];
     }
   ): HTMLElement | undefined {
+    debugger;
+    if (item.componentKey) {
+      item.component = LibConsts.SourceItemList.find(
+        (x) => x.componentKey === item.componentKey
+      )?.component;
+      if (!item.component) {
+        console.error('component not found', item.componentKey);
+        return;
+      }
+      return this.createComponentElement(container, item.component, item.id, options);
+    }
     let html = item.html;
     if (!html) {
       console.error('Create element: Invalid HTML content', item.id);
