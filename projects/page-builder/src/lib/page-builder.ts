@@ -36,6 +36,7 @@ import { Page } from '../models/Page';
 import { IStorageService } from '../services/storage/IStorageService';
 import { STORAGE_SERVICE } from '../services/storage/token.storage';
 import { PAGE_BUILDER_CONFIGURATION, PageBuilderConfiguration } from '../ngx-page-builder.provider';
+import { PageBuilderDto } from '../public-api';
 
 @Component({
   selector: 'ngx-page-builder',
@@ -65,8 +66,6 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
     @Inject(STORAGE_SERVICE) private storageService: IStorageService
   ) {
     super(injector);
-    this.dynamicElementService.renderer = this.renderer;
-    this.pageBuilderService.renderer = this.renderer;
     this.pageBuilderService.pageBody = this._pageBody;
     this.pageBuilderService.pageHeader = this._pageHeader;
     this.pageBuilderService.pageFooter = this._pageFooter;
@@ -82,27 +81,14 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
   preventDefault() {}
   async loadPageData() {
     try {
-      this.pageBuilderService.pageInfo = await this.storageService.loadData();
-      let pages = this.pageBuilderService.pageInfo.pages;
-      if (pages.length == 0) {
+      this.pageBuilderService.pageInfo = PageBuilderDto.fromJSON(
+        await this.storageService.loadData()
+      );
+      if (this.pageBuilderService.pageInfo.pages.length == 0) {
         this.pageBuilderService.addPage();
         return;
-      }
-      this.pageBuilderService.pageInfo.pages = [];
-      for (let pageData of pages) {
-        const page = new Page(pageData);
-        page.bodyItems = [];
-        for (let item of pageData.bodyItems) {
-          item = new PageItem(item);
-          page.bodyItems.push(item);
-        }
-        this.pageBuilderService.pageInfo.pages.push(page);
-
-        if (this.pageBuilderService.pageInfo.pages.length > 0) {
-          this.pageBuilderService.changePage(1);
-        } else {
-          this.pageBuilderService.addPage();
-        }
+      } else {
+        this.pageBuilderService.changePage(1);
       }
     } catch (error) {
       console.error('Error loading page data:', error);

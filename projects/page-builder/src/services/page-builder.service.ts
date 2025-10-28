@@ -7,6 +7,7 @@ import {
   Signal,
   WritableSignal,
   signal,
+  RendererFactory2,
 } from '@angular/core';
 import { PageItem } from '../models/PageItem';
 import { DynamicElementService } from './dynamic-element.service';
@@ -20,7 +21,6 @@ import { DefaultBlockDirectives, DefaultBlockClassName } from '../consts/defauls
 })
 export class PageBuilderService implements OnDestroy {
   currentPageIndex = signal<number>(-1);
-  renderer!: Renderer2;
   activeEl = signal<PageItem | undefined>(undefined);
   pageBody: Signal<ElementRef<HTMLElement> | undefined> = signal<
     ElementRef<HTMLElement> | undefined
@@ -37,7 +37,13 @@ export class PageBuilderService implements OnDestroy {
   private _changed$ = new Subject<string>();
   changed$ = this._changed$.asObservable();
 
-  constructor(private dynamicElementService: DynamicElementService) {}
+  private renderer!: Renderer2;
+  constructor(
+    rendererFactory: RendererFactory2,
+    private dynamicElementService: DynamicElementService
+  ) {
+    this.renderer = rendererFactory.createRenderer(null, null);
+  }
 
   ngOnDestroy(): void {
     this._changed$.complete();

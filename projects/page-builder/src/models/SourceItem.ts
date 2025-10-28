@@ -15,7 +15,6 @@ export class SourceItem {
         if (this.hasOwnProperty(property)) (<any>this)[property] = (<any>data)[property];
       }
     }
-    debugger;
     if (this.component && typeof this.component === 'function') {
       this.componentKey = this.component.name || 'UnknownComponent';
     }

@@ -1,12 +1,12 @@
 import { Component, signal, viewChild } from '@angular/core';
-import { NGX_PAGE_BUILDER_FILE_PICKER, NgxPageBuilder } from '@ngx-page-builder';
+import { NGX_PAGE_BUILDER_FILE_PICKER } from '@ngx-page-builder';
 import { FilePickerService } from './file-picker.service';
+import { RouterOutlet } from '@angular/router';
 @Component({
   selector: 'app-root',
-  imports: [NgxPageBuilder],
+  imports: [RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.scss',
-  providers: [{ provide: NGX_PAGE_BUILDER_FILE_PICKER, useClass: FilePickerService }],
 })
 export class App {
   filePicker = viewChild<HTMLInputElement>('filePicker');

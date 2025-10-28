@@ -17,9 +17,13 @@ export class PageItem {
         if (this.hasOwnProperty(property)) (<any>this)[property] = (<any>data)[property];
       }
     }
-    debugger;
     if (this.component && typeof this.component === 'function') {
       this.componentKey = this.component.name || 'UnknownComponent';
     }
+  }
+  static fromJSON(data: any): PageItem {
+    const item = new PageItem(data);
+    Object.assign(item, data);
+    return item;
   }
 }

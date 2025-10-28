@@ -27,7 +27,7 @@ export class PreviewService {
       let data = await this.loadPageData(hContainer, bContainer, fContainer, page);
       content += `
       <div class="paper-inner">
-        <table cellspacing="0" cellpadding="0" class="ngx-page-builder">
+        <table cellspacing="0" cellpadding="0" class="ngx-page-table">
           <thead>
             <tr>
               <th class="pb-3">
@@ -80,7 +80,7 @@ export class PreviewService {
      .paper-inner {
         min-height: inherit;
       }
-      table.ngx-page-builder {
+      table.ngx-page-table {
         width: 100%;
         border-spacing: 0;
         border: 0;
@@ -88,7 +88,7 @@ export class PreviewService {
         padding: 0;
         height: 100%;
      }
-     table.ngx-page-builder th {
+     table.ngx-page-table th {
       text-align: start;
      }
     .page-break { 

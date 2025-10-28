@@ -7,28 +7,24 @@ import {
   Injector,
   Renderer2,
   RendererFactory2,
-  Signal,
   Type,
   ViewContainerRef,
   runInInjectionContext,
-  createEnvironmentInjector,
   createComponent,
 } from '@angular/core';
 import 'reflect-metadata';
 import { PageItem } from '../models/PageItem';
 import { DEFAULT_IMAGE_URL, LibConsts } from '../consts/defauls';
-import { SourceItem } from '../models/SourceItem';
 
 @Injectable({ providedIn: 'root' })
 export class DynamicElementService {
-  renderer!: Renderer2;
+  private renderer!: Renderer2;
   constructor(
     rendererFactory: RendererFactory2,
-    private injector: Injector,
     private appRef: ApplicationRef,
     private envInjector: EnvironmentInjector
   ) {
-    //this.renderer = rendererFactory.createRenderer(null, null);
+    this.renderer = rendererFactory.createRenderer(null, null);
   }
 
   /**
@@ -86,7 +82,6 @@ export class DynamicElementService {
       directives?: Type<any>[];
     }
   ): HTMLElement | undefined {
-    debugger;
     if (item.componentKey) {
       item.component = LibConsts.SourceItemList.find(
         (x) => x.componentKey === item.componentKey
