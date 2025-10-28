@@ -2,6 +2,7 @@
   <p>Properties</p>
   @if(item){
   <p>{{ item.id }}</p>
+  @if(isImageTag == false){
   <div class="text" (click)="openTextEditor()">
     <span [innerHTML]="item.content | safeHtml" class="content"></span>
 
@@ -11,10 +12,26 @@
       />
     </svg>
   </div>
+  }
+  <details>
+    <summary>Display Settings</summary>
+    <display-control [(ngModel)]="item" (change)="onChangeProperties()"></display-control>
+  </details>
 
-  <display-control [(ngModel)]="item" (change)="onChangeProperties()"></display-control>
-  <spacing-control [(ngModel)]="item" (change)="onChangeProperties()"></spacing-control>
-  <typography-control [(ngModel)]="item" (change)="onChangeProperties()"></typography-control>
-  <background-control [(ngModel)]="item" (change)="onChangeProperties()"></background-control>
+  <details>
+    <summary>Spacing Settings</summary>
+    <spacing-control [(ngModel)]="item" (change)="onChangeProperties()"></spacing-control>
+  </details>
+  <details>
+    <summary>Typography Settings</summary>
+    <typography-control [(ngModel)]="item" (change)="onChangeProperties()"></typography-control>
+  </details>
+  <details>
+    <summary>Background Settings</summary>
+    <background-control [(ngModel)]="item" (change)="onChangeProperties()"></background-control>
+  </details>
+  <details>
+    <summary>Advanced Settings</summary>
+  </details>
   }
 </div>

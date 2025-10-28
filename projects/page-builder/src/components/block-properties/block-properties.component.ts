@@ -39,11 +39,15 @@ import { DisplayControlComponent } from '../../controls/display-control/display-
 export class BlockPropertiesComponent extends BaseComponent implements OnInit {
   item?: PageItem;
 
+  isImageTag = false;
+
   constructor(injector: Injector, private matDialog: MatDialog) {
     super(injector);
     effect(() => {
       this.item = this.pageBuilderService.activeEl();
       // console.log('updated properties', this.item);
+      this.isImageTag = this.item?.el?.tagName === 'IMG';
+
       this.chdRef.detectChanges();
     });
   }
