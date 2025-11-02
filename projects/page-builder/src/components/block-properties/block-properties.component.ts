@@ -18,6 +18,7 @@ import { FormsModule } from '@angular/forms';
 import { TypographyControlComponent } from '../../controls/typography-control/typography-control.component';
 import { BackgroundControlComponent } from '../../controls/beckground-control/background-control.component';
 import { DisplayControlComponent } from '../../controls/display-control/display-control.component';
+import { TextCssControlComponent } from '../../controls/textcss-control/textcss-control.component';
 
 @Component({
   selector: 'block-properties',
@@ -32,6 +33,7 @@ import { DisplayControlComponent } from '../../controls/display-control/display-
     TypographyControlComponent,
     BackgroundControlComponent,
     DisplayControlComponent,
+    TextCssControlComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,

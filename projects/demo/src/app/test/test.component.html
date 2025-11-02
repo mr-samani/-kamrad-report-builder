@@ -1,0 +1,31 @@
+<div class="container">
+  <h1>Test Component</h1>
+  <div
+    class="list"
+    cdkDropList
+    (cdkDropListDropped)="drop($event)"
+    [cdkDropListOrientation]="'mixed'"
+  >
+    <div class="item" cdkDrag>
+      <div class="placeholder" *cdkDragPlaceholder></div>
+      Item 1
+    </div>
+    <input type="text" placeholder="jkkkkh gjgh" cdkDrag />
+
+    <div class="item" cdkDrag>Item 2</div>
+    <div class="item" cdkDrag>Item 3</div>
+    <input type="text" placeholder="jkkkkh " cdkDrag />
+    <div class="item" cdkDrag>Item 4</div>
+    <input type="text" placeholder="123 " cdkDrag />
+    <button cdkDrag>dsfs dfsdfsd</button>
+  </div>
+</div>
+
+<div cdkDropList class="example-list" (cdkDropListDropped)="drop($event)">
+  @for (movie of movies; track movie) {
+  <div class="example-box" cdkDrag>
+    <div class="example-custom-placeholder" *cdkDragPlaceholder></div>
+    {{ movie }}
+  </div>
+  }
+</div>

@@ -12,6 +12,7 @@ export class PageItem {
   component?: Type<any>;
   componentKey?: string;
   options?: ISourceOptions;
+  style?: string;
   constructor(data?: PageItem | any) {
     if (data) {
       for (var property in data) {

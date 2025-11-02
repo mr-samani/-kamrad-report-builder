@@ -41,12 +41,12 @@ export class SourceItem {
    * Html tags
    * @example 'div'
    * */
-  tag?: 'div' | 'span' | 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'img' | 'input' = 'div';
+  tag?: 'div' | 'span' | 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'img' | 'input';
   /**
    *  Display title
    * @example 'My Chart'
    * */
-  title: string = 'Div';
+  title?: string;
   /**
    * Block icon
    * @example <svg>...</svg>

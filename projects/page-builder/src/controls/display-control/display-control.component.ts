@@ -153,7 +153,7 @@ export class DisplayControlComponent implements OnInit, ControlValueAccessor {
     this.el = item?.el;
 
     if (item && this.el) {
-      const computed = getComputedStyle(this.el);
+      const computed = this.el.style;
 
       // Display
       this.display = (computed.display || 'block') as DisplayType;

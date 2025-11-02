@@ -36,33 +36,24 @@ export class DynamicElementService {
   createElement(
     container: HTMLElement | ViewContainerRef,
     index: number,
-    tag: string,
-    id: string,
-    component: Type<any> | undefined,
-    options?: ISourceOptions
+    item: PageItem
   ): HTMLElement {
-    if (component) {
-      return this.createComponentElement(container, component, id, options);
-    }
-    let element = this.renderer.createElement(tag);
-    element.dataset['id'] = id;
-
-    if (options?.text) {
-      this.renderer.appendChild(element, this.renderer.createText(options.text));
-    }
-    // if (this.isContentEditable(tag)) {
-    //   element.contentEditable = 'true';
-    // }
-    element = this.bindOptions(element, options);
-
-    const parentEl: HTMLElement =
-      container instanceof ViewContainerRef ? container.element.nativeElement : container;
-    if (index != null && index >= 0) {
-      const refNode = parentEl.children[index] || null;
-      this.renderer.insertBefore(parentEl, element, refNode);
+    let element: HTMLElement;
+    if (item.component) {
+      element = this.createComponentElement(container, item);
     } else {
-      this.renderer.appendChild(parentEl, element);
+      element = this.renderer.createElement(item.tag);
+      const parentEl: HTMLElement =
+        container instanceof ViewContainerRef ? container.element.nativeElement : container;
+      if (index != null && index >= 0) {
+        const refNode = parentEl.children[index] || null;
+        this.renderer.insertBefore(parentEl, element, refNode);
+      } else {
+        this.renderer.appendChild(parentEl, element);
+      }
     }
+
+    element = this.bindOptions(element, item);
 
     return element;
   }
@@ -71,39 +62,35 @@ export class DynamicElementService {
    * create html element from PageItem (Saved data)
    */
   createElementFromHTML(item: PageItem, container: HTMLElement): HTMLElement | undefined {
+    let element: HTMLElement;
     if (item.componentKey) {
-      debugger;
       let CustomSource = LibConsts.SourceItemList.find((x) => x.componentKey === item.componentKey);
       if (!CustomSource || !CustomSource.component) {
         console.error('component not found', item.componentKey);
         return;
       }
       item.component = CustomSource.component;
-      item.options = CustomSource.options;
+      item.options = Object.assign(item.options ?? {}, CustomSource.options);
 
-      return this.createComponentElement(container, item.component, item.id, item.options);
+      element = this.createComponentElement(container, item);
+    } else {
+      let html = item.html;
+      if (!html) {
+        console.error('Create element: Invalid HTML content', item.id);
+        return undefined;
+      }
+      const div: HTMLElement = this.renderer.createElement('div');
+      html = decodeURIComponent(html);
+      this.renderer.setProperty(div, 'innerHTML', html);
+      element = div.firstChild as HTMLElement;
+      if (element.nodeType !== 1) {
+        console.error('Error on create elment:', element.nodeType, element);
+        return undefined;
+      }
+      this.renderer.appendChild(container, element);
     }
-    let html = item.html;
-    if (!html) {
-      console.error('Create element: Invalid HTML content', item.id);
-      return undefined;
-    }
-    const div: HTMLElement = this.renderer.createElement('div');
-    html = decodeURIComponent(html);
-    this.renderer.setProperty(div, 'innerHTML', html);
-    let element = div.firstChild as HTMLElement;
-    if (element.nodeType !== 1) {
-      console.error('Error on create elment:', element.nodeType, element);
-      return undefined;
-    }
-    element.dataset['id'] = item.id;
-    // if (this.isContentEditable(item.tag)) {
-    //   element.contentEditable = 'true';
-    // }
 
-    element = this.bindOptions(element, item.options);
-
-    this.renderer.appendChild(container, element);
+    element = this.bindOptions(element, item);
 
     return element;
   }
@@ -114,12 +101,10 @@ export class DynamicElementService {
 
   private createComponentElement(
     container: HTMLElement | ViewContainerRef,
-    component: Type<any>,
-    id: string,
-    options?: ISourceOptions
+    item: PageItem
   ): HTMLElement {
+    const component = item.component;
     if (!component) throw new Error('SourceItem.component not defined');
-
     // ساخت کامپوننت در محیط Angular
     const compRef = createComponent(component, {
       environmentInjector: this.envInjector,
@@ -139,14 +124,10 @@ export class DynamicElementService {
     // ذخیره برای cleanup
     (element as any).__componentRef__ = compRef;
 
-    // dataset id
-    element.dataset['id'] = id;
-
-    element = this.bindOptions(element, options);
     const instance = compRef.instance;
     // ✅ Inputs
-    if (options?.inputs) {
-      for (const [key, val] of Object.entries(options.inputs)) {
+    if (item.options?.inputs) {
+      for (const [key, val] of Object.entries(item.options.inputs)) {
         if (key in instance) {
           instance[key] = val;
         } else {
@@ -156,8 +137,8 @@ export class DynamicElementService {
     }
 
     // ✅ Outputs
-    if (options?.outputs) {
-      for (const [key, handler] of Object.entries(options.outputs)) {
+    if (item.options?.outputs) {
+      for (const [key, handler] of Object.entries(item.options.outputs)) {
         const emitter = (instance as any)[key];
         if (emitter instanceof EventEmitter) {
           emitter.subscribe((value: any) => handler(value));
@@ -170,20 +151,20 @@ export class DynamicElementService {
   }
 
   //--------------------------------------------------------------------------------------------------------------
-  private bindOptions(element: HTMLElement, options?: ISourceOptions): HTMLElement {
-    if (options?.attributes) {
-      for (const [k, v] of Object.entries(options.attributes)) {
+  private bindOptions(element: HTMLElement, item: PageItem): HTMLElement {
+    if (item.options?.attributes) {
+      for (const [k, v] of Object.entries(item.options.attributes)) {
         this.renderer.setAttribute(element, k, v);
       }
     }
 
-    if (options && options.directives?.length) {
-      for (const DirType of options.directives) {
+    if (item.options && item.options.directives?.length) {
+      for (const DirType of item.options.directives) {
         this.attachDirective(element, DirType);
       }
     }
-    if (options?.events) {
-      for (const [k, v] of Object.entries(options.events)) {
+    if (item.options?.events) {
+      for (const [k, v] of Object.entries(item.options.events)) {
         this.renderer.listen(element, k, v);
       }
     }
@@ -197,6 +178,18 @@ export class DynamicElementService {
       element.tagName == 'SELECT'
     ) {
       element.setAttribute('readonly', 'true');
+    }
+
+    element.dataset['id'] = item.id;
+
+    if (item.options?.text) {
+      this.renderer.appendChild(element, this.renderer.createText(item.options.text));
+    }
+    // if (this.isContentEditable(tag)) {
+    //   element.contentEditable = 'true';
+    // }
+    if (item.style) {
+      element.style.cssText = decodeURIComponent(item.style);
     }
     return element;
   }

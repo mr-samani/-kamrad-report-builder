@@ -81,7 +81,7 @@ export class BackgroundControlComponent implements OnInit, ControlValueAccessor 
     this.item = item;
     this.el = item?.el;
     if (item && this.el) {
-      const val = getComputedStyle(this.el);
+      const val = this.el.style;
       const backgroundFull = val.background;
       const parsed = parseBackground(backgroundFull);
 

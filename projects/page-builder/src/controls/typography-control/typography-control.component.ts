@@ -49,7 +49,7 @@ export class TypographyControlComponent implements OnInit, ControlValueAccessor 
     this.item = item;
     if (!item || !item.el) return;
     this.el = item.el;
-    let val = getComputedStyle(item.el);
+    let val = item.el.style;
     this.fontSize = parseFloat(val?.fontSize);
     this.fontFamily = val?.fontFamily;
     this.lineHeight = parseFloat(val?.lineHeight);

@@ -50,7 +50,7 @@ export class SpacingControlComponent implements OnInit, ControlValueAccessor {
     this.item = item;
     if (!item || !item.el) return;
     this.el = item.el;
-    let val = getComputedStyle(item.el);
+    let val = this.el.style;
     this.style = { padding: val?.padding, margin: val?.margin };
     const defaultSpacing: ISpacingModel = {
       margin: { top: 0, right: 0, bottom: 0, left: 0 },

@@ -103,23 +103,21 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
       // انتقال از یک container به container دیگه
       const source = new PageItem(this.sources[event.previousIndex]);
       source.id = generateUUID();
+      source.options = {
+        text: source.content,
+        directives: DefaultBlockDirectives,
+        attributes: {
+          class: DefaultBlockClassName,
+        },
+        events: {
+          click: (ev: Event) => this.pageBuilderService.onSelectBlock(source, ev),
+        },
+        ...source.options,
+      };
       let html = this.dynamicElementService.createElement(
         event.container.el,
         event.currentIndex,
-        source.tag,
-        source.id,
-        source.component,
-        {
-          text: source.content,
-          directives: DefaultBlockDirectives,
-          attributes: {
-            class: DefaultBlockClassName,
-          },
-          events: {
-            click: (ev: Event) => this.pageBuilderService.onSelectBlock(source, ev),
-          },
-          ...source.options,
-        }
+        source
       );
       source.el = html;
       source.html = html.outerHTML;
