@@ -84,12 +84,14 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
         this.pageBuilderService.changePage(1);
       }
     } catch (error) {
+      this.pageBuilderService.addPage();
       console.error('Error loading page data:', error);
       alert('Error loading page data: ' + error);
     }
   }
 
   async onDrop(event: IDropEvent, listName = '') {
+    debugger;
     console.log('Dropped:', event);
     if (event.container == event.previousContainer && event.currentIndex == event.previousIndex) {
       return;

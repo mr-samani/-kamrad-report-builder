@@ -14,6 +14,7 @@ import { IStorageService } from '../../services/storage/IStorageService';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfigDialogComponent } from '../config-dialog/config-dialog.component';
 import { SortPageListComponent } from '../sort-page-list/sort-page-list.component';
+import { PageBuilderDto } from '../../models/PageBuilderDto';
 
 @Component({
   selector: 'toolbar',
@@ -34,6 +35,7 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
     super(injector);
     effect(() => {
       this.pageNumber = this.pageBuilderService.currentPageIndex() + 1;
+      this.chdRef.detectChanges();
     });
   }
 
@@ -84,6 +86,24 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
         alert('Data saved successfully');
       })
       .finally(() => (this.isSaving = false));
+  }
+
+  async onOpen() {
+    try {
+      this.pageBuilderService.pageInfo = PageBuilderDto.fromJSON(
+        await this.storageService.loadData()
+      );
+      if (this.pageBuilderService.pageInfo.pages.length == 0) {
+        this.pageBuilderService.addPage();
+        return;
+      } else {
+        this.pageBuilderService.changePage(1);
+      }
+      this.chdRef.detectChanges();
+    } catch (error) {
+      console.error('Error loading page data:', error);
+      alert('Error loading page data: ' + error);
+    }
   }
 
   toggleOutlines() {

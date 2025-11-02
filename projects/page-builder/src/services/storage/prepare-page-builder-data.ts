@@ -15,9 +15,12 @@ export function preparePageDataForSave(pageInfo: PageBuilderDto): PageBuilderDto
         item.html = '';
         continue;
       }
+      delete item.options?.attributes;
+      delete item.options?.events;
+      delete item.options?.directives;
+
       //cleanup
       if (item.el) {
-        debugger;
         let html = item.el.outerHTML;
         html = html.replace(/\s*data-id="[^"]*"/g, '');
         html = html.replace(/\s*contenteditable="[^"]*"/g, '');

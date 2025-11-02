@@ -5,6 +5,7 @@ import { HttpStorageService } from './services/storage/http.storage.service';
 import { STORAGE_SERVICE } from './services/storage/token.storage';
 import { SOURCE_ITEMS, SourceItem } from './models/SourceItem';
 import { LibConsts } from './consts/defauls';
+import { JsonFileStorageService } from './services/storage/jsonfile.storage.service';
 
 export class PageBuilderConfiguration {
   storageType: StorageType = StorageType.LocalStorage;
@@ -23,6 +24,9 @@ export function providePageBuilder(config: PageBuilderConfiguration) {
       break;
     case StorageType.HttpClient:
       storage = HttpStorageService;
+      break;
+    case StorageType.JSONFile:
+      storage = JsonFileStorageService;
       break;
     default:
       throw new Error('Invalid storage type');
