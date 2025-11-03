@@ -1,5 +1,15 @@
-@use '../styles/paper.scss';
+.page-builder-container {
+  display: grid;
+  grid-template-columns: var(--toolbar-height) auto 350px;
+  grid-template-rows: 28px auto;
+  gap: 0px 5px;
+  min-height: 100vh;
+  background: #f6f6f6;
 
+  * {
+    box-sizing: border-box;
+  }
+}
 .properties {
   border: none var(--tools-border);
   background-color: var(--properties-bg);

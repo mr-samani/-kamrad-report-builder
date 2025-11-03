@@ -1,11 +1,15 @@
 :host {
   display: block;
   font-family: var(--ui-font, Arial), sans-serif;
+  height: calc(100% - 30px);
+  width: calc(100% - 2px);
 }
 .editor-wrapper {
   border: 1px solid #ddd;
   border-radius: 6px;
   overflow: hidden;
+  width: 100%;
+  height: 100%;
 }
 .toolbar {
   display: flex;

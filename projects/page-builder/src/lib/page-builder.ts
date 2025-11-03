@@ -6,6 +6,7 @@ import {
   Inject,
   inject,
   Injector,
+  Input,
   OnInit,
   Renderer2,
   viewChild,
@@ -30,11 +31,12 @@ import { IStorageService } from '../services/storage/IStorageService';
 import { STORAGE_SERVICE } from '../services/storage/token.storage';
 import { PAGE_BUILDER_CONFIGURATION, PageBuilderConfiguration } from '../ngx-page-builder.provider';
 import { PageBuilderDto } from '../public-api';
+import { DynamicDataStructure } from '../models/DynamicData';
 
 @Component({
   selector: 'ngx-page-builder',
   templateUrl: './page-builder.html',
-  styleUrls: ['./page-builder.scss'],
+  styleUrls: ['../styles/paper.scss', './page-builder.scss'],
   imports: [
     CommonModule,
     NgxDragDropKitModule,
@@ -47,6 +49,9 @@ import { PageBuilderDto } from '../public-api';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
+  @Input('dynamicData') set setDynamicData(val: DynamicDataStructure) {
+    this.dynamicDataService.dynamicData = val;
+  }
   private renderer = inject(Renderer2);
   sources: SourceItem[] = LibConsts.SourceItemList;
   private _pageBody = viewChild<ElementRef<HTMLElement>>('PageBody');
@@ -91,7 +96,6 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
   }
 
   async onDrop(event: IDropEvent, listName = '') {
-    debugger;
     console.log('Dropped:', event);
     if (event.container == event.previousContainer && event.currentIndex == event.previousIndex) {
       return;

@@ -16,10 +16,12 @@ import {
 import 'reflect-metadata';
 import { PageItem } from '../models/PageItem';
 import { DEFAULT_IMAGE_URL, LibConsts } from '../consts/defauls';
-import { ISourceOptions } from '../public-api';
+import { DynamicDataStructure, ISourceOptions } from '../public-api';
 
 @Injectable({ providedIn: 'root' })
 export class DynamicElementService {
+  public dynamicData?: DynamicDataStructure;
+
   private renderer!: Renderer2;
   constructor(
     rendererFactory: RendererFactory2,

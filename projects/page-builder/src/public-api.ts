@@ -18,3 +18,5 @@ export * from './services/file-picker/token.filepicker';
 
 export * from './models/SourceItem';
 export * from './models/PageBuilderDto';
+
+export * from './models/DynamicData';

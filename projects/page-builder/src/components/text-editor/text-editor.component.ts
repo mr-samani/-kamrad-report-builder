@@ -1,12 +1,12 @@
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Component,
   DOCUMENT,
   ElementRef,
   EventEmitter,
   Inject,
   Input,
-  OnInit,
   Output,
   ViewChild,
 } from '@angular/core';
@@ -17,6 +17,7 @@ import { FormsModule } from '@angular/forms';
 import { DomSanitizer } from '@angular/platform-browser';
 import { DynamicAutocompleteDirective } from '../../directives/ngx-dynamic-data-autocomplete.directive';
 import { DynamicDataStructure } from '../../models/DynamicData';
+import { DynamicDataService } from '../../services/dynamic-data.service';
 
 @Component({
   selector: 'app-text-editor',
@@ -61,38 +62,13 @@ export class TextEditorComponent implements AfterViewInit {
   // ✅ نمایش تعداد کاراکترهای انتخاب شده
   selectedCharCount = 0;
 
-  dynamicData: DynamicDataStructure = {
-    personalInfo: {
-      type: 'object',
-      properties: {
-        name: {
-          type: 'object',
-          properties: {
-            first: { type: 'value', valueType: 'string' },
-            last: { type: 'value', valueType: 'string' },
-          },
-        },
-        age: { type: 'value', valueType: 'number' },
-        email: { type: 'value', valueType: 'string' },
-      },
-    },
-    jobData: {
-      type: 'object',
-      properties: {
-        title: { type: 'value', valueType: 'string' },
-        company: { type: 'value', valueType: 'string' },
-        location: { type: 'value', valueType: 'string' },
-        startDate: { type: 'value', valueType: 'date' },
-        endDate: { type: 'value', valueType: 'date' },
-      },
-    },
-  };
-
   constructor(
     private sanitizer: DomSanitizer,
     @Inject(MAT_DIALOG_DATA) public data: PageItem,
     private dialogRef: MatDialogRef<TextEditorComponent>,
-    @Inject(DOCUMENT) private doc: Document
+    @Inject(DOCUMENT) private doc: Document,
+    private chdRef: ChangeDetectorRef,
+    public dynamicDataService: DynamicDataService
   ) {
     this._value = data.content || '';
   }
@@ -101,8 +77,8 @@ export class TextEditorComponent implements AfterViewInit {
     this.editableRef.nativeElement.innerHTML = this._value || '';
 
     // ✅ Listen به تغییرات selection
-    this.editableRef.nativeElement.addEventListener('mouseup', () => this.saveSelection('mouseup'));
-    this.editableRef.nativeElement.addEventListener('keyup', () => this.saveSelection('keyup'));
+    this.doc.addEventListener('mouseup', () => this.saveSelection('mouseup'));
+    this.doc.addEventListener('keyup', () => this.saveSelection('keyup'));
     this.editableRef.nativeElement.addEventListener('selectstart', () =>
       this.saveSelection('selectstart')
     );
@@ -120,11 +96,11 @@ export class TextEditorComponent implements AfterViewInit {
       // محاسبه تعداد کاراکترهای انتخاب شده
       const selectedText = sel.toString();
       this.selectedCharCount = selectedText.length;
-
       // آپدیت toolbar state
       this.updateToolbarState();
     }
     console.log('Selection saved on:', eventType);
+    this.chdRef.detectChanges();
   }
 
   // ✅ بازگردانی selection ذخیره شده
@@ -273,6 +249,7 @@ export class TextEditorComponent implements AfterViewInit {
     root.innerHTML = html.replace(/\n/g, '<br>');
     this.savedSelection = null;
     this.selectedCharCount = 0;
+    this.chdRef.detectChanges();
   }
 
   // ✅ آپدیت کردن state های toolbar بر اساس selection

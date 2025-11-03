@@ -61,6 +61,9 @@ export class BlockPropertiesComponent extends BaseComponent implements OnInit {
     this.matDialog
       .open(TextEditorComponent, {
         data: this.item,
+        width: '80vw',
+        maxWidth: '100%',
+        height: '90vh',
       })
       .afterClosed()
       .subscribe((result) => {

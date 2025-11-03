@@ -21,4 +21,6 @@ export interface DynamicValueNode {
   type: 'value';
   valueType: 'string' | 'number' | 'boolean' | 'date' | 'any';
   displayName?: string;
+
+  value?: string | number | boolean | Date | null;
 }

@@ -17,13 +17,12 @@ export const appConfig: ApplicationConfig = {
     provideZonelessChangeDetection(),
     provideRouter(routes),
     providePageBuilder({
-      storageType: StorageType.JSONFile,
       customSources: CustomSources,
     }),
     provideAnimationsAsync(),
-    {
-      provide: STORAGE_SERVICE,
-      useClass: MessagePackStorageService,
-    },
+    // {
+    //   provide: STORAGE_SERVICE,
+    //   useClass: MessagePackStorageService,
+    // },
   ],
 };

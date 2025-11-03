@@ -12,14 +12,20 @@ import {
 import { PageBuilderDto } from '../../models/PageBuilderDto';
 import { PageItem } from '../../models/PageItem';
 import { DynamicElementService } from '../../services/dynamic-element.service';
+import { DynamicDataStructure } from '../../models/DynamicData';
+import { DynamicDataService } from '../../services/dynamic-data.service';
 
 @Component({
   selector: 'ngx-page-preview',
   templateUrl: './page-preview.component.html',
-  styleUrls: ['./page-preview.component.scss'],
+  styleUrls: ['../../styles/paper.scss', './page-preview.component.scss'],
   imports: [CommonModule],
 })
 export class NgxPagePreviewComponent implements OnInit {
+  @Input('dynamicData') set setDynamicData(val: DynamicDataStructure) {
+    this.dynamicDataService.dynamicData = val;
+  }
+
   data = new PageBuilderDto();
   @Input('data') set setData(val: PageBuilderDto) {
     this.cleanCanvas();
@@ -31,6 +37,7 @@ export class NgxPagePreviewComponent implements OnInit {
   private paper = viewChild<ElementRef<HTMLElement>>('paper');
   constructor(
     private dynamicElementService: DynamicElementService,
+    private dynamicDataService: DynamicDataService,
     private renderer: Renderer2,
     @Inject(DOCUMENT) private doc: Document
   ) {}
@@ -82,6 +89,7 @@ export class NgxPagePreviewComponent implements OnInit {
         bodyItems.map((m) => (m.el = this.createElement(m, body)));
         footerItems.map((m) => (m.el = this.createElement(m, footer)));
       }
+      this.dynamicDataService.replaceValues(this.data.pages);
     } catch (error) {
       console.error('Error loading page data:', error);
       alert('Error loading page data: ' + error);

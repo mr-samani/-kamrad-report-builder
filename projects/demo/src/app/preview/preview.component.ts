@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { NgxPagePreviewComponent, PageBuilderDto } from '@ngx-page-builder';
+import { DynamicData } from '../dynamic-data/dynamic-data';
 
 @Component({
   selector: 'app-preview',
@@ -8,6 +9,8 @@ import { NgxPagePreviewComponent, PageBuilderDto } from '@ngx-page-builder';
   imports: [NgxPagePreviewComponent],
 })
 export class PreviewComponent implements OnInit {
+  dynamicData = DynamicData;
+
   data = new PageBuilderDto();
   constructor() {
     this.data = JSON.parse(localStorage.getItem('page') || '{}');

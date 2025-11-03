@@ -9,20 +9,14 @@ import {
   Output,
   OnDestroy,
 } from '@angular/core';
-import {
-  DynamicDataStructure,
-  DynamicNode,
-  DynamicObjectNode,
-  DynamicArrayNode,
-  DynamicValueNode,
-} from '../models/DynamicData';
+import { DynamicDataStructure, DynamicNode, DynamicObjectNode } from '../models/DynamicData';
 
 @Directive({
   selector: '[ngxDynamicAutocomplete]',
   standalone: true,
 })
 export class DynamicAutocompleteDirective implements OnDestroy {
-  @Input() dynamicData!: DynamicDataStructure;
+  @Input() dynamicData?: DynamicDataStructure;
   @Output() inserted = new EventEmitter<string>();
 
   private popupEl?: HTMLElement;
@@ -55,10 +49,9 @@ export class DynamicAutocompleteDirective implements OnDestroy {
   // -------------------------
   @HostListener('keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
-    // open suggestions via Ctrl+Space or Ctrl+Shift+Space or just Ctrl+Space
+    // open suggestions via Ctrl+Space
     if (event.ctrlKey && (event.code === 'Space' || event.key === ' ')) {
       event.preventDefault();
-      // open after browser updates input (not strictly necessary but safe)
       setTimeout(() => this.openSuggestionsAtCursor(), 0);
       return;
     }
@@ -87,15 +80,13 @@ export class DynamicAutocompleteDirective implements OnDestroy {
       }
     }
 
-    // If user types '.' we re-open suggestions relative to the new path.
-    // Wait a tick so '.' is inserted into the editable before computing path.
+    // If user types '.' we re-open suggestions
     if (event.key === '.') {
       setTimeout(() => this.openSuggestionsAtCursor(), 0);
       return;
     }
 
-    // For normal typing / deletion, if popup is open we recompute suggestions.
-    // Wait a tick to allow input to update.
+    // For normal typing / deletion, if popup is open we recompute suggestions
     setTimeout(() => {
       if (this.showPopup) {
         const path = this.computePathBeforeCursor();
@@ -115,7 +106,6 @@ export class DynamicAutocompleteDirective implements OnDestroy {
 
   @HostListener('blur')
   onBlur() {
-    // slight delay to allow click on suggestion to be processed
     setTimeout(() => this.closePopup(), 150);
   }
 
@@ -125,6 +115,13 @@ export class DynamicAutocompleteDirective implements OnDestroy {
   private openSuggestionsAtCursor() {
     const path = this.computePathBeforeCursor();
     const suggestions = this.getSuggestionsForPath(path);
+
+    console.log('🔍 Debug Info:', {
+      textBefore: this.getTextBeforeCursor(),
+      path: path,
+      suggestions: suggestions,
+    });
+
     if (!suggestions || !suggestions.length) {
       this.closePopup();
       return;
@@ -138,75 +135,105 @@ export class DynamicAutocompleteDirective implements OnDestroy {
   }
 
   /**
-   * computePathBeforeCursor
-   * - returns segments array
-   * - if text ends with '.' the last segment is '' (empty) to indicate "list children"
-   *
-   * Examples:
-   *  "" -> []
-   *  "personalInfo" -> ["personalInfo"]
-   *  "personalInfo." -> ["personalInfo",""]
-   *  "personalInfo.name.fi" -> ["personalInfo","name","fi"]
+   * IMPROVED: Get text before cursor - works with HTML editors
    */
-  private computePathBeforeCursor(): string[] {
-    const textBefore = this.getTextBeforeCursor();
-    if (!textBefore) return [];
-
-    // match the last chain that contains words or [index] separated by dots
-    // this match finds the chain at the end of textBefore
-    const chainMatch = textBefore.match(/(?:[\w$]+|\[index\])(?:\.(?:[\w$]+|\[index\]))*$/);
-    if (!chainMatch) {
-      // if text ends with '.' but chainMatch failed (rare), check explicitly
-      if (textBefore.endsWith('.')) {
-        const prev = textBefore
-          .slice(0, -1)
-          .match(/(?:[\w$]+|\[index\])(?:\.(?:[\w$]+|\[index\]))*$/);
-        if (prev) {
-          const segs = prev[0].split('.');
-          segs.push('');
-          return segs;
-        }
-      }
-      return [];
-    }
-
-    const chain = chainMatch[0];
-    const segments = chain.split('.');
-
-    // if original text ended with '.' then we want an extra empty segment
-    if (textBefore.endsWith('.')) {
-      segments.push('');
-    }
-
-    // normalize: keep empty last segment only (used to show children)
-    return segments;
-  }
-
-  // get current token (last alphanumeric token before caret) — uses the improved regex you suggested
-  private getCurrentToken(): string {
-    const textBefore = this.getTextBeforeCursor();
-    if (!textBefore) return '';
-    const match = textBefore.replace(/[\s.]+$/, '').match(/[\w$]+$/);
-    return match ? match[0] : '';
-  }
-
-  // Retrieve text before cursor for input/textarea or contenteditable
   private getTextBeforeCursor(): string {
     const el = this.el.nativeElement;
+
     if ((el as HTMLElement).isContentEditable) {
       const sel = window.getSelection();
       if (!sel || !sel.rangeCount) return '';
-      const range = sel.getRangeAt(0).cloneRange();
-      range.collapse(true);
+
+      const range = sel.getRangeAt(0);
       const preRange = document.createRange();
       preRange.selectNodeContents(el);
       preRange.setEnd(range.endContainer, range.endOffset);
-      return preRange.toString();
+
+      // Get text content - this handles <br>, <p>, and other HTML elements
+      let text = preRange.cloneContents().textContent || '';
+
+      // Normalize line breaks
+      text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+      return text;
     } else if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
       const pos = el.selectionStart ?? 0;
       return el.value.slice(0, pos);
     }
     return '';
+  }
+
+  /**
+   * IMPROVED: Compute path - robust line handling
+   */
+  private computePathBeforeCursor(): string[] {
+    const textBefore = this.getTextBeforeCursor();
+
+    console.log('📝 Text before cursor:', JSON.stringify(textBefore));
+
+    if (!textBefore) return [];
+
+    // Split by actual line breaks
+    const lines = textBefore.split('\n');
+    const currentLine = lines[lines.length - 1] || '';
+
+    console.log('📄 Current line:', JSON.stringify(currentLine));
+    console.log('📊 Total lines:', lines.length);
+
+    // If current line is empty or only whitespace -> root suggestions
+    const trimmedLine = currentLine.trim();
+    if (!trimmedLine) {
+      console.log('✅ Empty line - showing root');
+      return [];
+    }
+
+    // Extract the rightmost path chain from current line
+    // This regex matches: word.word.[index].word etc at the END of line
+    const pathRegex = /(?:[\w$]+|\[index\])(?:\.(?:[\w$]+|\[index\]))*\.?$/;
+    const match = trimmedLine.match(pathRegex);
+
+    if (!match) {
+      console.log('❌ No path match in line');
+      return [];
+    }
+
+    const chain = match[0];
+    console.log('🔗 Found chain:', chain);
+
+    // Handle edge case: just a dot
+    if (chain === '.') {
+      return [];
+    }
+
+    // Split and clean
+    const segments = chain.split('.');
+    const result: string[] = [];
+
+    for (let i = 0; i < segments.length; i++) {
+      const seg = segments[i].trim();
+      // Skip empty segments except the last one
+      if (seg || i === segments.length - 1) {
+        result.push(seg);
+      }
+    }
+
+    console.log('🎯 Final path:', result);
+    return result;
+  }
+
+  /**
+   * Get current token for filtering
+   */
+  private getCurrentToken(): string {
+    const textBefore = this.getTextBeforeCursor();
+    if (!textBefore) return '';
+
+    const lines = textBefore.split('\n');
+    const currentLine = lines[lines.length - 1] || '';
+
+    // Get last word/token
+    const match = currentLine.replace(/[\s.]+$/, '').match(/[\w$]+$/);
+    return match ? match[0] : '';
   }
 
   // -------------------------
@@ -215,88 +242,119 @@ export class DynamicAutocompleteDirective implements OnDestroy {
   private getSuggestionsForPath(path: string[]): string[] {
     const root = this.dynamicData ?? {};
 
-    // empty path -> top-level keys
+    // Empty path -> top-level keys
     if (!path || path.length === 0) {
-      return Object.keys(root);
+      const keys = Object.keys(root);
+      console.log('🌳 Root keys:', keys);
+      return keys;
     }
 
-    // We will traverse to parent (everything except last segment)
+    // Traverse to parent
     const parentPath = path.slice(0, -1);
-    const currentToken = path[path.length - 1]; // may be '' when user typed '.' just now
+    const currentToken = path[path.length - 1] || '';
 
-    // Start from a synthetic root object wrapping dynamicData
+    console.log('🔍 Parent path:', parentPath);
+    console.log('🔍 Current token:', currentToken);
+
+    // Start from synthetic root
     let current: DynamicNode = { type: 'object', properties: root } as DynamicObjectNode;
 
-    // traverse parentPath
+    // Traverse parent path
     for (const seg of parentPath) {
-      if (!current) return [];
+      if (!current) {
+        console.log('❌ Current is null at segment:', seg);
+        return [];
+      }
+
       if (current.type === 'object') {
         if (current.properties && seg in current.properties) {
           current = current.properties[seg];
+          console.log('✅ Navigated to object property:', seg);
         } else {
+          console.log('❌ Property not found:', seg);
           return [];
         }
       } else if (current.type === 'array') {
-        // If seg is [index] -> go into items, otherwise allow direct drill into items as well
+        // Handle array navigation
         if (seg === '[index]') {
           current = current.items;
+          console.log('✅ Navigated to array items');
+        } else if (current.items && current.items.type === 'object') {
+          if (current.items.properties && seg in current.items.properties) {
+            current = current.items.properties[seg];
+            console.log('✅ Navigated to array item property:', seg);
+          } else {
+            console.log('❌ Array item property not found:', seg);
+            return [];
+          }
         } else {
-          // treat unknown segment as attempt to access items properties
-          current = current.items;
+          console.log('❌ Cannot navigate array with segment:', seg);
+          return [];
         }
       } else {
+        console.log('❌ Cannot navigate value node');
         return [];
       }
     }
 
-    // Now current refers to the parent node where we want to list children for currentToken
+    // Get suggestions from current node
     if (!current) return [];
+
+    let suggestions: string[] = [];
 
     if (current.type === 'object') {
       const keys = Object.keys(current.properties || {});
-      if (currentToken === '' || currentToken === undefined) {
-        // user typed '.' -> show all children
-        return keys;
-      }
-      // filter by prefix
-      return keys.filter((k) => k.startsWith(currentToken));
-    }
 
-    if (current.type === 'array') {
-      const suggestions: string[] = [];
-      // suggest [index]
-      if (!currentToken || '[index]'.startsWith(currentToken)) suggestions.push('[index]');
-      // if items is object, suggest its props
+      if (!currentToken) {
+        // Show all keys
+        suggestions = keys;
+      } else {
+        // Filter by prefix
+        suggestions = keys.filter((k) => k.toLowerCase().startsWith(currentToken.toLowerCase()));
+      }
+    } else if (current.type === 'array') {
+      // Suggest [index]
+      if (!currentToken || '[index]'.toLowerCase().startsWith(currentToken.toLowerCase())) {
+        suggestions.push('[index]');
+      }
+
+      // Suggest item properties
       if (current.items && current.items.type === 'object') {
         const itemKeys = Object.keys(current.items.properties || {});
-        if (!currentToken) suggestions.push(...itemKeys);
-        else suggestions.push(...itemKeys.filter((k) => k.startsWith(currentToken)));
+        if (!currentToken) {
+          suggestions.push(...itemKeys);
+        } else {
+          suggestions.push(
+            ...itemKeys.filter((k) => k.toLowerCase().startsWith(currentToken.toLowerCase()))
+          );
+        }
       }
-      return suggestions;
     }
 
-    // value node has no children
-    return [];
+    console.log('💡 Suggestions:', suggestions);
+    return suggestions;
   }
 
   // -------------------------
-  // Popup DOM helpers
+  // Popup DOM
   // -------------------------
   private createOrUpdatePopup() {
     if (!this.popupEl) {
       const popup = this.renderer.createElement('ul');
       this.renderer.setStyle(popup, 'position', 'fixed');
-      this.renderer.setStyle(popup, 'z-index', '10000');
+      this.renderer.setStyle(popup, 'z-index', '999999');
       this.renderer.setStyle(popup, 'background', '#fff');
-      this.renderer.setStyle(popup, 'border', '1px solid rgba(0,0,0,0.12)');
-      this.renderer.setStyle(popup, 'border-radius', '6px');
-      this.renderer.setStyle(popup, 'box-shadow', '0 6px 18px rgba(0,0,0,0.12)');
+      this.renderer.setStyle(popup, 'border', '1px solid #ccc');
+      this.renderer.setStyle(popup, 'border-radius', '4px');
+      this.renderer.setStyle(popup, 'box-shadow', '0 4px 12px rgba(0,0,0,0.15)');
       this.renderer.setStyle(popup, 'list-style', 'none');
       this.renderer.setStyle(popup, 'margin', '0');
-      this.renderer.setStyle(popup, 'padding', '6px 0');
+      this.renderer.setStyle(popup, 'padding', '4px 0');
       this.renderer.setStyle(popup, 'font-family', 'monospace');
-      this.renderer.setStyle(popup, 'max-height', '220px');
+      this.renderer.setStyle(popup, 'font-size', '13px');
+      this.renderer.setStyle(popup, 'max-height', '250px');
       this.renderer.setStyle(popup, 'overflow', 'auto');
+      this.renderer.setStyle(popup, 'min-width', '150px');
       this.renderer.appendChild(document.body, popup);
       this.popupEl = popup;
     }
@@ -305,19 +363,30 @@ export class DynamicAutocompleteDirective implements OnDestroy {
 
   private updatePopupItems() {
     if (!this.popupEl) return;
-    // clear
-    while (this.popupEl.firstChild) this.popupEl.removeChild(this.popupEl.firstChild);
+
+    while (this.popupEl.firstChild) {
+      this.popupEl.removeChild(this.popupEl.firstChild);
+    }
 
     this.suggestions.forEach((sugg, idx) => {
       const li = this.renderer.createElement('li');
       this.renderer.setStyle(li, 'padding', '6px 12px');
       this.renderer.setStyle(li, 'cursor', 'pointer');
+      this.renderer.setStyle(li, 'transition', 'all 0.15s');
       this.renderer.setProperty(li, 'innerText', sugg);
+
+      this.renderer.listen(li, 'mouseenter', () => {
+        this.activeIndex = idx;
+        this.updateHighlight();
+      });
+
       this.renderer.listen(li, 'click', () => this.select(sugg));
+
       if (idx === this.activeIndex) {
         this.renderer.setStyle(li, 'background', '#0078d7');
         this.renderer.setStyle(li, 'color', '#fff');
       }
+
       this.renderer.appendChild(this.popupEl!, li);
     });
   }
@@ -329,26 +398,38 @@ export class DynamicAutocompleteDirective implements OnDestroy {
       this.renderer.setStyle(c, 'background', i === this.activeIndex ? '#0078d7' : '');
       this.renderer.setStyle(c, 'color', i === this.activeIndex ? '#fff' : '#000');
     });
-    const activeEl = children[this.activeIndex] as HTMLElement | undefined;
-    if (activeEl) activeEl.scrollIntoView({ block: 'nearest' });
+    const activeEl = children[this.activeIndex];
+    if (activeEl) {
+      activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
   }
 
   private setPosition(x: number, y: number) {
     if (!this.popupEl) return;
+
+    // Force layout calculation
+    this.popupEl.style.display = 'block';
     const popupRect = this.popupEl.getBoundingClientRect();
     const winW = window.innerWidth;
-    const left = x + popupRect.width > winW ? Math.max(8, winW - popupRect.width - 8) : x;
+    const winH = window.innerHeight;
+
+    let left = Math.max(8, Math.min(x, winW - popupRect.width - 8));
+    let top = y + 4;
+
+    // Flip up if no space below
+    if (top + popupRect.height > winH - 20) {
+      top = Math.max(8, y - popupRect.height - 4);
+    }
+
     this.renderer.setStyle(this.popupEl, 'left', `${left}px`);
-    this.renderer.setStyle(this.popupEl, 'top', `${y}px`);
+    this.renderer.setStyle(this.popupEl, 'top', `${top}px`);
   }
 
   private closePopup() {
     if (this.popupEl) {
       try {
         this.renderer.removeChild(document.body, this.popupEl);
-      } catch {
-        /* ignore */
-      }
+      } catch {}
       this.popupEl = undefined;
     }
     this.showPopup = false;
@@ -360,8 +441,6 @@ export class DynamicAutocompleteDirective implements OnDestroy {
   // Insert logic
   // -------------------------
   private select(value: string) {
-    // Insert the selected segment in place of the chain's last segment.
-    // If you prefer inserting placeholder format like [%@data.path%], change here.
     this.replaceCurrentTokenWith(value);
     this.inserted.emit(value);
     this.closePopup();
@@ -369,115 +448,178 @@ export class DynamicAutocompleteDirective implements OnDestroy {
 
   private replaceCurrentTokenWith(textToInsert: string) {
     const el = this.el.nativeElement;
-    // For contenteditable we reconstruct text (innerText) and set caret by char index
+
     if ((el as HTMLElement).isContentEditable) {
-      const full = el.innerText ?? el.textContent ?? '';
-      const caretIndex = this.getCaretIndexInContentEditable();
-      const before = full.slice(0, caretIndex);
-      const after = full.slice(caretIndex);
-      const chainMatch = before.match(/(?:[\w$]+|\[index\])(?:\.(?:[\w$]+|\[index\]))*$/);
-      if (chainMatch) {
-        const start = caretIndex - chainMatch[0].length;
-        const newText = before.slice(0, start) + textToInsert + after;
-        // set new text (note: this loses inner HTML formatting; if you need to keep HTML use more advanced approach)
-        el.innerText = newText;
-        // set caret after inserted text
-        this.setCaretInContentEditable(start + textToInsert.length);
+      // For contenteditable, use Selection API
+      const sel = window.getSelection();
+      if (!sel || !sel.rangeCount) return;
+
+      const range = sel.getRangeAt(0);
+
+      // Get text before cursor in current text node
+      const textNode = range.startContainer;
+      const offset = range.startOffset;
+
+      if (textNode.nodeType === Node.TEXT_NODE) {
+        const textBefore = (textNode.textContent || '').slice(0, offset);
+        const textAfter = (textNode.textContent || '').slice(offset);
+
+        // Find the chain to replace
+        const chainMatch = textBefore.match(/(?:[\w$]+|\[index\])(?:\.(?:[\w$]+|\[index\]))*$/);
+
+        if (chainMatch) {
+          const chainStart = offset - chainMatch[0].length;
+          const newText =
+            textBefore.slice(0, textBefore.length - chainMatch[0].length) +
+            textToInsert +
+            textAfter;
+
+          textNode.textContent = newText;
+
+          // Set cursor position
+          const newOffset = chainStart + textToInsert.length;
+          range.setStart(textNode, newOffset);
+          range.setEnd(textNode, newOffset);
+          sel.removeAllRanges();
+          sel.addRange(range);
+        } else {
+          // Just insert at cursor
+          range.deleteContents();
+          range.insertNode(document.createTextNode(textToInsert));
+          range.collapse(false);
+        }
       } else {
-        // fallback: insert at caret
-        const sel = window.getSelection();
-        if (!sel || !sel.rangeCount) return;
-        const range = sel.getRangeAt(0);
+        // Fallback: insert at cursor
         range.deleteContents();
         range.insertNode(document.createTextNode(textToInsert));
         range.collapse(false);
       }
+
+      // Trigger input event
+      el.dispatchEvent(new Event('input', { bubbles: true }));
     } else if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
       const start = el.selectionStart ?? 0;
-      const before = el.value.slice(0, start);
-      const after = el.value.slice(start);
-      const chainMatch = before.match(/(?:[\w$]+|\[index\])(?:\.(?:[\w$]+|\[index\]))*$/);
+      const value = el.value;
+      const before = value.slice(0, start);
+      const after = value.slice(start);
+
+      // Find chain in current line
+      const lines = before.split('\n');
+      const currentLine = lines[lines.length - 1] || '';
+      const chainMatch = currentLine.match(/(?:[\w$]+|\[index\])(?:\.(?:[\w$]+|\[index\]))*$/);
+
       if (chainMatch) {
-        const s = start - chainMatch[0].length;
-        el.value = el.value.slice(0, s) + textToInsert + el.value.slice(start);
-        const pos = s + textToInsert.length;
-        el.setSelectionRange(pos, pos);
-        el.dispatchEvent(new Event('input', { bubbles: true }));
+        const lineStart = before.length - currentLine.length;
+        const chainStart = lineStart + currentLine.lastIndexOf(chainMatch[0]);
+
+        el.value = value.slice(0, chainStart) + textToInsert + after;
+        const newPos = chainStart + textToInsert.length;
+        el.setSelectionRange(newPos, newPos);
       } else {
-        // insert normally
-        el.setRangeText(textToInsert, el.selectionStart ?? 0, el.selectionEnd ?? 0, 'end');
-        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.setRangeText(textToInsert, start, start, 'end');
       }
-    }
-  }
 
-  // helper: get caret index inside contenteditable as character offset
-  private getCaretIndexInContentEditable(): number {
-    const sel = window.getSelection();
-    if (!sel || !sel.rangeCount) return 0;
-    const range = sel.getRangeAt(0).cloneRange();
-    range.collapse(true);
-    const preRange = document.createRange();
-    preRange.selectNodeContents(this.el.nativeElement);
-    preRange.setEnd(range.endContainer, range.endOffset);
-    return preRange.toString().length;
-  }
-
-  private setCaretInContentEditable(charIndex: number) {
-    const node = this.el.nativeElement;
-    const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT, null);
-    let currentNode: Node | null = walker.nextNode();
-    let count = 0;
-    while (currentNode) {
-      const textLen = (currentNode.textContent || '').length;
-      if (count + textLen >= charIndex) {
-        const offset = charIndex - count;
-        const range = document.createRange();
-        range.setStart(currentNode, offset);
-        range.collapse(true);
-        const sel = window.getSelection();
-        if (sel) {
-          sel.removeAllRanges();
-          sel.addRange(range);
-        }
-        return;
-      }
-      count += textLen;
-      currentNode = walker.nextNode();
-    }
-    // fallback: set to end
-    const range = document.createRange();
-    range.selectNodeContents(this.el.nativeElement);
-    range.collapse(false);
-    const sel = window.getSelection();
-    if (sel) {
-      sel.removeAllRanges();
-      sel.addRange(range);
+      el.dispatchEvent(new Event('input', { bubbles: true }));
     }
   }
 
   // -------------------------
-  // caret rect calculation
+  // Caret rect
   // -------------------------
   private getCaretRect(): DOMRect {
     const el = this.el.nativeElement;
+
     if ((el as HTMLElement).isContentEditable) {
       const sel = window.getSelection();
-      if (!sel || !sel.rangeCount) return el.getBoundingClientRect();
-      const range = sel.getRangeAt(0).cloneRange();
-      range.collapse(false);
+      if (!sel || !sel.rangeCount) {
+        const rect = el.getBoundingClientRect();
+        return new DOMRect(rect.left, rect.top, 0, 0);
+      }
+
+      const range = sel.getRangeAt(0);
       const rects = range.getClientRects();
-      if (rects.length) return rects[0];
-      return el.getBoundingClientRect();
-    } else if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
-      // a simple approximation for inputs/textarea caret position
-      // For pixel-perfect placement use the "mirror" technique (I can add it on request)
+
+      if (rects.length > 0) {
+        return rects[0];
+      }
+
+      // Fallback: create a temporary span at cursor
+      const span = document.createElement('span');
+      span.textContent = '\u200B'; // zero-width space
+      range.insertNode(span);
+      const rect = span.getBoundingClientRect();
+      span.parentNode?.removeChild(span);
+
+      return rect;
+    } else if (el instanceof HTMLTextAreaElement) {
+      return this.getTextareaCaretRect(el);
+    } else if (el instanceof HTMLInputElement) {
       const rect = el.getBoundingClientRect();
-      // try to approximate vertical position using line-height or font-size
-      const style = window.getComputedStyle(el);
-      const lineHeight = parseFloat(style.lineHeight || style.fontSize || '16');
-      return new DOMRect(rect.left + 8, rect.top + Math.min(24, lineHeight + 8), 0, 0);
+      return new DOMRect(rect.left + 8, rect.bottom, 0, 0);
     }
+
     return new DOMRect();
+  }
+
+  private getTextareaCaretRect(textarea: HTMLTextAreaElement): DOMRect {
+    const rect = textarea.getBoundingClientRect();
+    const style = window.getComputedStyle(textarea);
+
+    const mirror = document.createElement('div');
+    const props = [
+      'boxSizing',
+      'width',
+      'height',
+      'overflowX',
+      'overflowY',
+      'borderTopWidth',
+      'borderRightWidth',
+      'borderBottomWidth',
+      'borderLeftWidth',
+      'paddingTop',
+      'paddingRight',
+      'paddingBottom',
+      'paddingLeft',
+      'fontStyle',
+      'fontVariant',
+      'fontWeight',
+      'fontSize',
+      'fontFamily',
+      'lineHeight',
+      'letterSpacing',
+      'wordSpacing',
+      'textAlign',
+      'whiteSpace',
+      'wordWrap',
+    ];
+
+    props.forEach((prop) => {
+      mirror.style[prop as any] = style[prop as any];
+    });
+
+    mirror.style.position = 'absolute';
+    mirror.style.visibility = 'hidden';
+    mirror.style.top = '0';
+    mirror.style.left = '-9999px';
+    mirror.style.whiteSpace = 'pre-wrap';
+
+    document.body.appendChild(mirror);
+
+    const start = textarea.selectionStart || 0;
+    mirror.textContent = textarea.value.substring(0, start);
+
+    const span = document.createElement('span');
+    span.textContent = '|';
+    mirror.appendChild(span);
+
+    const spanRect = span.getBoundingClientRect();
+    const mirrorRect = mirror.getBoundingClientRect();
+
+    document.body.removeChild(mirror);
+
+    const x = rect.left + (spanRect.left - mirrorRect.left) - (textarea.scrollLeft || 0);
+    const y = rect.top + (spanRect.top - mirrorRect.top) - (textarea.scrollTop || 0);
+
+    return new DOMRect(x, y + parseFloat(style.fontSize || '16'), 0, 0);
   }
 }

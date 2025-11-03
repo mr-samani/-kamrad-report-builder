@@ -8,7 +8,7 @@ import { LibConsts } from './consts/defauls';
 import { JsonFileStorageService } from './services/storage/jsonfile.storage.service';
 
 export class PageBuilderConfiguration {
-  storageType: StorageType = StorageType.LocalStorage;
+  storageType?: StorageType = StorageType.LocalStorage;
   customSources?: SourceItem[];
 }
 export const PAGE_BUILDER_CONFIGURATION = new InjectionToken<PageBuilderConfiguration>(
@@ -27,6 +27,9 @@ export function providePageBuilder(config: PageBuilderConfiguration) {
       break;
     case StorageType.JSONFile:
       storage = JsonFileStorageService;
+      break;
+    case undefined:
+      storage = LocalStorageService;
       break;
     default:
       throw new Error('Invalid storage type');
