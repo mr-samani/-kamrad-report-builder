@@ -184,9 +184,9 @@ export class DynamicElementService {
 
     element.dataset['id'] = item.id;
 
-    if (item.options?.text && element.innerText !== item.options.text) {
-      this.renderer.appendChild(element, this.renderer.createText(item.options.text));
-    }
+    // if (item.options?.text && element.innerText !== item.options.text) {
+    //   this.renderer.appendChild(element, this.renderer.createText(item.options.text));
+    // }
     // if (this.isContentEditable(tag)) {
     //   element.contentEditable = 'true';
     // }

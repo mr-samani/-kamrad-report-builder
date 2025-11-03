@@ -8,6 +8,7 @@ export class PageItem {
   children: PageItem[] = [];
   tag!: string;
   html?: string;
+  /** content in html editor */
   content?: string;
   component?: Type<any>;
   componentKey?: string;

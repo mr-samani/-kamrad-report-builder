@@ -3,7 +3,8 @@ import { LocalStorageService } from './services/storage/local.storage.service';
 import { StorageType } from './services/storage/storage-type';
 import { HttpStorageService } from './services/storage/http.storage.service';
 import { STORAGE_SERVICE } from './services/storage/token.storage';
-import { SOURCE_ITEMS, SourceItem } from './models/SourceItem';
+import { SourceItem } from './models/SourceItem';
+import { SOURCE_ITEMS } from './consts/SOURCE_ITEMS';
 import { LibConsts } from './consts/defauls';
 import { JsonFileStorageService } from './services/storage/jsonfile.storage.service';
 

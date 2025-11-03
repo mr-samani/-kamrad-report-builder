@@ -90,6 +90,8 @@
   min-height: 70px;
   border-top: 1px dotted red;
   border-bottom: 1px dotted red;
+  max-height: 400px;
+  overflow: hidden;
   &.is-empty::after {
     display: flex;
     align-items: center;

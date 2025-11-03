@@ -90,7 +90,14 @@ export class PreviewService {
      }
      table.ngx-page-table th {
       text-align: start;
+      max-height: 400px;
+      overflow: hidden;
+      display: block;
      }
+    img,svg{
+      max-width:100%;
+      max-height:100%;
+    }
     .page-break { 
       page-break-after: always !important;
     }

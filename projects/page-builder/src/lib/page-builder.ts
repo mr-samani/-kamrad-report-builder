@@ -110,7 +110,6 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
       const source = new PageItem(this.sources[event.previousIndex]);
       source.id = generateUUID();
       source.options = {
-        text: source.content,
         directives: DefaultBlockDirectives,
         attributes: {
           class: DefaultBlockClassName,

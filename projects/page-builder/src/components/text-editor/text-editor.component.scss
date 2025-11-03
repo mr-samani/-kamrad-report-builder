@@ -54,6 +54,8 @@ input[type='color'] {
   background: white;
   max-height: 80vh;
   overflow: auto;
+  // footer + toolbar
+  height: calc(100% - 30px - 47px);
 }
 .label {
   font-size: 12px;

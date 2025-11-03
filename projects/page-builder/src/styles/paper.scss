@@ -83,6 +83,9 @@
     }
     table.ngx-page-table th {
       text-align: start;
+      max-height: 400px;
+      overflow: hidden;
+      display: block;
     }
     img,
     svg {
