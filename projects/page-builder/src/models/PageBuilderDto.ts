@@ -1,5 +1,4 @@
 import { Page } from './Page';
-import { PageItem } from './PageItem';
 import { PageOrientation, PageSize } from './types';
 
 export class PageBuilderDto {

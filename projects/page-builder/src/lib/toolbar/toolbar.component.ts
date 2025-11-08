@@ -15,13 +15,14 @@ import { MatDialog } from '@angular/material/dialog';
 import { ConfigDialogComponent } from '../config-dialog/config-dialog.component';
 import { SortPageListComponent } from '../sort-page-list/sort-page-list.component';
 import { PageBuilderDto } from '../../models/PageBuilderDto';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'toolbar',
   templateUrl: './toolbar.component.html',
   styleUrls: ['./toolbar.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit {
@@ -120,6 +121,9 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
     this.previewService.openPreview();
   }
 
+  previewPage() {
+    window.open('/preview');
+  }
   sortPages() {
     this.matDialog
       .open(SortPageListComponent)
@@ -131,6 +135,8 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
       });
   }
   openConfigDialog() {
-    this.matDialog.open(ConfigDialogComponent);
+    this.matDialog.open(ConfigDialogComponent, {
+      panelClass: 'ngx-page-builder',
+    });
   }
 }

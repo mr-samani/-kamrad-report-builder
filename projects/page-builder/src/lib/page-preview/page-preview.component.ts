@@ -84,10 +84,12 @@ export class NgxPagePreviewComponent implements OnInit {
       if (!this.data) return;
       for (let page of this.data.pages) {
         const { header, body, footer } = this.createPageHtml();
-        const { headerItems, bodyItems, footerItems } = page;
-        headerItems.map((m) => (m.el = this.createElement(m, header)));
-        bodyItems.map((m) => (m.el = this.createElement(m, body)));
-        footerItems.map((m) => (m.el = this.createElement(m, footer)));
+        setTimeout(() => {
+          const { headerItems, bodyItems, footerItems } = page;
+          headerItems.map((m) => (m.el = this.createElement(m, header)));
+          bodyItems.map((m) => (m.el = this.createElement(m, body)));
+          footerItems.map((m) => (m.el = this.createElement(m, footer)));
+        }, 100);
       }
       this.dynamicDataService.replaceValues(this.data.pages);
     } catch (error) {

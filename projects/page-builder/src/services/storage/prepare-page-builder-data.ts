@@ -11,13 +11,13 @@ export function preparePageDataForSave(pageInfo: PageBuilderDto): PageBuilderDto
       if (item.el) {
         item.style = encodeURIComponent(item.el.style.cssText);
       }
+      delete item.options?.attributes;
+      delete item.options?.events;
+      delete item.options?.directives;
       if (item.component) {
         item.html = '';
         continue;
       }
-      delete item.options?.attributes;
-      delete item.options?.events;
-      delete item.options?.directives;
 
       //cleanup
       if (item.el) {

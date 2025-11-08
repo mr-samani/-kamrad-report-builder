@@ -16,7 +16,7 @@ import {
 import 'reflect-metadata';
 import { PageItem } from '../models/PageItem';
 import { DEFAULT_IMAGE_URL, LibConsts } from '../consts/defauls';
-import { DynamicDataStructure, ISourceOptions } from '../public-api';
+import { DynamicDataStructure } from '../public-api';
 
 @Injectable({ providedIn: 'root' })
 export class DynamicElementService {

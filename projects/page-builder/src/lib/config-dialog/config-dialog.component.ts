@@ -8,7 +8,7 @@ import { PageOrientation, PageSize } from '../../models/types';
 @Component({
   selector: 'app-config-dialog',
   templateUrl: './config-dialog.component.html',
-  styleUrls: ['./config-dialog.component.scss'],
+  styleUrls: ['../../styles/paper.scss', './config-dialog.component.scss'],
   imports: [MatDialogModule, MatButtonModule],
 })
 export class ConfigDialogComponent implements OnInit {
