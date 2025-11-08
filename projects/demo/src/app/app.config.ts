@@ -10,6 +10,7 @@ import { providePageBuilder, STORAGE_SERVICE, StorageType } from '@ngx-page-buil
 import { CustomSources } from './custom-source/custom-sources';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { MessagePackStorageService } from './custom-storage/msgpack.service';
+import { provideHighcharts } from 'highcharts-angular';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -24,5 +25,30 @@ export const appConfig: ApplicationConfig = {
     //   provide: STORAGE_SERVICE,
     //   useClass: MessagePackStorageService,
     // },
+    provideHighcharts({
+      // Optional: Define the Highcharts instance dynamically
+      instance: () => import('highcharts'),
+
+      // Global chart options applied across all charts
+      options: {
+        title: {
+          style: {
+            color: 'tomato',
+          },
+        },
+        legend: {
+          enabled: false,
+        },
+      },
+
+      // Include Highcharts additional modules (e.g., exporting, accessibility) or custom themes
+      modules: () => {
+        return [
+          import('highcharts/esm/modules/accessibility'),
+          import('highcharts/esm/modules/exporting'),
+          import('highcharts/esm/themes/sunset'),
+        ];
+      },
+    }),
   ],
 };
