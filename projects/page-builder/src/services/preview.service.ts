@@ -74,6 +74,9 @@ export class PreviewService {
         console.log('Preview load ended');
         if (this.mustBePrint) {
           this.previewWindow?.print();
+          this.previewWindow?.close();
+          this.previewWindow = null;
+          window.removeEventListener('message', messageHandler);
         }
       } else if (event.data?.type === PREVIEW_CONSTS.MESSAGE_TYPES.CLOSE) {
         this.previewWindow?.close();
