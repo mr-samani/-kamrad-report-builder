@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import {
+  AfterViewInit,
   Component,
   DOCUMENT,
   ElementRef,
@@ -14,6 +15,8 @@ import { PageItem } from '../../models/PageItem';
 import { DynamicElementService } from '../../services/dynamic-element.service';
 import { DynamicDataStructure } from '../../models/DynamicData';
 import { DynamicDataService } from '../../services/dynamic-data.service';
+import { ActivatedRoute } from '@angular/router';
+import { PREVIEW_CONSTS } from './PREVIEW_CONSTS';
 
 @Component({
   selector: 'ngx-page-preview',
@@ -21,17 +24,14 @@ import { DynamicDataService } from '../../services/dynamic-data.service';
   styleUrls: ['../../styles/paper.scss', './page-preview.component.scss'],
   imports: [CommonModule],
 })
-export class NgxPagePreviewComponent implements OnInit {
+export class NgxPagePreviewComponent implements OnInit, AfterViewInit {
   @Input('dynamicData') set setDynamicData(val: DynamicDataStructure) {
     this.dynamicDataService.dynamicData = val;
   }
 
   data = new PageBuilderDto();
   @Input('data') set setData(val: PageBuilderDto) {
-    this.cleanCanvas();
-    this.data = PageBuilderDto.fromJSON(val);
-    this.loadPageData();
-    this.setPrintStyle();
+    this.initializePreview(PageBuilderDto.fromJSON(val));
   }
 
   private paper = viewChild<ElementRef<HTMLElement>>('paper');
@@ -39,12 +39,47 @@ export class NgxPagePreviewComponent implements OnInit {
     private dynamicElementService: DynamicElementService,
     private dynamicDataService: DynamicDataService,
     private renderer: Renderer2,
-    @Inject(DOCUMENT) private doc: Document
+    @Inject(DOCUMENT) private doc: Document,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit() {}
 
-  createPageHtml(): { header: HTMLElement; body: HTMLElement; footer: HTMLElement } {
+  ngAfterViewInit(): void {
+    window.opener?.postMessage({ type: PREVIEW_CONSTS.MESSAGE_TYPES.READY }, '*');
+
+    // منتظر دریافت دیتا از parent
+    window.addEventListener('message', (event) => {
+      if (event.data?.type === PREVIEW_CONSTS.MESSAGE_TYPES.GET_DATA) {
+        const data = event.data.payload;
+        const val = JSON.parse(data);
+        this.initializePreview(PageBuilderDto.fromJSON(val));
+      }
+    });
+
+    // اعلام بسته شدن
+    window.addEventListener('beforeunload', () => {
+      window.opener?.postMessage({ type: PREVIEW_CONSTS.MESSAGE_TYPES.CLOSE }, '*');
+    });
+  }
+
+  initializePreview(data: PageBuilderDto) {
+    this.cleanCanvas();
+
+    this.data = data;
+    this.loadPageData();
+    this.setPrintStyle();
+
+    setTimeout(() => {
+      window.opener?.postMessage({ type: PREVIEW_CONSTS.MESSAGE_TYPES.LOAD_ENDED }, '*');
+    }, PREVIEW_CONSTS.TIMEOUT_READY);
+  }
+
+  createPageHtml(isLastPage: boolean): {
+    header: HTMLElement;
+    body: HTMLElement;
+    footer: HTMLElement;
+  } {
     if (!this.paper()) {
       throw new Error('Paper element not found');
     }
@@ -74,16 +109,19 @@ export class NgxPagePreviewComponent implements OnInit {
     mainTable.appendChild(tfoot);
     inner.appendChild(mainTable);
     this.paper()!.nativeElement.appendChild(inner);
-    const pageBreak = this.doc.createElement('div');
-    pageBreak.classList.add('page-break');
-    this.paper()!.nativeElement.appendChild(pageBreak);
+    if (!isLastPage) {
+      const pageBreak = this.doc.createElement('div');
+      pageBreak.classList.add('page-break');
+      this.paper()!.nativeElement.appendChild(pageBreak);
+    }
     return { header: Hth, body: Ctd, footer: Ftd };
   }
   async loadPageData() {
     try {
       if (!this.data) return;
       for (let page of this.data.pages) {
-        const { header, body, footer } = this.createPageHtml();
+        const isLastPage = page === this.data.pages[this.data.pages.length - 1];
+        const { header, body, footer } = this.createPageHtml(isLastPage);
         setTimeout(() => {
           const { headerItems, bodyItems, footerItems } = page;
           headerItems.map((m) => (m.el = this.createElement(m, header)));
@@ -121,8 +159,9 @@ export class NgxPagePreviewComponent implements OnInit {
         }
       }
     }
-
-    this.paper()!.nativeElement.innerHTML = '';
+    if (this.paper()?.nativeElement) {
+      this.paper()!.nativeElement.innerHTML = '';
+    }
   }
 
   private createElement(item: PageItem, container: HTMLElement) {

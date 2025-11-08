@@ -1,24 +1,31 @@
-import { EnvironmentProviders, InjectionToken } from '@angular/core';
-import { LocalStorageService } from './services/storage/local.storage.service';
-import { StorageType } from './services/storage/storage-type';
-import { HttpStorageService } from './services/storage/http.storage.service';
+import {
+  EnvironmentProviders,
+  makeEnvironmentProviders,
+  ENVIRONMENT_INITIALIZER,
+  inject,
+  InjectionToken,
+} from '@angular/core';
+import { Router } from '@angular/router';
 import { STORAGE_SERVICE } from './services/storage/token.storage';
+import { LocalStorageService } from './services/storage/local.storage.service';
+import { HttpStorageService } from './services/storage/http.storage.service';
+import { JsonFileStorageService } from './services/storage/jsonfile.storage.service';
+import { StorageType } from './services/storage/storage-type';
 import { SourceItem } from './models/SourceItem';
 import { SOURCE_ITEMS } from './consts/SOURCE_ITEMS';
 import { LibConsts } from './consts/defauls';
-import { JsonFileStorageService } from './services/storage/jsonfile.storage.service';
 
 export class PageBuilderConfiguration {
   storageType?: StorageType = StorageType.LocalStorage;
   customSources?: SourceItem[];
 }
+
 export const PAGE_BUILDER_CONFIGURATION = new InjectionToken<PageBuilderConfiguration>(
   'PAGE_BUILDER_CONFIGURATION'
 );
 
 export function providePageBuilder(config: PageBuilderConfiguration) {
-  let providers: EnvironmentProviders[] = [];
-  let storage;
+  let storage: any;
   switch (config.storageType) {
     case StorageType.LocalStorage:
       storage = LocalStorageService;
@@ -35,22 +42,46 @@ export function providePageBuilder(config: PageBuilderConfiguration) {
     default:
       throw new Error('Invalid storage type');
   }
+
   if (!config.customSources || !Array.isArray(config.customSources)) {
     config.customSources = [];
   }
+
   LibConsts.SourceItemList = [
     ...SOURCE_ITEMS,
     ...(config.customSources ?? []).map((item) => new SourceItem(item)),
   ];
-  return [
+
+  return makeEnvironmentProviders([
     {
       provide: STORAGE_SERVICE,
       useClass: storage,
-      multi: false,
     },
     {
       provide: PAGE_BUILDER_CONFIGURATION,
       useValue: config,
     },
-  ];
+
+    // 🧩 اضافه کردن route به router در زمان bootstrap
+    {
+      provide: ENVIRONMENT_INITIALIZER,
+      multi: true,
+      useValue: () => {
+        const router = inject(Router);
+        const existing = router.config.some((r) => r.path === 'ngx-page-preview');
+        if (!existing) {
+          router.resetConfig([
+            ...router.config,
+            {
+              path: 'ngx-page-preview',
+              loadComponent: () =>
+                import('./lib/page-preview/page-preview.component').then(
+                  (m) => m.NgxPagePreviewComponent
+                ),
+            },
+          ]);
+        }
+      },
+    },
+  ]);
 }

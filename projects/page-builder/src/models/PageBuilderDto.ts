@@ -13,6 +13,12 @@ export class PageBuilderDto {
   }
   static fromJSON(data: any): PageBuilderDto {
     const p = new PageBuilderDto(data);
+    if (!data) {
+      return p;
+    }
+    if (!data.pages) {
+      data.pages = [];
+    }
     p.pages = data.pages.map((page: any) => Page.fromJSON(page));
     p.config = new PageBuilderConfig(data.config);
     return p;
