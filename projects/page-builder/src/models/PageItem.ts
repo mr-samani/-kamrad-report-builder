@@ -14,6 +14,7 @@ export class PageItem {
   componentKey?: string;
   options?: ISourceOptions;
   style?: string;
+
   constructor(data?: PageItem | any) {
     if (data) {
       for (var property in data) {
@@ -28,5 +29,10 @@ export class PageItem {
     const item = new PageItem(data);
     Object.assign(item, data);
     return item;
+  }
+
+  public get CanBeSetContent(): boolean {
+    const isComponent = this.component && typeof this.component === 'function';
+    return !(this.el?.tagName === 'IMG' || isComponent === true);
   }
 }

@@ -43,14 +43,11 @@ import { SizeControlComponent } from '../../controls/size-control/size-control.c
 export class BlockPropertiesComponent extends BaseComponent implements OnInit {
   item?: PageItem;
 
-  isImageTag = false;
-
   constructor(injector: Injector, private matDialog: MatDialog) {
     super(injector);
     effect(() => {
       this.item = this.pageBuilderService.activeEl();
       // console.log('updated properties', this.item);
-      this.isImageTag = this.item?.el?.tagName === 'IMG';
 
       this.chdRef.detectChanges();
     });

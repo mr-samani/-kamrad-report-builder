@@ -2,7 +2,7 @@
   <p>Properties</p>
   @if(item){
   <p>{{ item.id }}</p>
-  @if(isImageTag == false){
+  @if(item.CanBeSetContent){
   <div class="text" (click)="openTextEditor()">
     <span [innerHTML]="item.content | safeHtml" class="content"></span>
 

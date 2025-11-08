@@ -150,7 +150,7 @@ small {
     }
   }
 
-  input,
+  input:not([ngxinputcolor]),
   select,
   textarea {
     background: #374151 !important;
