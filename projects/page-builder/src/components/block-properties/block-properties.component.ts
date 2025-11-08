@@ -19,6 +19,7 @@ import { TypographyControlComponent } from '../../controls/typography-control/ty
 import { BackgroundControlComponent } from '../../controls/beckground-control/background-control.component';
 import { DisplayControlComponent } from '../../controls/display-control/display-control.component';
 import { TextCssControlComponent } from '../../controls/textcss-control/textcss-control.component';
+import { SizeControlComponent } from '../../controls/size-control/size-control.component';
 
 @Component({
   selector: 'block-properties',
@@ -34,6 +35,7 @@ import { TextCssControlComponent } from '../../controls/textcss-control/textcss-
     BackgroundControlComponent,
     DisplayControlComponent,
     TextCssControlComponent,
+    SizeControlComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,

@@ -14,24 +14,29 @@
   </div>
   }
   <details>
-    <summary>Display Settings</summary>
+    <summary>Display</summary>
     <display-control [(ngModel)]="item" (change)="onChangeProperties()"></display-control>
   </details>
 
   <details>
-    <summary>Spacing Settings</summary>
+    <summary>Size</summary>
+    <size-control [(ngModel)]="item" (change)="onChangeProperties()"></size-control>
+  </details>
+
+  <details>
+    <summary>Spacing</summary>
     <spacing-control [(ngModel)]="item" (change)="onChangeProperties()"></spacing-control>
   </details>
   <details>
-    <summary>Typography Settings</summary>
+    <summary>Typography</summary>
     <typography-control [(ngModel)]="item" (change)="onChangeProperties()"></typography-control>
   </details>
   <details>
-    <summary>Background Settings</summary>
+    <summary>Background</summary>
     <background-control [(ngModel)]="item" (change)="onChangeProperties()"></background-control>
   </details>
   <details>
-    <summary>Advanced Settings</summary>
+    <summary>Advanced</summary>
     <textcss-control [(ngModel)]="item" (change)="onChangeProperties()"></textcss-control>
   </details>
   }

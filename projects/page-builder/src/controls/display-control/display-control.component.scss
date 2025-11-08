@@ -1,9 +1,4 @@
 .display-control {
-  padding: 16px;
-  background: #ffffff;
-  border-radius: 8px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-
   &.disabled {
     opacity: 0.6;
     pointer-events: none;
@@ -47,7 +42,7 @@
   // Display Grid
   .display-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
     gap: 8px;
   }
 
@@ -55,11 +50,11 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
-    padding: 12px 8px;
+    gap: 5px;
+    padding: 5px;
     background: #f9fafb;
     border: 2px solid #e5e7eb;
-    border-radius: 8px;
+    border-radius: 5px;
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 12px;
@@ -95,69 +90,6 @@
       text-align: center;
       line-height: 1.2;
     }
-  }
-
-  // Control Group
-  .control-group {
-    margin-bottom: 16px;
-
-    label {
-      display: block;
-      font-size: 13px;
-      font-weight: 500;
-      color: #374151;
-      margin-bottom: 6px;
-    }
-
-    input[type='text'],
-    input[type='number'],
-    select,
-    textarea {
-      width: 100%;
-      padding: 8px 12px;
-      border: 1px solid #d1d5db;
-      border-radius: 6px;
-      font-size: 13px;
-      color: #111827;
-      background: #ffffff;
-      transition: border-color 0.2s ease;
-
-      &:focus {
-        outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-      }
-
-      &:disabled {
-        background: #f9fafb;
-        cursor: not-allowed;
-      }
-
-      &::placeholder {
-        color: #9ca3af;
-      }
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 60px;
-      font-family: 'Monaco', 'Courier New', monospace;
-    }
-
-    small {
-      display: block;
-      font-size: 11px;
-      color: #6b7280;
-      margin-top: 4px;
-      line-height: 1.4;
-    }
-  }
-
-  .control-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 16px;
   }
 
   // Visual Select
@@ -289,8 +221,6 @@
 // Dark Mode Support (Optional)
 @media (prefers-color-scheme: dark) {
   .display-control {
-    background: #1f2937;
-
     .section-label {
       color: #f9fafb;
     }
