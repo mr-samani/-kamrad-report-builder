@@ -18,6 +18,7 @@ export class DynamicDataService {
   public set dynamicData(value: DynamicDataStructure | undefined) {
     this._dynamicData = value;
     this.createValueDictionary();
+    console.log(this._dynamicDataDictionary);
   }
 
   private createValueDictionary() {
@@ -46,20 +47,26 @@ export class DynamicDataService {
 
   public replaceValues(pages: Page[]) {
     setTimeout(() => {
+      // console.log('Replacing values...', pages, this._dynamicDataDictionary);
       let replace = (item?: HTMLElement) => {
         if (!item) return;
         let txt = item.innerHTML;
+        let isReplaced = false;
         for (const key in this._dynamicDataDictionary) {
           const value = this._dynamicDataDictionary[key];
-          txt = txt.replace(new RegExp(`\\[%${key}%\\]`, 'g'), value);
+          const regEx = new RegExp(`\\[%${key}%\\]`, 'g');
+          isReplaced = isReplaced || regEx.test(txt);
+          txt = txt.replace(regEx, value);
         }
-        item.innerHTML = txt;
+        if (isReplaced) {
+          item.innerHTML = txt;
+        }
       };
       for (let page of pages) {
         page.bodyItems.forEach((item) => replace(item.el));
         page.headerItems.forEach((item) => replace(item.el));
         page.footerItems.forEach((item) => replace(item.el));
       }
-    });
+    }, 100);
   }
 }

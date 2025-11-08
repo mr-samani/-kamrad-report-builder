@@ -65,13 +65,13 @@ export class NgxPagePreviewComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     window.opener?.postMessage({ type: PREVIEW_CONSTS.MESSAGE_TYPES.READY }, '*');
-
     // منتظر دریافت دیتا از parent
     window.addEventListener('message', (event) => {
+      console.log('Received message from parent:', event.data);
       if (event.data?.type === PREVIEW_CONSTS.MESSAGE_TYPES.GET_DATA) {
-        const data = event.data.payload;
-        const val = JSON.parse(data);
-        this.initializePreview(PageBuilderDto.fromJSON(val));
+        const data: { pageInfo: string; dynamicData: DynamicDataStructure } = event.data.payload;
+        this.dynamicDataService.dynamicData = data.dynamicData;
+        this.initializePreview(PageBuilderDto.fromJSON(JSON.parse(data.pageInfo)));
       }
     });
 

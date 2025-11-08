@@ -1,18 +1,11 @@
-import {
-  Injectable,
-  ComponentRef,
-  createComponent,
-  EnvironmentInjector,
-  ApplicationRef,
-  Injector,
-  PLATFORM_ID,
-} from '@angular/core';
-import { DOCUMENT, isPlatformBrowser } from '@angular/common';
+import { Injectable, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Inject } from '@angular/core';
 import { PageBuilderService } from './page-builder.service';
 import { preparePageDataForSave } from './storage/prepare-page-builder-data';
 import { PREVIEW_CONSTS } from '../lib/page-preview/PREVIEW_CONSTS';
 import { Router } from '@angular/router';
+import { DynamicDataService } from './dynamic-data.service';
 
 @Injectable({ providedIn: 'root' })
 export class PreviewService {
@@ -20,6 +13,7 @@ export class PreviewService {
   mustBePrint = false;
   constructor(
     private pageBuilderService: PageBuilderService,
+    private dynamicDataService: DynamicDataService,
     @Inject(PLATFORM_ID) private platformId: Object,
     private router: Router
   ) {}
@@ -72,12 +66,13 @@ export class PreviewService {
       if (event.data?.type === 'NGX_PAGE_PREVIEW_READY') {
         console.log('Preview window is ready');
         const sanitized = preparePageDataForSave(this.pageBuilderService.pageInfo);
-        const json = JSON.stringify(sanitized, null, 2);
-
         this.previewWindow?.postMessage(
           {
             type: PREVIEW_CONSTS.MESSAGE_TYPES.GET_DATA,
-            payload: json,
+            payload: {
+              pageInfo: JSON.stringify(sanitized),
+              dynamicData: this.dynamicDataService.dynamicData,
+            },
           },
           '*'
         );
