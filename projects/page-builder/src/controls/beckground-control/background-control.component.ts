@@ -64,7 +64,6 @@ export class BackgroundControlComponent implements OnInit, ControlValueAccessor 
     { value: 'color+image', label: 'Color + Image', icon: 'mix' },
   ];
   style?: Partial<CSSStyleDeclaration>;
-  isImageTag = false;
   item?: PageItem;
   onChange = (_: PageItem | undefined) => {};
   onTouched = () => {};
@@ -94,8 +93,7 @@ export class BackgroundControlComponent implements OnInit, ControlValueAccessor 
       this.backgroundAttachment = val.backgroundAttachment;
       this.backgroundOrigin = val.backgroundOrigin;
       this.backgroundClip = val.backgroundClip;
-      this.isImageTag = this.el.tagName === 'IMG';
-      if (this.isImageTag) {
+      if (this.item.isImageTag) {
         this.imageUrl = this.el.getAttribute('src') ?? '';
       }
       this.detectMode();
@@ -153,7 +151,7 @@ export class BackgroundControlComponent implements OnInit, ControlValueAccessor 
     this.renderer.setStyle(this.el, 'background-origin', this.backgroundOrigin);
     this.renderer.setStyle(this.el, 'background-clip', this.backgroundClip);
 
-    if (this.isImageTag) {
+    if (this.item?.isImageTag) {
       if (this.imageUrl) {
         this.renderer.setAttribute(this.el, 'src', this.imageUrl);
       } else {

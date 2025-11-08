@@ -35,4 +35,8 @@ export class PageItem {
     const isComponent = this.component && typeof this.component === 'function';
     return !(this.el?.tagName === 'IMG' || isComponent === true);
   }
+
+  public get isImageTag(): boolean {
+    return this.el?.tagName === 'IMG';
+  }
 }

@@ -81,16 +81,20 @@
     .page-break {
       page-break-after: always !important;
     }
-    table.ngx-page-table th {
-      text-align: start;
-      max-height: 400px;
-      overflow: hidden;
-      display: block;
-    }
     img,
     svg {
       max-width: 100%;
       max-height: 100%;
+    }
+
+    table.ngx-page-table th {
+      text-align: start;
+      max-height: 270px; /* maximum browser page header */
+      overflow: hidden;
+      display: block;
+      // img {
+      //   max-height: 270px;
+      // }
     }
   }
   @media print {

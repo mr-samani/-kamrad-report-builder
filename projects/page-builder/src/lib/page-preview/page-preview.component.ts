@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Component,
   DOCUMENT,
   ElementRef,
@@ -35,15 +36,32 @@ export class NgxPagePreviewComponent implements OnInit, AfterViewInit {
   }
 
   private paper = viewChild<ElementRef<HTMLElement>>('paper');
+  isPrintPage = false;
   constructor(
     private dynamicElementService: DynamicElementService,
     private dynamicDataService: DynamicDataService,
     private renderer: Renderer2,
     @Inject(DOCUMENT) private doc: Document,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private chdRef: ChangeDetectorRef
   ) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.isPrintPage = this.route.snapshot.queryParams['print'] === 'true';
+
+    this.renderer.listen(window, 'beforeprint', this.onBeforePrint.bind(this));
+  }
+
+  onBeforePrint(event: Event): void {
+    // لغو عملیات پیش‌فرض پرینت
+    event.preventDefault();
+    event.stopPropagation();
+    this.isPrintPage = true;
+    this.chdRef.detectChanges();
+    setTimeout(() => {
+      window.print();
+    });
+  }
 
   ngAfterViewInit(): void {
     window.opener?.postMessage({ type: PREVIEW_CONSTS.MESSAGE_TYPES.READY }, '*');
