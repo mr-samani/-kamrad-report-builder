@@ -1,1 +1,22 @@
-<textarea [(ngModel)]="textCss" (ngModelChange)="update()" rows="10" class="css-editor"></textarea>
+<div class="css-editor-container">
+  <div class="editor-wrapper">
+    <!-- Highlighted background -->
+    <div #highlight class="highlight-layer" [innerHTML]="highlightedCss"></div>
+
+    <!-- Transparent textarea overlay -->
+    <textarea
+      #textarea
+      [(ngModel)]="textCss"
+      (input)="onInput($event)"
+      (scroll)="onScroll($event)"
+      (blur)="onTouched()"
+      [disabled]="isDisabled"
+      rows="10"
+      class="css-editor"
+      spellcheck="false"
+      autocomplete="off"
+      autocorrect="off"
+      autocapitalize="off"
+    ></textarea>
+  </div>
+</div>

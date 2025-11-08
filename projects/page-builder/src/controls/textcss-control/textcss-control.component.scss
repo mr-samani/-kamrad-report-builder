@@ -1,3 +1,158 @@
-.css-editor {
+.css-editor-container {
+  position: relative;
   width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #1e1e1e; // Dark theme like browser dev tools
+
+  .editor-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  // Highlighted background layer
+  .highlight-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 10px;
+    margin: 0;
+    border: none;
+    color: transparent;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow: auto;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    pointer-events: none;
+    z-index: 1;
+
+    // CSS syntax highlighting colors (browser-like)
+    .css-property {
+      color: #9cdcfe; // Light blue for properties
+    }
+
+    .css-colon {
+      color: #d4d4d4; // Light gray
+    }
+
+    .css-value {
+      color: #ce9178; // Orange for values
+    }
+
+    .css-number {
+      color: #b5cea8; // Light green for numbers
+    }
+
+    .css-color {
+      color: #ce9178; // Orange for colors
+    }
+
+    .css-url {
+      color: #ce9178; // Orange for URLs
+    }
+
+    .css-keyword {
+      color: #569cd6; // Blue for keywords
+    }
+
+    .css-semicolon {
+      color: #d4d4d4; // Light gray
+    }
+
+    .css-invalid {
+      color: #f48771; // Red for invalid
+      text-decoration: wavy underline;
+      text-decoration-color: #f48771;
+    }
+  }
+
+  // Transparent textarea overlay
+  .css-editor {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    padding: 10px;
+    margin: 0;
+    border: none;
+    outline: none;
+    background: transparent !important;
+    color: #d4d4d4 !important; // Match highlight text color
+    caret-color: #ffffff; // White cursor
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow: auto;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: vertical;
+    z-index: 2;
+
+    &:focus {
+      outline: none;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    // Make text transparent to show highlight behind
+    -webkit-text-fill-color: transparent;
+
+    // Show actual text color on selection
+    &::selection {
+      background: rgba(38, 79, 120, 0.8);
+      -webkit-text-fill-color: #d4d4d4;
+    }
+  }
 }
+
+// Light theme alternative (uncomment if needed)
+/*
+.css-editor-container {
+  background: #ffffff;
+  border-color: #d0d0d0;
+  
+  .highlight-layer {
+    .css-property{
+      color: #0451a5; // Dark blue
+    }
+    
+    .css-value{
+      color: #a31515; // Dark red
+    }
+    
+    .css-number{
+      color: #098658; // Dark green
+    }
+    
+    .css-color{
+      color: #a31515;
+    }
+    
+    .css-keyword{
+      color: #0000ff; // Blue
+    }
+    
+    .css-invalid{
+      color: #e51400;
+    }
+  }
+  
+  .css-editor {
+    color: #000000;
+    caret-color: #000000;
+    
+    &::selection {
+      background: rgba(173, 214, 255, 0.8);
+      -webkit-text-fill-color: #000000;
+    }
+  }
+}
+*/
