@@ -4,6 +4,7 @@ import {
   ENVIRONMENT_INITIALIZER,
   inject,
   InjectionToken,
+  provideEnvironmentInitializer,
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { STORAGE_SERVICE } from './services/storage/token.storage';
@@ -63,25 +64,24 @@ export function providePageBuilder(config: PageBuilderConfiguration) {
     },
 
     // 🧩 اضافه کردن route به router در زمان bootstrap
-    {
-      provide: ENVIRONMENT_INITIALIZER,
-      multi: true,
-      useValue: () => {
-        const router = inject(Router);
-        const existing = router.config.some((r) => r.path === 'ngx-page-preview');
-        if (!existing) {
-          router.resetConfig([
-            ...router.config,
-            {
-              path: 'ngx-page-preview',
-              loadComponent: () =>
-                import('./lib/page-preview/page-preview.component').then(
-                  (m) => m.NgxPagePreviewComponent
-                ),
-            },
-          ]);
-        }
-      },
-    },
+    provideDynamicRoute(),
   ]);
 }
+
+export const provideDynamicRoute = () =>
+  provideEnvironmentInitializer(() => {
+    const router = inject(Router);
+    const existing = router.config.some((r) => r.path === 'ngx-page-preview');
+    if (!existing) {
+      router.resetConfig([
+        ...router.config,
+        {
+          path: 'ngx-page-preview',
+          loadComponent: () =>
+            import('./lib/page-preview/page-preview.component').then(
+              (m) => m.NgxPagePreviewComponent
+            ),
+        },
+      ]);
+    }
+  });
