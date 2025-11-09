@@ -31,6 +31,7 @@ import { STORAGE_SERVICE } from '../services/storage/token.storage';
 import { PAGE_BUILDER_CONFIGURATION, PageBuilderConfiguration } from '../ngx-page-builder.provider';
 import { PageBuilderDto } from '../public-api';
 import { DynamicDataStructure } from '../models/DynamicData';
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'ngx-page-builder',
@@ -38,7 +39,7 @@ import { DynamicDataStructure } from '../models/DynamicData';
   styleUrls: ['../styles/paper.scss', './page-builder.scss'],
   imports: [
     CommonModule,
-    NgxDragDropKitModule,
+    DragDropModule,
     SafeHtmlPipe,
     ToolbarComponent,
     BlockSelectorComponent,
@@ -94,7 +95,7 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
     }
   }
 
-  async onDrop(event: IDropEvent, listName = '') {
+  async onDrop(event: CdkDragDrop<PageItem[], any, any>, listName = '') {
     console.log('Dropped:', event);
     if (event.container == event.previousContainer && event.currentIndex == event.previousIndex) {
       return;
@@ -104,7 +105,7 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
     }
 
     this.pageBuilderService.activeEl.set(undefined);
-    if (event.previousContainer.el.id == 'blockSourceList') {
+    if (event.previousContainer.element.nativeElement.id == 'blockSourceList') {
       // انتقال از یک container به container دیگه
       const source = new PageItem(this.sources[event.previousIndex]);
       source.options = {
@@ -118,7 +119,7 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
         ...source.options,
       };
       let html = this.dynamicElementService.createElement(
-        event.container.el,
+        event.container.element.nativeElement,
         event.currentIndex,
         source
       );
@@ -139,7 +140,7 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
         );
       }
 
-      const containerEl = event.container.el;
+      const containerEl = event.container.element.nativeElement;
       const children = Array.from(containerEl.children);
       // اگر باید به آخر لیست اضافه بشه
       if (event.currentIndex >= children.length - 1) {
@@ -148,8 +149,8 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
         // وگرنه قبل از المنت مورد نظر قرارش بده
         // توجه: چون یه element رو remove کردیم، باید index رو تنظیم کنیم
         const refNode = children[event.currentIndex];
+        // this.renderer.removeChild(event.previousContainer.el, nativeEl);
         this.renderer.insertBefore(containerEl, nativeEl, refNode);
-        // this.renderer.removeChild(containerEl, nativeEl);
       }
     }
 

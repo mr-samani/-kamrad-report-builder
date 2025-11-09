@@ -1,18 +1,18 @@
-<div class="page-builder-container ngx-page-builder">
+<div class="page-builder-container ngx-page-builder" cdkDropListGroup>
   <toolbar></toolbar>
   <div
     class="components"
     id="blockSourceList"
-    ngxDropList
-    [data]="sources"
-    [connectedTo]="[PageBody, PageHeader, PageFooter]"
-    [disableSort]="true"
+    cdkDropList
+    [cdkDropListData]="sources"
+    [cdkDropListSortingDisabled]="true"
   >
     <div class="sticky-top">
       @for (item of sources; track $index) {
       <div
         class="tool"
-        ngxDraggable
+        cdkDrag
+        [cdkDragData]="item"
         [innerHTML]="item.icon | safeHtml"
         [title]="item.title"
         (click)="preventDefault()"
@@ -35,34 +35,34 @@
         class="page-header"
         #PageHeader
         [class.show-outlines]="pageBuilderService.showOutlines"
-        ngxDropList
-        [data]="pageBuilderService.currentPage.headerItems"
+        cdkDropList
+        [cdkDropListData]="pageBuilderService.currentPage.headerItems"
         [class.is-empty]="pageBuilderService.currentPage.headerItems.length == 0"
-        (drop)="onDrop($event, 'header')"
+        (cdkDropListDropped)="onDrop($event, 'header')"
       >
-        <div class="placeholder" *ngxPlaceholder></div>
+        <div class="placeholder" *cdkDragPlaceholder></div>
       </div>
 
       <div
         class="page-body"
         #PageBody
         [class.show-outlines]="pageBuilderService.showOutlines"
-        ngxDropList
-        [data]="pageBuilderService.currentPage.bodyItems"
-        (drop)="onDrop($event, 'body')"
+        cdkDropList
+        [cdkDropListData]="pageBuilderService.currentPage.bodyItems"
+        (cdkDropListDropped)="onDrop($event, 'body')"
       >
-        <div class="placeholder" *ngxPlaceholder></div>
+        <div class="placeholder" *cdkDragPlaceholder></div>
       </div>
       <div
         class="page-footer"
         #PageFooter
         [class.show-outlines]="pageBuilderService.showOutlines"
-        ngxDropList
+        cdkDropList
         [class.is-empty]="pageBuilderService.currentPage.footerItems.length == 0"
-        [data]="pageBuilderService.currentPage.footerItems"
-        (drop)="onDrop($event, 'footer')"
+        [cdkDropListData]="pageBuilderService.currentPage.footerItems"
+        (cdkDropListDropped)="onDrop($event, 'footer')"
       >
-        <div class="placeholder" *ngxPlaceholder></div>
+        <div class="placeholder" *cdkDragPlaceholder></div>
       </div>
     </div>
     <block-selector #blockSelector />

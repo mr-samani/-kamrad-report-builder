@@ -18,7 +18,7 @@ export class DynamicDataService {
   public set dynamicData(value: DynamicDataStructure | undefined) {
     this._dynamicData = value;
     this.createValueDictionary();
-    console.log(this._dynamicDataDictionary);
+    // console.log(this._dynamicDataDictionary);
   }
 
   private createValueDictionary() {

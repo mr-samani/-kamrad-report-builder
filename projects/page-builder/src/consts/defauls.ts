@@ -1,5 +1,6 @@
 import { NgxDraggableDirective, NgxResizableDirective } from 'ngx-drag-drop-kit';
 import { SourceItem } from '../models/SourceItem';
+import { CdkDrag } from '@angular/cdk/drag-drop';
 
 /** loaded from initial provider
  *
@@ -11,7 +12,7 @@ export const LibConsts: {
   SourceItemList: [],
 };
 
-export const DefaultBlockDirectives = [NgxDraggableDirective];
+export const DefaultBlockDirectives = [CdkDrag];
 
 export const DefaultBlockClassName = 'block-item';
 
