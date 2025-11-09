@@ -23,7 +23,6 @@ import { SourceItem } from '../models/SourceItem';
 import { DefaultBlockClassName, DefaultBlockDirectives, LibConsts } from '../consts/defauls';
 import { SafeHtmlPipe } from '../pipes/safe-html.pipe';
 import { BlockSelectorComponent } from '../components/block-selector/block-selector.component';
-import { generateUUID } from '../utiles/generateUUID';
 import { BlockPropertiesComponent } from '../components/block-properties/block-properties.component';
 import { ToolbarComponent } from './toolbar/toolbar.component';
 import { PageBuilderBaseComponent } from './page-builder-base-component';
@@ -108,7 +107,6 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
     if (event.previousContainer.el.id == 'blockSourceList') {
       // انتقال از یک container به container دیگه
       const source = new PageItem(this.sources[event.previousIndex]);
-      source.id = generateUUID();
       source.options = {
         directives: DefaultBlockDirectives,
         attributes: {

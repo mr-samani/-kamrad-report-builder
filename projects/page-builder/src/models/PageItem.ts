@@ -1,9 +1,9 @@
-import { Type } from '@angular/core';
-import { generateUUID } from '../utiles/generateUUID';
+import { reflectComponentType, Type } from '@angular/core';
+import { randomStrnig } from '../utiles/generateUUID';
 import { ISourceOptions } from './SourceItem';
 
 export class PageItem {
-  id: string = generateUUID();
+  id: string = '';
   el?: HTMLElement;
   children: PageItem[] = [];
   tag!: string;
@@ -21,8 +21,11 @@ export class PageItem {
         if (this.hasOwnProperty(property)) (<any>this)[property] = (<any>data)[property];
       }
     }
+    if (!this.id) this.id = randomStrnig(5);
     if (this.component && typeof this.component === 'function') {
       this.componentKey = this.component.name || 'UnknownComponent';
+      const metadata = reflectComponentType(this.component);
+      this.tag = metadata?.selector || '';
     }
   }
   static fromJSON(data: any): PageItem {

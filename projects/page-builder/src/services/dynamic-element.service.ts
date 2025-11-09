@@ -42,7 +42,7 @@ export class DynamicElementService {
   ): HTMLElement {
     let element: HTMLElement;
     if (item.component) {
-      element = this.createComponentElement(container, item);
+      element = this.createComponentElement(container, item, index);
     } else {
       element = this.renderer.createElement(item.tag);
       const parentEl: HTMLElement =
@@ -74,7 +74,7 @@ export class DynamicElementService {
       item.component = CustomSource.component;
       item.options = Object.assign(item.options ?? {}, CustomSource.options);
 
-      element = this.createComponentElement(container, item);
+      element = this.createComponentElement(container, item, null);
     } else {
       let html = item.html;
       if (!html) {
@@ -103,7 +103,8 @@ export class DynamicElementService {
 
   private createComponentElement(
     container: HTMLElement | ViewContainerRef,
-    item: PageItem
+    item: PageItem,
+    index: number | null
   ): HTMLElement {
     const component = item.component;
     if (!component) throw new Error('SourceItem.component not defined');
@@ -121,8 +122,12 @@ export class DynamicElementService {
     // افزودن به DOM
     const parentEl =
       container instanceof ViewContainerRef ? container.element.nativeElement : container;
-    this.renderer.appendChild(parentEl, element);
-
+    if (index != null && index >= 0) {
+      const refNode = parentEl.children[index] || null;
+      this.renderer.insertBefore(parentEl, element, refNode);
+    } else {
+      this.renderer.appendChild(parentEl, element);
+    }
     // ذخیره برای cleanup
     (element as any).__componentRef__ = compRef;
 
