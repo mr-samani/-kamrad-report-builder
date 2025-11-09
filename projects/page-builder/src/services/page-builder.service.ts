@@ -22,6 +22,7 @@ import { SourceItem } from '../models/SourceItem';
   providedIn: 'root',
 })
 export class PageBuilderService implements OnDestroy {
+  mode: 'Edit' | 'Preview' = 'Preview';
   sources: SourceItem[] = LibConsts.SourceItemList;
 
   currentPageIndex = signal<number>(-1);

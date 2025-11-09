@@ -51,6 +51,7 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
     @Inject(STORAGE_SERVICE) private storageService: IStorageService
   ) {
     super(injector);
+    this.pageBuilderService.mode = 'Edit';
     this.pageBuilderService.pageBody = this._pageBody;
     this.pageBuilderService.pageHeader = this._pageHeader;
     this.pageBuilderService.pageFooter = this._pageFooter;

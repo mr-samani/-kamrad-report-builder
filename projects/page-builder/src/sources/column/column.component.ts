@@ -1,8 +1,17 @@
-import { Component, ElementRef, Input, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import {
+  Component,
+  ContentChild,
+  ElementRef,
+  Input,
+  OnInit,
+  ViewChild,
+  ViewEncapsulation,
+} from '@angular/core';
 import { NgxDragDropKitModule, NgxDropListDirective } from 'ngx-drag-drop-kit';
 import { PageItem } from '../../models/PageItem';
 import { DynamicElementService } from '../../services/dynamic-element.service';
 import { PageBuilderService } from '../../services/page-builder.service';
+import { CellDirective } from './cell.directive';
 
 @Component({
   selector: 'page-column',
@@ -17,7 +26,7 @@ export class ColumnComponent implements OnInit {
   @ViewChild('colContainer', { static: true }) colContainer!: ElementRef<HTMLDivElement>;
   constructor(
     private dynamicElementService: DynamicElementService,
-    private pageBuilderService: PageBuilderService
+    public pageBuilderService: PageBuilderService
   ) {}
 
   ngOnInit() {
@@ -28,16 +37,30 @@ export class ColumnComponent implements OnInit {
       this.loadCols();
     }
   }
+  loadCols() {
+    for (const child of this.pageItem.children) {
+      let el = this.createElementCell(child, this.colContainer.nativeElement);
+      if (!el) continue;
+      if (child.children && child.children.length > 0 && el) {
+        this.loadChilds(child.children, el);
+      }
+    }
+  }
 
-  addNewColumn() {
+  loadChilds(childs: PageItem[], container: HTMLElement) {
+    for (const child of childs) {
+      this.pageBuilderService.createElement(child, container);
+    }
+  }
+  addNewColumn(index?: number) {
     const newColumn = new PageItem({
       tag: 'div',
     });
-    let el = this.createElementCell(newColumn, this.colContainer.nativeElement);
-    this.pageItem.children.push(newColumn);
+    let el = this.createElementCell(newColumn, this.colContainer.nativeElement, index);
+    this.pageItem.children.splice(index ?? this.pageItem.children.length, 0, newColumn);
   }
 
-  private createElementCell(item: PageItem, container: HTMLElement, index: number = 0) {
+  private createElementCell(item: PageItem, container: HTMLElement, index: number = -1) {
     item.options = {
       ...item.options,
       directives: [
@@ -49,6 +72,9 @@ export class ColumnComponent implements OnInit {
           outputs: {
             drop: this.onDrop.bind(this),
           },
+        },
+        {
+          directive: CellDirective,
         },
       ],
       attributes: {
@@ -68,19 +94,10 @@ export class ColumnComponent implements OnInit {
     this.pageBuilderService.onDrop(ev);
   }
 
-  loadCols() {
-    for (const child of this.pageItem.children) {
-      let el = this.createElementCell(child, this.colContainer.nativeElement);
-      if (!el) continue;
-      if (child.children && child.children.length > 0 && el) {
-        this.loadChilds(child.children, el);
-      }
-    }
+  addColumnToLast() {
+    this.addNewColumn(this.pageItem.children.length);
   }
-
-  loadChilds(childs: PageItem[], container: HTMLElement) {
-    for (const child of childs) {
-      this.pageBuilderService.createElement(child, container);
-    }
+  addColumnToFirst() {
+    this.addNewColumn(0);
   }
 }
