@@ -2,7 +2,21 @@ import { reflectComponentType, Type } from '@angular/core';
 import { randomStrnig } from '../utiles/generateUUID';
 import { ISourceOptions } from './SourceItem';
 
-export class PageItem {
+export interface IPageItem {
+  id?: string;
+  el?: HTMLElement;
+  children?: PageItem[];
+  tag?: string;
+  html?: string;
+  /** content in html editor */
+  content?: string;
+  component?: Type<any>;
+  componentKey?: string;
+  options?: ISourceOptions;
+  style?: string;
+}
+
+export class PageItem implements IPageItem {
   id: string = '';
   el?: HTMLElement;
   children: PageItem[] = [];
@@ -15,7 +29,7 @@ export class PageItem {
   options?: ISourceOptions;
   style?: string;
 
-  constructor(data?: PageItem | any) {
+  constructor(data?: IPageItem) {
     if (data) {
       for (var property in data) {
         if (this.hasOwnProperty(property)) (<any>this)[property] = (<any>data)[property];
@@ -34,11 +48,17 @@ export class PageItem {
     return item;
   }
 
+  /**
+   * @readonly
+   */
   public get CanBeSetContent(): boolean {
     const isComponent = this.component && typeof this.component === 'function';
     return !(this.el?.tagName === 'IMG' || isComponent === true);
   }
 
+  /**
+   * @readonly
+   */
   public get isImageTag(): boolean {
     return this.el?.tagName === 'IMG';
   }

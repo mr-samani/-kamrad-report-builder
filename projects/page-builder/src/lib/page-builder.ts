@@ -4,23 +4,13 @@ import {
   Component,
   ElementRef,
   Inject,
-  inject,
   Injector,
   Input,
   OnInit,
-  Renderer2,
   viewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import {
-  IDropEvent,
-  moveItemInArray,
-  NgxDragDropKitModule,
-  transferArrayItem,
-} from 'ngx-drag-drop-kit';
-import { PageItem } from '../models/PageItem';
-import { SourceItem } from '../models/SourceItem';
-import { DefaultBlockClassName, DefaultBlockDirectives, LibConsts } from '../consts/defauls';
+import { NgxDragDropKitModule } from 'ngx-drag-drop-kit';
 import { SafeHtmlPipe } from '../pipes/safe-html.pipe';
 import { BlockSelectorComponent } from '../components/block-selector/block-selector.component';
 import { BlockPropertiesComponent } from '../components/block-properties/block-properties.component';
@@ -51,8 +41,6 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
   @Input('dynamicData') set setDynamicData(val: DynamicDataStructure) {
     this.dynamicDataService.dynamicData = val;
   }
-  private renderer = inject(Renderer2);
-  sources: SourceItem[] = LibConsts.SourceItemList;
   private _pageBody = viewChild<ElementRef<HTMLElement>>('PageBody');
   private _pageHeader = viewChild<ElementRef<HTMLElement>>('PageHeader');
   private _pageFooter = viewChild<ElementRef<HTMLElement>>('PageFooter');
@@ -92,68 +80,5 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
       console.error('Error loading page data:', error);
       alert('Error loading page data: ' + error);
     }
-  }
-
-  async onDrop(event: IDropEvent, listName = '') {
-    console.log('Dropped:', event);
-    if (event.container == event.previousContainer && event.currentIndex == event.previousIndex) {
-      return;
-    }
-    if (!event.previousContainer.data[event.previousIndex]) {
-      return;
-    }
-
-    this.pageBuilderService.activeEl.set(undefined);
-    if (event.previousContainer.el.id == 'blockSourceList') {
-      // انتقال از یک container به container دیگه
-      const source = new PageItem(this.sources[event.previousIndex]);
-      source.options = {
-        directives: DefaultBlockDirectives,
-        attributes: {
-          class: DefaultBlockClassName,
-        },
-        events: {
-          click: (ev: Event) => this.pageBuilderService.onSelectBlock(source, ev),
-        },
-        ...source.options,
-      };
-      let html = this.dynamicElementService.createElement(
-        event.container.el,
-        event.currentIndex,
-        source
-      );
-      source.el = html;
-      source.html = html.outerHTML;
-      event.container.data.splice(event.currentIndex, 0, source);
-      this.pageBuilderService.onSelectBlock(source);
-    } else {
-      const nativeEl = event.previousContainer.data[event.previousIndex].el;
-      if (event.container == event.previousContainer) {
-        moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
-      } else {
-        transferArrayItem(
-          event.previousContainer.data,
-          event.container.data,
-          event.previousIndex,
-          event.currentIndex
-        );
-      }
-
-      const containerEl = event.container.el;
-      const children = Array.from(containerEl.children);
-      // اگر باید به آخر لیست اضافه بشه
-      if (event.currentIndex >= children.length - 1) {
-        this.renderer.appendChild(containerEl, nativeEl);
-      } else {
-        // وگرنه قبل از المنت مورد نظر قرارش بده
-        // توجه: چون یه element رو remove کردیم، باید index رو تنظیم کنیم
-        const refNode = children[event.currentIndex];
-        this.renderer.insertBefore(containerEl, nativeEl, refNode);
-        // this.renderer.removeChild(containerEl, nativeEl);
-      }
-    }
-
-    // this.pageBuilderService.items = items;
-    this.chdRef.detectChanges();
   }
 }

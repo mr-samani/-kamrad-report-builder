@@ -13,7 +13,7 @@ import { HttpStorageService } from './services/storage/http.storage.service';
 import { JsonFileStorageService } from './services/storage/jsonfile.storage.service';
 import { StorageType } from './services/storage/storage-type';
 import { SourceItem } from './models/SourceItem';
-import { SOURCE_ITEMS } from './consts/SOURCE_ITEMS';
+import { SOURCE_ITEMS } from './sources/SOURCE_ITEMS';
 import { LibConsts } from './consts/defauls';
 
 export class PageBuilderConfiguration {

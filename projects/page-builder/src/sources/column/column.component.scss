@@ -1,0 +1,14 @@
+page-column {
+  display: block;
+  padding: 12px 0;
+  .flex-row {
+    display: flex;
+  }
+
+  .col-item {
+    border: 1px solid #00e0ff;
+    padding: 10px;
+    flex: auto;
+    min-height: 40px;
+  }
+}

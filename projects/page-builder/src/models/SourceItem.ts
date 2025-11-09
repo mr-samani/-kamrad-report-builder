@@ -1,8 +1,14 @@
-import { Type } from '@angular/core';
+import { reflectComponentType, Type } from '@angular/core';
+
+export class Directive {
+  directive!: Type<any>;
+  inputs?: Record<string, any> | undefined;
+  outputs?: Record<string, Function> | undefined;
+}
 
 export interface ISourceOptions {
   events?: Record<string, (event: any) => boolean | void>;
-  directives?: Type<any>[];
+  directives?: Directive[];
 
   /**
    * Html attributs
@@ -39,7 +45,7 @@ export class SourceItem {
    * Html tags
    * @example 'div'
    * */
-  tag?: 'div' | 'span' | 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'img' | 'input';
+  tag?: string; // 'div' | 'span' | 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'img' | 'input' = 'div';
   /**
    *  Display title
    * @example 'My Chart'
@@ -69,7 +75,7 @@ export class SourceItem {
   readonly componentKey?: string;
 
   options?: ISourceOptions;
-  constructor(data?: SourceItem | any) {
+  constructor(data?: SourceItem) {
     if (data) {
       for (var property in data) {
         if (this.hasOwnProperty(property)) (<any>this)[property] = (<any>data)[property];
@@ -77,6 +83,8 @@ export class SourceItem {
     }
     if (this.component && typeof this.component === 'function') {
       this.componentKey = this.component.name || 'UnknownComponent';
+      const metadata = reflectComponentType(this.component);
+      this.tag = metadata?.selector || 'div';
     }
   }
 }

@@ -14,12 +14,16 @@ import { DynamicElementService } from './dynamic-element.service';
 import { Page } from '../models/Page';
 import { PageBuilderDto } from '../models/PageBuilderDto';
 import { Subject } from 'rxjs';
-import { DefaultBlockDirectives, DefaultBlockClassName } from '../consts/defauls';
+import { DefaultBlockDirectives, DefaultBlockClassName, LibConsts } from '../consts/defauls';
+import { IDropEvent, moveItemInArray, transferArrayItem } from 'ngx-drag-drop-kit';
+import { SourceItem } from '../models/SourceItem';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PageBuilderService implements OnDestroy {
+  sources: SourceItem[] = LibConsts.SourceItemList;
+
   currentPageIndex = signal<number>(-1);
   activeEl = signal<PageItem | undefined>(undefined);
   pageBody: Signal<ElementRef<HTMLElement> | undefined> = signal<
@@ -60,6 +64,67 @@ export class PageBuilderService implements OnDestroy {
       throw new Error('Current page does not exist');
     }
     this.pageInfo.pages[this.currentPageIndex()] = page;
+  }
+
+  async onDrop(event: IDropEvent) {
+    console.log('Dropped:', event);
+    if (event.container == event.previousContainer && event.currentIndex == event.previousIndex) {
+      return;
+    }
+    if (!event.previousContainer.data[event.previousIndex]) {
+      return;
+    }
+    debugger;
+    this.activeEl.set(undefined);
+    if (event.previousContainer.el.id == 'blockSourceList') {
+      // انتقال از یک container به container دیگه
+      const source = new PageItem(this.sources[event.previousIndex]);
+      source.options = {
+        directives: DefaultBlockDirectives,
+        attributes: {
+          class: DefaultBlockClassName,
+        },
+        events: {
+          click: (ev: Event) => this.onSelectBlock(source, ev),
+        },
+        ...source.options,
+      };
+      let html = this.dynamicElementService.createElement(
+        event.container.el,
+        event.currentIndex,
+        source
+      );
+      event.container.data.splice(event.currentIndex, 0, source);
+      this.onSelectBlock(source);
+    } else {
+      const nativeEl = event.previousContainer.data[event.previousIndex].el;
+      if (event.container == event.previousContainer) {
+        moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+      } else {
+        transferArrayItem(
+          event.previousContainer.data,
+          event.container.data,
+          event.previousIndex,
+          event.currentIndex
+        );
+      }
+
+      const containerEl = event.container.el;
+      const children = Array.from(containerEl.children);
+      // اگر باید به آخر لیست اضافه بشه
+      if (event.currentIndex >= children.length - 1) {
+        this.renderer.appendChild(containerEl, nativeEl);
+      } else {
+        // وگرنه قبل از المنت مورد نظر قرارش بده
+        // توجه: چون یه element رو remove کردیم، باید index رو تنظیم کنیم
+        const refNode = children[event.currentIndex];
+        this.renderer.insertBefore(containerEl, nativeEl, refNode);
+        // this.renderer.removeChild(containerEl, nativeEl);
+      }
+    }
+
+    // this.pageBuilderService.items = items;
+    // this.chdRef.detectChanges();
   }
 
   addPage(): Promise<number> {
@@ -136,7 +201,7 @@ export class PageBuilderService implements OnDestroy {
   reloadCurrentPage() {
     this.changePage(this.currentPageIndex() + 1);
   }
-  private createElement(item: PageItem, container: HTMLElement) {
+  createElement(item: PageItem, container: HTMLElement) {
     item.options = {
       ...item.options,
       directives: DefaultBlockDirectives,

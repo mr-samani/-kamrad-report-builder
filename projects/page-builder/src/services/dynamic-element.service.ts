@@ -7,7 +7,6 @@ import {
   Injector,
   Renderer2,
   RendererFactory2,
-  Type,
   ViewContainerRef,
   runInInjectionContext,
   createComponent,
@@ -16,7 +15,8 @@ import {
 import 'reflect-metadata';
 import { PageItem } from '../models/PageItem';
 import { DEFAULT_IMAGE_URL, LibConsts } from '../consts/defauls';
-import { DynamicDataStructure } from '../public-api';
+import { Directive } from '../models/SourceItem';
+import { DynamicDataStructure } from '../models/DynamicData';
 
 @Injectable({ providedIn: 'root' })
 export class DynamicElementService {
@@ -44,6 +44,9 @@ export class DynamicElementService {
     if (item.component) {
       element = this.createComponentElement(container, item, index);
     } else {
+      if (!item.tag) {
+        item.tag = 'div';
+      }
       element = this.renderer.createElement(item.tag);
       const parentEl: HTMLElement =
         container instanceof ViewContainerRef ? container.element.nativeElement : container;
@@ -56,7 +59,8 @@ export class DynamicElementService {
     }
 
     element = this.bindOptions(element, item);
-
+    item.el = element;
+    item.html = element.outerHTML;
     return element;
   }
 
@@ -93,7 +97,8 @@ export class DynamicElementService {
     }
 
     element = this.bindOptions(element, item);
-
+    item.el = element;
+    item.html = element.outerHTML;
     return element;
   }
   updateElementContent(el: HTMLElement, data: PageItem) {
@@ -132,14 +137,18 @@ export class DynamicElementService {
     (element as any).__componentRef__ = compRef;
 
     const instance = compRef.instance;
+
     // ✅ Inputs
-    if (item.options?.inputs) {
+    if (item.options && item.options.inputs) {
+      if ('pageItem' in instance) {
+        instance['pageItem'] = item;
+      }
       for (const [key, val] of Object.entries(item.options.inputs)) {
-        if (key in instance) {
-          instance[key] = val;
-        } else {
-          this.renderer.setAttribute(element, key, val);
-        }
+        // if (key in instance) {
+        instance[key] = val;
+        // } else {
+        //   this.renderer.setAttribute(element, key, val);
+        // }
       }
     }
 
@@ -201,7 +210,9 @@ export class DynamicElementService {
     return element;
   }
 
-  private attachDirective<T>(element: HTMLElement, DirType: Type<T>) {
+  private attachDirective<T>(element: HTMLElement, directive: Directive) {
+    const DirType = directive.directive;
+    const { inputs, outputs } = directive;
     if (!DirType) return;
     const elRef = new ElementRef(element);
 
@@ -243,6 +254,24 @@ export class DynamicElementService {
     } catch (err) {
       console.error('Error creating directive instance:', err);
       dirInstance = new (DirType as any)(elRef);
+    }
+    // ✅ Inputs
+    if (inputs) {
+      for (const [key, val] of Object.entries(inputs)) {
+        dirInstance[key] = val;
+      }
+    }
+
+    // ✅ Outputs
+    if (outputs) {
+      for (const [key, handler] of Object.entries(outputs)) {
+        const emitter = (dirInstance as any)[key];
+        if (emitter instanceof EventEmitter) {
+          emitter.subscribe((value: any) => handler(value));
+        } else {
+          console.warn(`⚠️ '${key}' is not an EventEmitter on ${DirType.name}`);
+        }
+      }
     }
 
     // فراخوانی lifecycle hooks

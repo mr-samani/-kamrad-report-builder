@@ -4,12 +4,12 @@
     class="components"
     id="blockSourceList"
     ngxDropList
-    [data]="sources"
+    [data]="pageBuilderService.sources"
     [connectedTo]="[PageBody, PageHeader, PageFooter]"
     [disableSort]="true"
   >
     <div class="sticky-top">
-      @for (item of sources; track $index) {
+      @for (item of pageBuilderService.sources; track $index) {
       <div
         class="tool"
         ngxDraggable
@@ -38,7 +38,7 @@
         ngxDropList
         [data]="pageBuilderService.currentPage.headerItems"
         [class.is-empty]="pageBuilderService.currentPage.headerItems.length == 0"
-        (drop)="onDrop($event, 'header')"
+        (drop)="pageBuilderService.onDrop($event)"
       >
         <div class="placeholder" *ngxPlaceholder></div>
       </div>
@@ -49,7 +49,7 @@
         [class.show-outlines]="pageBuilderService.showOutlines"
         ngxDropList
         [data]="pageBuilderService.currentPage.bodyItems"
-        (drop)="onDrop($event, 'body')"
+        (drop)="pageBuilderService.onDrop($event)"
       >
         <div class="placeholder" *ngxPlaceholder></div>
       </div>
@@ -60,7 +60,7 @@
         ngxDropList
         [class.is-empty]="pageBuilderService.currentPage.footerItems.length == 0"
         [data]="pageBuilderService.currentPage.footerItems"
-        (drop)="onDrop($event, 'footer')"
+        (drop)="pageBuilderService.onDrop($event)"
       >
         <div class="placeholder" *ngxPlaceholder></div>
       </div>

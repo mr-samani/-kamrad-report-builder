@@ -28,7 +28,8 @@ export function preparePageDataForSave(pageInfo: PageBuilderDto): PageBuilderDto
         html = removeClassesFromHtml(html, ['ngx-corner-resize', 'block-item', 'ngx-draggable']);
 
         // remove style from first tag only
-        html.replace(new RegExp(item.tag.toLowerCase() + '.*style="[^"]*"'), item.tag);
+        if (item.tag)
+          html = html.replace(new RegExp(item.tag.toLowerCase() + '.*style="[^"]*"'), item.tag);
 
         item.html = encodeURIComponent(html);
       }
