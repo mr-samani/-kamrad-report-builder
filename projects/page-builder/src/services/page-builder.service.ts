@@ -74,7 +74,7 @@ export class PageBuilderService implements OnDestroy {
     if (!event.previousContainer.data[event.previousIndex]) {
       return;
     }
-    debugger;
+
     this.activeEl.set(undefined);
     if (event.previousContainer.el.id == 'blockSourceList') {
       // انتقال از یک container به container دیگه
@@ -269,15 +269,33 @@ export class PageBuilderService implements OnDestroy {
     this.activeEl.set(undefined);
   }
 
-  private findBlockList(block: PageItem): PageItem[] | undefined {
-    const { headerItems, bodyItems, footerItems } = this.pageInfo.pages[this.currentPageIndex()];
-    for (let item of headerItems) if (item.id === block.id) return headerItems;
+  private findBlockList(block: PageItem): PageItem[] {
+    const page = this.pageInfo.pages[this.currentPageIndex()];
+    if (!page) return [];
 
-    for (let item of bodyItems) if (item.id === block.id) return bodyItems;
+    const lists = [page.headerItems, page.bodyItems, page.footerItems];
 
-    for (let item of footerItems) if (item.id === block.id) return footerItems;
+    for (const list of lists) {
+      const found = this.findInTree(list, block.id);
+      if (found) return found;
+    }
 
     return [];
+  }
+
+  private findInTree(list: PageItem[], id: string): PageItem[] | null {
+    for (const item of list) {
+      if (item.id === id) {
+        return list; // این لیست شامل بلاک مورد نظر است
+      }
+
+      if (item.children && item.children.length > 0) {
+        const found = this.findInTree(item.children, id);
+        if (found) return found; // فقط در صورت پیدا شدن بازگشت
+      }
+    }
+
+    return null;
   }
 
   writeItemValue(data: PageItem) {
