@@ -43,11 +43,7 @@ export const appConfig: ApplicationConfig = {
 
       // Include Highcharts additional modules (e.g., exporting, accessibility) or custom themes
       modules: () => {
-        return [
-          import('highcharts/esm/modules/accessibility'),
-          import('highcharts/esm/modules/exporting'),
-          import('highcharts/esm/themes/sunset'),
-        ];
+        return [import('highcharts/esm/modules/exporting')];
       },
     }),
   ],

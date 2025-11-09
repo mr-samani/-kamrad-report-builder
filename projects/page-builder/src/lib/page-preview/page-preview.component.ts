@@ -18,6 +18,7 @@ import { DynamicDataStructure } from '../../models/DynamicData';
 import { DynamicDataService } from '../../services/dynamic-data.service';
 import { ActivatedRoute } from '@angular/router';
 import { PREVIEW_CONSTS } from './PREVIEW_CONSTS';
+import { waitForFontsToLoad, waitForRenderComplete } from '../../utiles/rendering';
 
 @Component({
   selector: 'ngx-page-preview',
@@ -88,7 +89,9 @@ export class NgxPagePreviewComponent implements OnInit, AfterViewInit {
     this.loadPageData();
     this.setPrintStyle();
 
-    setTimeout(() => {
+    setTimeout(async () => {
+      await waitForFontsToLoad(PREVIEW_CONSTS.TIMEOUT_LOAD_FONTS);
+      await waitForRenderComplete();
       window.opener?.postMessage({ type: PREVIEW_CONSTS.MESSAGE_TYPES.LOAD_ENDED }, '*');
     }, PREVIEW_CONSTS.TIMEOUT_READY);
   }
