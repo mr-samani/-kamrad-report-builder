@@ -1,12 +1,12 @@
 import { PageBuilderDto } from '../../models/PageBuilderDto';
+import { PageItem } from '../../models/PageItem';
 import { sanitizeForStorage } from '../../utiles/sanitizeForStorage';
 
 export function preparePageDataForSave(pageInfo: PageBuilderDto): PageBuilderDto {
   if (!pageInfo) {
     return new PageBuilderDto();
   }
-  for (let page of pageInfo.pages) {
-    const list = [...page.headerItems, ...page.bodyItems, ...page.footerItems];
+  let tree = (list: PageItem[]) => {
     for (let item of list) {
       if (item.el) {
         item.style = encodeURIComponent(item.el.style.cssText);
@@ -16,25 +16,32 @@ export function preparePageDataForSave(pageInfo: PageBuilderDto): PageBuilderDto
       delete item.options?.directives;
       if (item.component) {
         item.html = '';
-        continue;
+      } else {
+        //cleanup
+        if (item.el) {
+          let html = item.el.outerHTML;
+          html = html.replace(/\s*data-id="[^"]*"/g, '');
+          html = html.replace(/\s*contenteditable="[^"]*"/g, '');
+
+          html = removeClassesFromHtml(html, ['ngx-corner-resize', 'block-item', 'ngx-draggable']);
+
+          // remove style from first tag only
+          if (item.tag)
+            html = html.replace(new RegExp(item.tag.toLowerCase() + '.*style="[^"]*"'), item.tag);
+
+          item.html = encodeURIComponent(html);
+        }
       }
-
-      //cleanup
-      if (item.el) {
-        let html = item.el.outerHTML;
-        html = html.replace(/\s*data-id="[^"]*"/g, '');
-        html = html.replace(/\s*contenteditable="[^"]*"/g, '');
-
-        html = removeClassesFromHtml(html, ['ngx-corner-resize', 'block-item', 'ngx-draggable']);
-
-        // remove style from first tag only
-        if (item.tag)
-          html = html.replace(new RegExp(item.tag.toLowerCase() + '.*style="[^"]*"'), item.tag);
-
-        item.html = encodeURIComponent(html);
+      if (item.children && item.children.length > 0) {
+        tree(item.children);
       }
     }
+  };
+  for (let page of pageInfo.pages) {
+    const list = [...page.headerItems, ...page.bodyItems, ...page.footerItems];
+    tree(list);
   }
+
   pageInfo.pages.map((m, index) => (m.order = index));
 
   const sanitized = sanitizeForStorage(pageInfo);
