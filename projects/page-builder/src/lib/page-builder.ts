@@ -2,10 +2,12 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  DOCUMENT,
   ElementRef,
   Inject,
   Injector,
   Input,
+  OnDestroy,
   OnInit,
   viewChild,
   ViewEncapsulation,
@@ -21,6 +23,7 @@ import { STORAGE_SERVICE } from '../services/storage/token.storage';
 import { PAGE_BUILDER_CONFIGURATION, PageBuilderConfiguration } from '../ngx-page-builder.provider';
 import { PageBuilderDto } from '../public-api';
 import { DynamicDataStructure } from '../models/DynamicData';
+import { fromEvent, Subscription } from 'rxjs';
 
 @Component({
   selector: 'ngx-page-builder',
@@ -37,7 +40,7 @@ import { DynamicDataStructure } from '../models/DynamicData';
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
+export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, OnDestroy {
   @Input('dynamicData') set setDynamicData(val: DynamicDataStructure) {
     this.dynamicDataService.dynamicData = val;
   }
@@ -45,10 +48,13 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
   private _pageHeader = viewChild<ElementRef<HTMLElement>>('PageHeader');
   private _pageFooter = viewChild<ElementRef<HTMLElement>>('PageFooter');
 
+  subscriptions: Subscription[] = [];
+
   constructor(
     injector: Injector,
     @Inject(PAGE_BUILDER_CONFIGURATION) private mainConfig: PageBuilderConfiguration,
-    @Inject(STORAGE_SERVICE) private storageService: IStorageService
+    @Inject(STORAGE_SERVICE) private storageService: IStorageService,
+    @Inject(DOCUMENT) private doc: Document
   ) {
     super(injector);
     this.pageBuilderService.mode = 'Edit';
@@ -62,6 +68,13 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadPageData();
+    this.subscriptions = [
+      fromEvent<KeyboardEvent>(this.doc, 'keydown').subscribe((ev) => this.deleteCurrentBlock(ev)),
+    ];
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
   }
 
   preventDefault() {}
@@ -80,6 +93,15 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit {
       this.pageBuilderService.addPage();
       console.error('Error loading page data:', error);
       alert('Error loading page data: ' + error);
+    }
+  }
+
+  deleteCurrentBlock(ev: KeyboardEvent) {
+    if (ev.key === 'Delete') {
+      const currentBlock = this.pageBuilderService.activeEl();
+      if (currentBlock) {
+        this.pageBuilderService.removeBlock(currentBlock);
+      }
     }
   }
 }

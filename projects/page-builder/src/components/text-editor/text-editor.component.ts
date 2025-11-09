@@ -7,6 +7,7 @@ import {
   EventEmitter,
   Inject,
   Input,
+  OnDestroy,
   Output,
   ViewChild,
 } from '@angular/core';
@@ -16,8 +17,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer } from '@angular/platform-browser';
 import { DynamicAutocompleteDirective } from '../../directives/ngx-dynamic-data-autocomplete.directive';
-import { DynamicDataStructure } from '../../models/DynamicData';
 import { DynamicDataService } from '../../services/dynamic-data.service';
+import { fromEvent, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-text-editor',
@@ -25,7 +26,7 @@ import { DynamicDataService } from '../../services/dynamic-data.service';
   styleUrls: ['./text-editor.component.scss'],
   imports: [CommonModule, FormsModule, MatDialogClose, DynamicAutocompleteDirective],
 })
-export class TextEditorComponent implements AfterViewInit {
+export class TextEditorComponent implements AfterViewInit, OnDestroy {
   @ViewChild('editable', { static: true }) editableRef!: ElementRef<HTMLElement>;
 
   @Input() set value(v: string | null) {
@@ -62,6 +63,7 @@ export class TextEditorComponent implements AfterViewInit {
   // ✅ نمایش تعداد کاراکترهای انتخاب شده
   selectedCharCount = 0;
 
+  subscriptions: Subscription[] = [];
   constructor(
     private sanitizer: DomSanitizer,
     @Inject(MAT_DIALOG_DATA) public data: PageItem,
@@ -76,15 +78,21 @@ export class TextEditorComponent implements AfterViewInit {
   ngAfterViewInit() {
     this.editableRef.nativeElement.innerHTML = this._value || '';
 
-    // ✅ Listen به تغییرات selection
-    this.doc.addEventListener('mouseup', () => this.saveSelection('mouseup'));
-    this.doc.addEventListener('keyup', () => this.saveSelection('keyup'));
-    this.editableRef.nativeElement.addEventListener('selectstart', () =>
-      this.saveSelection('selectstart')
-    );
-    this.editableRef.nativeElement.addEventListener('selectend', () =>
-      this.saveSelection('selectend')
-    );
+    this.subscriptions = [
+      fromEvent(this.editableRef.nativeElement, 'selectstart').subscribe(() =>
+        this.saveSelection('selectstart')
+      ),
+      fromEvent(this.editableRef.nativeElement, 'selectend').subscribe(() =>
+        this.saveSelection('selectend')
+      ),
+      // ✅ Listen به تغییرات selection
+      fromEvent(this.doc, 'mouseup').subscribe(() => this.saveSelection('mouseup')),
+      fromEvent(this.doc, 'keyup').subscribe(() => this.saveSelection('keyup')),
+    ];
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
   // ✅ ذخیره کردن selection فعلی
