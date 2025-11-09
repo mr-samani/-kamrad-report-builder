@@ -82,16 +82,16 @@ export class NgxPagePreviewComponent implements OnInit, AfterViewInit {
     });
   }
 
-  initializePreview(data: PageBuilderDto) {
+  async initializePreview(data: PageBuilderDto) {
     this.cleanCanvas();
 
     this.data = data;
     this.loadPageData();
     this.setPrintStyle();
 
-    setTimeout(async () => {
-      await waitForFontsToLoad(PREVIEW_CONSTS.TIMEOUT_LOAD_FONTS);
-      await waitForRenderComplete();
+    await waitForFontsToLoad(PREVIEW_CONSTS.TIMEOUT_LOAD_FONTS);
+    await waitForRenderComplete();
+    setTimeout(() => {
       window.opener?.postMessage({ type: PREVIEW_CONSTS.MESSAGE_TYPES.LOAD_ENDED }, '*');
     }, PREVIEW_CONSTS.TIMEOUT_READY);
   }

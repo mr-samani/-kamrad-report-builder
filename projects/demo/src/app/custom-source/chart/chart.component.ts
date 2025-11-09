@@ -42,13 +42,23 @@ export class SignalHighcartComponent {
   }
   initializeChart() {
     this.chartOptions = {
-      chart: {},
+      chart: {
+        animation: false,
+      },
+      credits: {
+        enabled: false,
+      },
       series: [
         {
           type: 'line',
           data: this.data(),
         },
       ],
+      plotOptions: {
+        line: {
+          animation: false,
+        },
+      },
     };
     this.chart?.update(this.chartOptions);
     this.chart?.reflow();
