@@ -54,7 +54,7 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
     injector: Injector,
     @Inject(PAGE_BUILDER_CONFIGURATION) private mainConfig: PageBuilderConfiguration,
     @Inject(STORAGE_SERVICE) private storageService: IStorageService,
-    @Inject(DOCUMENT) private doc: Document
+    @Inject(DOCUMENT) private doc: Document,
   ) {
     super(injector);
     this.pageBuilderService.mode = 'Edit';
@@ -81,7 +81,7 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
   async loadPageData() {
     try {
       this.pageBuilderService.pageInfo = PageBuilderDto.fromJSON(
-        await this.storageService.loadData()
+        await this.storageService.loadData(),
       );
       if (this.pageBuilderService.pageInfo.pages.length == 0) {
         this.pageBuilderService.addPage();

@@ -45,7 +45,7 @@ export class PageBuilderService implements OnDestroy {
   private renderer!: Renderer2;
   constructor(
     rendererFactory: RendererFactory2,
-    private dynamicElementService: DynamicElementService
+    private dynamicElementService: DynamicElementService,
   ) {
     this.renderer = rendererFactory.createRenderer(null, null);
   }
@@ -93,7 +93,7 @@ export class PageBuilderService implements OnDestroy {
       let html = this.dynamicElementService.createElement(
         event.container.el,
         event.currentIndex,
-        source
+        source,
       );
       event.container.data.splice(event.currentIndex, 0, source);
       this.onSelectBlock(source);
@@ -106,7 +106,7 @@ export class PageBuilderService implements OnDestroy {
           event.previousContainer.data,
           event.container.data,
           event.previousIndex,
-          event.currentIndex
+          event.currentIndex,
         );
       }
 

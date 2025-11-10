@@ -70,7 +70,7 @@ export class TextEditorComponent implements AfterViewInit, OnDestroy {
     private dialogRef: MatDialogRef<TextEditorComponent>,
     @Inject(DOCUMENT) private doc: Document,
     private chdRef: ChangeDetectorRef,
-    public dynamicDataService: DynamicDataService
+    public dynamicDataService: DynamicDataService,
   ) {
     this._value = data.content || '';
   }
@@ -80,10 +80,10 @@ export class TextEditorComponent implements AfterViewInit, OnDestroy {
 
     this.subscriptions = [
       fromEvent(this.editableRef.nativeElement, 'selectstart').subscribe(() =>
-        this.saveSelection('selectstart')
+        this.saveSelection('selectstart'),
       ),
       fromEvent(this.editableRef.nativeElement, 'selectend').subscribe(() =>
-        this.saveSelection('selectend')
+        this.saveSelection('selectend'),
       ),
       // ✅ Listen به تغییرات selection
       fromEvent(this.doc, 'mouseup').subscribe(() => this.saveSelection('mouseup')),
@@ -145,8 +145,8 @@ export class TextEditorComponent implements AfterViewInit, OnDestroy {
       direction === 'left'
         ? 'justifyleft'
         : direction === 'center'
-        ? 'justifycenter'
-        : 'justifyright';
+          ? 'justifycenter'
+          : 'justifyright';
     this.execCommand(cmd);
 
     this.saveSelection(); // ✅ ذخیره selection جدید
@@ -216,7 +216,7 @@ export class TextEditorComponent implements AfterViewInit, OnDestroy {
     const walker = document.createTreeWalker(
       fragment,
       NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT,
-      null
+      null,
     );
 
     const nodesToWrap: Node[] = [];

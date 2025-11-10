@@ -22,7 +22,7 @@ export function validateSpacing(spacing: IPosValue, allowNegative: boolean): IPo
 // Parse spacing values from CSS string (e.g., "10px 20px 30px 40px")
 export function parseSpacingValues(
   cssValue: string | undefined,
-  defaultValue: IPosValue
+  defaultValue: IPosValue,
 ): IPosValue {
   if (!cssValue) return { ...defaultValue };
 

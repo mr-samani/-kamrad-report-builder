@@ -15,7 +15,7 @@ export class PreviewService {
     private pageBuilderService: PageBuilderService,
     private dynamicDataService: DynamicDataService,
     @Inject(PLATFORM_ID) private platformId: Object,
-    private router: Router
+    private router: Router,
   ) {}
 
   async openPreview(print = false) {
@@ -31,7 +31,7 @@ export class PreviewService {
     this.previewWindow = window.open(
       previewUrl,
       '_blank',
-      print ? '' : 'width=900,height=700,resizable=yes,scrollbars=yes'
+      print ? '' : 'width=900,height=700,resizable=yes,scrollbars=yes',
     );
     if (!this.previewWindow) {
       alert('Popup blocked! Please allow popups for this site.');
@@ -55,7 +55,7 @@ export class PreviewService {
           timestamp: Date.now(),
           print: this.mustBePrint,
         },
-      })
+      }),
     );
     console.log('Preview URL:', url);
     return url;
@@ -74,7 +74,7 @@ export class PreviewService {
               dynamicData: this.dynamicDataService.dynamicData,
             },
           },
-          '*'
+          '*',
         );
       } else if (event.data?.type === PREVIEW_CONSTS.MESSAGE_TYPES.LOAD_ENDED) {
         console.log('Preview load ended');

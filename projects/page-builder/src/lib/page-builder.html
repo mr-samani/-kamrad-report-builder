@@ -9,13 +9,13 @@
   >
     <div class="sticky-top">
       @for (item of pageBuilderService.sources; track $index) {
-      <div
-        class="tool"
-        ngxDraggable
-        [innerHTML]="item.icon | safeHtml"
-        [title]="item.title"
-        (click)="preventDefault()"
-      ></div>
+        <div
+          class="tool"
+          ngxDraggable
+          [innerHTML]="item.icon | safeHtml"
+          [title]="item.title"
+          (click)="preventDefault()"
+        ></div>
       }
     </div>
   </div>

@@ -11,9 +11,8 @@ describe('PageBreakComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ PageBreakComponent ]
-    })
-    .compileComponents();
+      declarations: [PageBreakComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

@@ -35,7 +35,10 @@ export class DynamicAutocompleteDirective implements OnDestroy {
     }
   };
 
-  constructor(private el: ElementRef<HTMLElement>, private renderer: Renderer2) {
+  constructor(
+    private el: ElementRef<HTMLElement>,
+    private renderer: Renderer2,
+  ) {
     document.addEventListener('click', this.onDocClick, true);
   }
 
@@ -325,7 +328,7 @@ export class DynamicAutocompleteDirective implements OnDestroy {
           suggestions.push(...itemKeys);
         } else {
           suggestions.push(
-            ...itemKeys.filter((k) => k.toLowerCase().startsWith(currentToken.toLowerCase()))
+            ...itemKeys.filter((k) => k.toLowerCase().startsWith(currentToken.toLowerCase())),
           );
         }
       }

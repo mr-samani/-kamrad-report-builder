@@ -22,7 +22,7 @@ export class PageBuilderConfiguration {
 }
 
 export const PAGE_BUILDER_CONFIGURATION = new InjectionToken<PageBuilderConfiguration>(
-  'PAGE_BUILDER_CONFIGURATION'
+  'PAGE_BUILDER_CONFIGURATION',
 );
 
 export function providePageBuilder(config: PageBuilderConfiguration) {
@@ -79,7 +79,7 @@ export const provideDynamicRoute = () =>
           path: 'ngx-page-preview',
           loadComponent: () =>
             import('./lib/page-preview/page-preview.component').then(
-              (m) => m.NgxPagePreviewComponent
+              (m) => m.NgxPagePreviewComponent,
             ),
         },
       ]);

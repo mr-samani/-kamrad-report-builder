@@ -48,7 +48,7 @@ export class TextCssControlComponent implements OnInit, AfterViewInit, ControlVa
   constructor(
     private renderer: Renderer2,
     @Inject(NGX_PAGE_BUILDER_FILE_PICKER) private filePicker: IPageBuilderFilePicker | null,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {}

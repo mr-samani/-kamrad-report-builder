@@ -3,8 +3,8 @@
   <p>Drag and drop to reorder pages</p>
 
   <div class="list-container" ngxDropList (drop)="onDrop($event)">
-    @for(page of pageList; track $index) {
-    <div class="list-item" ngxDraggable>#Page {{ page.order + 1 }}</div>
+    @for (page of pageList; track $index) {
+      <div class="list-item" ngxDraggable>#Page {{ page.order + 1 }}</div>
     }
   </div>
 </mat-dialog-content>

@@ -11,9 +11,8 @@ describe('SpacingControlComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ SpacingControlComponent ]
-    })
-    .compileComponents();
+      declarations: [SpacingControlComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

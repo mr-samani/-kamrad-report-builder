@@ -1,47 +1,47 @@
-@if(sizes){
-<table class="properties-table">
-  <tbody>
-    <tr>
-      <th colspan="2" align="start">Width: {{ style?.width }}</th>
-    </tr>
-    @for (property of widthProperties; track $index) {
-    <ng-container>
-      <ng-container
-        *ngTemplateOutlet="
-          sizeControl;
-          context: {
-            sizeValue: sizes[property],
-            property: property,
-            label: getLabel(property)
-          }
-        "
-      ></ng-container>
-    </ng-container>
-    }
-  </tbody>
-</table>
+@if (sizes) {
+  <table class="properties-table">
+    <tbody>
+      <tr>
+        <th colspan="2" align="start">Width: {{ style?.width }}</th>
+      </tr>
+      @for (property of widthProperties; track $index) {
+        <ng-container>
+          <ng-container
+            *ngTemplateOutlet="
+              sizeControl;
+              context: {
+                sizeValue: sizes[property],
+                property: property,
+                label: getLabel(property),
+              }
+            "
+          ></ng-container>
+        </ng-container>
+      }
+    </tbody>
+  </table>
 
-<table class="properties-table">
-  <tbody>
-    <tr>
-      <th colspan="2" align="start">Height: {{ style?.height }}</th>
-    </tr>
-    @for (property of heightProperties; track $index) {
-    <ng-container>
-      <ng-container
-        *ngTemplateOutlet="
-          sizeControl;
-          context: {
-            sizeValue: sizes[property],
-            property: property,
-            label: getLabel(property)
-          }
-        "
-      ></ng-container>
-    </ng-container>
-    }
-  </tbody>
-</table>
+  <table class="properties-table">
+    <tbody>
+      <tr>
+        <th colspan="2" align="start">Height: {{ style?.height }}</th>
+      </tr>
+      @for (property of heightProperties; track $index) {
+        <ng-container>
+          <ng-container
+            *ngTemplateOutlet="
+              sizeControl;
+              context: {
+                sizeValue: sizes[property],
+                property: property,
+                label: getLabel(property),
+              }
+            "
+          ></ng-container>
+        </ng-container>
+      }
+    </tbody>
+  </table>
 }
 
 <ng-template #sizeControl let-sizeValue="sizeValue" let-property="property" let-label="label">

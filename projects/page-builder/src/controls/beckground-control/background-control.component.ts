@@ -71,7 +71,7 @@ export class BackgroundControlComponent implements OnInit, ControlValueAccessor 
   constructor(
     private renderer: Renderer2,
     @Inject(NGX_PAGE_BUILDER_FILE_PICKER) private filePicker: IPageBuilderFilePicker | null,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {}

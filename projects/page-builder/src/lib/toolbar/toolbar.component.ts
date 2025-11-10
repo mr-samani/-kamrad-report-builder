@@ -31,7 +31,7 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
   constructor(
     injector: Injector,
     @Inject(STORAGE_SERVICE) private storageService: IStorageService,
-    private matDialog: MatDialog
+    private matDialog: MatDialog,
   ) {
     super(injector);
     effect(() => {
@@ -92,7 +92,7 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
   async onOpen() {
     try {
       this.pageBuilderService.pageInfo = PageBuilderDto.fromJSON(
-        await this.storageService.loadData()
+        await this.storageService.loadData(),
       );
       if (this.pageBuilderService.pageInfo.pages.length == 0) {
         this.pageBuilderService.addPage();

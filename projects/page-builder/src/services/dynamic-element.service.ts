@@ -27,7 +27,7 @@ export class DynamicElementService {
   constructor(
     rendererFactory: RendererFactory2,
     private appRef: ApplicationRef,
-    private envInjector: EnvironmentInjector
+    private envInjector: EnvironmentInjector,
   ) {
     this.renderer = rendererFactory.createRenderer(null, null);
   }
@@ -39,7 +39,7 @@ export class DynamicElementService {
   createElement(
     container: HTMLElement | ViewContainerRef,
     index: number,
-    item: PageItem
+    item: PageItem,
   ): HTMLElement {
     let element: HTMLElement;
     if (item.component) {
@@ -110,7 +110,7 @@ export class DynamicElementService {
   private createComponentElement(
     container: HTMLElement | ViewContainerRef,
     item: PageItem,
-    index: number | null
+    index: number | null,
   ): HTMLElement {
     const component = item.component;
     if (!component) throw new Error('SourceItem.component not defined');

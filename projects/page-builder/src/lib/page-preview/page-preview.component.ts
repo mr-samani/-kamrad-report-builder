@@ -44,7 +44,7 @@ export class NgxPagePreviewComponent implements OnInit, AfterViewInit {
     private renderer: Renderer2,
     @Inject(DOCUMENT) private doc: Document,
     private route: ActivatedRoute,
-    private chdRef: ChangeDetectorRef
+    private chdRef: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {

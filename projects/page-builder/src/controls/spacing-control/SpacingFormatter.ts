@@ -34,7 +34,11 @@ export abstract class SpacingFormatter {
     const formattedLeft = this.formatValue(left);
 
     // بررسی تساوی مقادیر برای shorthand
-    if (formattedTop === formattedRight && formattedRight === formattedBottom && formattedBottom === formattedLeft) {
+    if (
+      formattedTop === formattedRight &&
+      formattedRight === formattedBottom &&
+      formattedBottom === formattedLeft
+    ) {
       // همه مقادیر برابرن (مثل margin: 10px)
       return formattedTop;
     } else if (formattedTop === formattedBottom && formattedRight === formattedLeft) {

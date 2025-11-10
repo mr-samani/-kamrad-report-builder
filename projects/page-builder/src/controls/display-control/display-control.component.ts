@@ -144,7 +144,10 @@ export class DisplayControlComponent implements OnInit, ControlValueAccessor {
   onChange = (_: PageItem | undefined) => {};
   onTouched = () => {};
 
-  constructor(private renderer: Renderer2, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private renderer: Renderer2,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit() {}
 

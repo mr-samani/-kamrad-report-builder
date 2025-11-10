@@ -43,7 +43,10 @@ import { SizeControlComponent } from '../../controls/size-control/size-control.c
 export class BlockPropertiesComponent extends BaseComponent implements OnInit {
   item?: PageItem;
 
-  constructor(injector: Injector, private matDialog: MatDialog) {
+  constructor(
+    injector: Injector,
+    private matDialog: MatDialog,
+  ) {
     super(injector);
     effect(() => {
       this.item = this.pageBuilderService.activeEl();

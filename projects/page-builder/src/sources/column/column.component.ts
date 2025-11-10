@@ -26,7 +26,7 @@ export class ColumnComponent implements OnInit {
   @ViewChild('colContainer', { static: true }) colContainer!: ElementRef<HTMLDivElement>;
   constructor(
     private dynamicElementService: DynamicElementService,
-    public pageBuilderService: PageBuilderService
+    public pageBuilderService: PageBuilderService,
   ) {}
 
   ngOnInit() {

@@ -1,49 +1,49 @@
-@if(spacing){
-<table class="properties-table">
-  <tbody>
-    <tr>
-      <th colspan="2" align="start">Margin: {{ style?.margin }}</th>
-    </tr>
-    @for (direction of ['top', 'right', 'bottom', 'left']; track $index) {
-    <ng-container>
-      <ng-container
-        *ngTemplateOutlet="
-          spacingControl;
-          context: {
-            spacing: spacing.margin,
-            unit: spacing.margin.unit,
-            key: 'margin',
-            direction: direction
-          }
-        "
-      ></ng-container>
-    </ng-container>
-    }
-  </tbody>
-</table>
+@if (spacing) {
+  <table class="properties-table">
+    <tbody>
+      <tr>
+        <th colspan="2" align="start">Margin: {{ style?.margin }}</th>
+      </tr>
+      @for (direction of ['top', 'right', 'bottom', 'left']; track $index) {
+        <ng-container>
+          <ng-container
+            *ngTemplateOutlet="
+              spacingControl;
+              context: {
+                spacing: spacing.margin,
+                unit: spacing.margin.unit,
+                key: 'margin',
+                direction: direction,
+              }
+            "
+          ></ng-container>
+        </ng-container>
+      }
+    </tbody>
+  </table>
 
-<table class="properties-table">
-  <tbody>
-    <tr>
-      <th colspan="2" align="start">Padding: {{ style?.padding }}</th>
-    </tr>
-    @for (direction of ['top', 'right', 'bottom', 'left']; track $index) {
-    <ng-container>
-      <ng-container
-        *ngTemplateOutlet="
-          spacingControl;
-          context: {
-            spacing: spacing.padding,
-            unit: spacing.padding.unit,
-            key: 'padding',
-            direction: direction
-          }
-        "
-      ></ng-container>
-    </ng-container>
-    }
-  </tbody>
-</table>
+  <table class="properties-table">
+    <tbody>
+      <tr>
+        <th colspan="2" align="start">Padding: {{ style?.padding }}</th>
+      </tr>
+      @for (direction of ['top', 'right', 'bottom', 'left']; track $index) {
+        <ng-container>
+          <ng-container
+            *ngTemplateOutlet="
+              spacingControl;
+              context: {
+                spacing: spacing.padding,
+                unit: spacing.padding.unit,
+                key: 'padding',
+                direction: direction,
+              }
+            "
+          ></ng-container>
+        </ng-container>
+      }
+    </tbody>
+  </table>
 }
 <ng-template
   #spacingControl

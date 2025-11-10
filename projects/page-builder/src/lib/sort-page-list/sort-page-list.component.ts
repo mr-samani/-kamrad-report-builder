@@ -18,7 +18,7 @@ export class SortPageListComponent implements OnInit {
   constructor(
     @Inject(MAT_DIALOG_DATA) _data: any,
     private dialogRef: MatDialogRef<SortPageListComponent>,
-    private pageBuilderService: PageBuilderService
+    private pageBuilderService: PageBuilderService,
   ) {
     this.pageList = [...(pageBuilderService.pageInfo.pages ?? [])];
     this.pageList.map((m, index) => (m.order = index));
