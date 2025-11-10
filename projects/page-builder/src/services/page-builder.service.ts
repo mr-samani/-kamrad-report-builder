@@ -123,7 +123,8 @@ export class PageBuilderService implements OnDestroy {
         // this.renderer.removeChild(containerEl, nativeEl);
       }
     }
-
+    // update register item
+    (event.item as any).ngAfterViewInit?.();
     // this.pageBuilderService.items = items;
     // this.chdRef.detectChanges();
   }

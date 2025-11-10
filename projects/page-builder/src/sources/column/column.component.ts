@@ -73,9 +73,6 @@ export class ColumnComponent implements OnInit {
             drop: this.onDrop.bind(this),
           },
         },
-        {
-          directive: CellDirective,
-        },
       ],
       attributes: {
         class: 'col-item',

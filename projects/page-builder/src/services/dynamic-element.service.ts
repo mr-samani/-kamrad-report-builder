@@ -11,6 +11,7 @@ import {
   runInInjectionContext,
   createComponent,
   EventEmitter,
+  reflectComponentType,
 } from '@angular/core';
 import 'reflect-metadata';
 import { PageItem } from '../models/PageItem';
@@ -274,6 +275,8 @@ export class DynamicElementService {
       }
     }
 
+    const selectorName = (DirType as any).ɵdir?.selectors?.[0]?.find((x: any) => x !== '');
+    elRef.nativeElement.setAttribute(selectorName, '');
     // فراخوانی lifecycle hooks
     if (typeof dirInstance.ngOnInit === 'function') {
       try {
