@@ -189,13 +189,13 @@ export class DynamicElementService {
     if (element.tagName == 'IMG' && !element.hasAttribute('src')) {
       element.setAttribute('src', DEFAULT_IMAGE_URL);
     }
-    if (
-      element.tagName == 'INPUT' ||
-      element.tagName == 'TEXTAREA' ||
-      element.tagName == 'SELECT'
-    ) {
-      element.setAttribute('readonly', 'true');
-    }
+    // if (
+    //   element.tagName == 'INPUT' ||
+    //   element.tagName == 'TEXTAREA' ||
+    //   element.tagName == 'SELECT'
+    // ) {
+    //   element.setAttribute('readonly', 'true');
+    // }
 
     element.dataset['id'] = item.id;
 

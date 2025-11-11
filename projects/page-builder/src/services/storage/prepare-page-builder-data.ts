@@ -23,7 +23,11 @@ export function preparePageDataForSave(pageInfo: PageBuilderDto): PageBuilderDto
           html = html.replace(/\s*data-id="[^"]*"/g, '');
           html = html.replace(/\s*contenteditable="[^"]*"/g, '');
 
-          html = removeClassesFromHtml(html, ['ngx-corner-resize', 'block-item', 'ngx-draggable']);
+          html = removeClassesFromHtml(
+            html,
+            ['ngx-corner-resize', 'block-item', 'ngx-draggable', 'ngx-drop-list'],
+            ['ngxDropList', 'ngxDraggable'],
+          );
 
           // remove style from first tag only
           if (item.tag)
@@ -48,9 +52,12 @@ export function preparePageDataForSave(pageInfo: PageBuilderDto): PageBuilderDto
   return sanitized;
 }
 
-export function removeClassesFromHtml(html: string, classesToRemove: string[]): string {
-  if (!html || !classesToRemove?.length) return html;
-
+export function removeClassesFromHtml(
+  html: string,
+  classesToRemove: string[],
+  attributesToRemove: string[],
+): string {
+  if (!html) return html;
   const doc = new DOMParser().parseFromString(html, 'text/html');
   const allElements = doc.body.querySelectorAll('*');
 
@@ -59,6 +66,9 @@ export function removeClassesFromHtml(html: string, classesToRemove: string[]): 
       if (el.classList.contains(cls)) el.classList.remove(cls);
     });
     if (el.classList.length === 0) el.removeAttribute('class');
+    attributesToRemove.forEach((attr) => {
+      if (el.hasAttribute(attr)) el.removeAttribute(attr);
+    });
   }
 
   return doc.body.innerHTML.trim();

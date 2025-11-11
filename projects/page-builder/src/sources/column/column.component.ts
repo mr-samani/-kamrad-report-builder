@@ -1,17 +1,8 @@
-import {
-  Component,
-  ContentChild,
-  ElementRef,
-  Input,
-  OnInit,
-  ViewChild,
-  ViewEncapsulation,
-} from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { NgxDragDropKitModule, NgxDropListDirective } from 'ngx-drag-drop-kit';
 import { PageItem } from '../../models/PageItem';
 import { DynamicElementService } from '../../services/dynamic-element.service';
 import { PageBuilderService } from '../../services/page-builder.service';
-import { CellDirective } from './cell.directive';
 
 @Component({
   selector: 'page-column',
@@ -63,7 +54,12 @@ export class ColumnComponent implements OnInit {
   private createElementCell(item: PageItem, container: HTMLElement, index: number = -1) {
     item.options = {
       ...item.options,
-      directives: [
+      attributes: {
+        class: 'col-item',
+      },
+    };
+    if (this.pageBuilderService.mode == 'Edit') {
+      item.options.directives = [
         {
           directive: NgxDropListDirective,
           inputs: {
@@ -73,14 +69,11 @@ export class ColumnComponent implements OnInit {
             drop: this.onDrop.bind(this),
           },
         },
-      ],
-      attributes: {
-        class: 'col-item',
-      },
-      events: {
+      ];
+      item.options.events = {
         click: (ev: Event) => this.pageBuilderService.onSelectBlock(item, ev),
-      },
-    };
+      };
+    }
     let el = this.dynamicElementService.createElement(container, index, item);
     item.el = el;
     item.html = el.outerHTML;

@@ -109,7 +109,6 @@ export class PageBuilderService implements OnDestroy {
           event.currentIndex,
         );
       }
-      debugger;
       (event.item as any).dragRegister?.removeDragItem?.(event.item);
 
       const containerEl = event.container.el;
@@ -206,16 +205,18 @@ export class PageBuilderService implements OnDestroy {
     this.changePage(this.currentPageIndex() + 1);
   }
   createElement(item: PageItem, container: HTMLElement) {
-    item.options = {
-      ...item.options,
-      directives: getDefaultBlockDirective(item),
-      attributes: {
-        class: DefaultBlockClassName,
-      },
-      events: {
-        click: (ev: Event) => this.onSelectBlock(item, ev),
-      },
-    };
+    if (this.mode == 'Edit') {
+      item.options = {
+        ...item.options,
+        directives: getDefaultBlockDirective(item),
+        attributes: {
+          class: DefaultBlockClassName,
+        },
+        events: {
+          click: (ev: Event) => this.onSelectBlock(item, ev),
+        },
+      };
+    }
     return this.dynamicElementService.createElementFromHTML(item, container);
   }
 
