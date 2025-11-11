@@ -1,7 +1,21 @@
 {
-  "printWidth": 120,
+  "tabWidth": 2,
+  "useTabs": false,
   "singleQuote": true,
-  "htmlWhitespaceSensitivity": "ignore",
+  "semi": true,
+  "bracketSpacing": true,
+  "arrowParens": "avoid",
+  "trailingComma": "es5",
   "bracketSameLine": true,
-  "semi": true
+  "printWidth": 120,
+
+  "htmlWhitespaceSensitivity": "ignore",
+  "overrides": [
+    {
+      "files": ["*.html"],
+      "options": {
+        "parser": "angular"
+      }
+    }
+  ]
 }

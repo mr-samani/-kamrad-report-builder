@@ -75,6 +75,12 @@ export class SourceItem {
   readonly componentKey?: string;
 
   options?: ISourceOptions;
+
+  /**
+   * Disable movement of the source item
+   * @example pagebreak cannot move to child items
+   */
+  disableMovement?: boolean = false;
   constructor(data?: SourceItem) {
     if (data) {
       for (var property in data) {

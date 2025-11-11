@@ -90,5 +90,6 @@ export const SOURCE_ITEMS: SourceItem[] = [
     component: await import('./page-break/page-break.component').then((c) => c.PageBreakComponent),
     title: 'Page Break',
     tag: 'page-break',
+    disableMovement: true,
   }),
 ];

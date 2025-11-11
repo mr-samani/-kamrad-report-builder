@@ -38,9 +38,7 @@
         [data]="pageBuilderService.currentPage.headerItems"
         [class.is-empty]="pageBuilderService.currentPage.headerItems.length == 0"
         (drop)="pageBuilderService.onDrop($event)"
-      >
-        <div class="placeholder" *ngxPlaceholder></div>
-      </div>
+      ></div>
 
       <div
         class="page-body"
@@ -49,9 +47,7 @@
         ngxDropList
         [data]="pageBuilderService.currentPage.bodyItems"
         (drop)="pageBuilderService.onDrop($event)"
-      >
-        <div class="placeholder" *ngxPlaceholder></div>
-      </div>
+      ></div>
       <div
         class="page-footer"
         #PageFooter
@@ -60,9 +56,7 @@
         [class.is-empty]="pageBuilderService.currentPage.footerItems.length == 0"
         [data]="pageBuilderService.currentPage.footerItems"
         (drop)="pageBuilderService.onDrop($event)"
-      >
-        <div class="placeholder" *ngxPlaceholder></div>
-      </div>
+      ></div>
     </div>
     <block-selector #blockSelector />
   </div>

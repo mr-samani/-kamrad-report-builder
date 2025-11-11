@@ -14,7 +14,7 @@ import { DynamicElementService } from './dynamic-element.service';
 import { Page } from '../models/Page';
 import { PageBuilderDto } from '../models/PageBuilderDto';
 import { Subject } from 'rxjs';
-import { DefaultBlockDirectives, DefaultBlockClassName, LibConsts } from '../consts/defauls';
+import { DefaultBlockClassName, getDefaultBlockDirective, LibConsts } from '../consts/defauls';
 import { IDropEvent, moveItemInArray, transferArrayItem } from 'ngx-drag-drop-kit';
 import { SourceItem } from '../models/SourceItem';
 
@@ -81,7 +81,7 @@ export class PageBuilderService implements OnDestroy {
       // انتقال از یک container به container دیگه
       const source = new PageItem(this.sources[event.previousIndex]);
       source.options = {
-        directives: DefaultBlockDirectives,
+        directives: getDefaultBlockDirective(source),
         attributes: {
           class: DefaultBlockClassName,
         },
@@ -109,6 +109,8 @@ export class PageBuilderService implements OnDestroy {
           event.currentIndex,
         );
       }
+      debugger;
+      (event.item as any).dragRegister?.removeDragItem?.(event.item);
 
       const containerEl = event.container.el;
       const children = Array.from(containerEl.children);
@@ -122,9 +124,9 @@ export class PageBuilderService implements OnDestroy {
         this.renderer.insertBefore(containerEl, nativeEl, refNode);
         // this.renderer.removeChild(containerEl, nativeEl);
       }
+      // update register item
+      (event.item as any).dragRegister?.registerDragItem?.(event.item);
     }
-    // update register item
-    (event.item as any).ngAfterViewInit?.();
     // this.pageBuilderService.items = items;
     // this.chdRef.detectChanges();
   }
@@ -206,7 +208,7 @@ export class PageBuilderService implements OnDestroy {
   createElement(item: PageItem, container: HTMLElement) {
     item.options = {
       ...item.options,
-      directives: DefaultBlockDirectives,
+      directives: getDefaultBlockDirective(item),
       attributes: {
         class: DefaultBlockClassName,
       },
@@ -260,7 +262,9 @@ export class PageBuilderService implements OnDestroy {
   }
   removeBlock(item: PageItem) {
     const list = this.findBlockList(item);
-    if (!item || !list || !list.length) return;
+    if (!item || !list || !list.length) {
+      throw new Error('Remove block failed: invalid item or list');
+    }
 
     const index = list.findIndex((i) => i.id === item.id);
     if (index !== -1 && item.el) {

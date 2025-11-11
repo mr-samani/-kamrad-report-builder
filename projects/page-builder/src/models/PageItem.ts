@@ -29,6 +29,11 @@ export class PageItem implements IPageItem {
   options?: ISourceOptions;
   style?: string;
 
+  /**
+   * Disable movement of the source item
+   * @example pagebreak cannot move to child items
+   */
+  disableMovement?: boolean = false;
   constructor(data?: IPageItem) {
     if (data) {
       for (var property in data) {
