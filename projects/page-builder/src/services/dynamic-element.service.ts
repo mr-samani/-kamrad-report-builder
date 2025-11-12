@@ -326,11 +326,9 @@ export class DynamicElementService {
   public destroy(item: PageItem) {
     if (!item.el) {
       return;
-    } else if (item.component) {
-      return this.destroyComponent(item.el);
-    } else {
-      return this.destroyDirective(item.el);
     }
+    this.destroyComponent(item.el);
+    this.destroyDirective(item.el);
   }
 
   // متد برای cleanup دستی اگر لازم شد

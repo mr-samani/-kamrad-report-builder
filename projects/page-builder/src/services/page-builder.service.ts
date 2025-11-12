@@ -109,7 +109,6 @@ export class PageBuilderService implements OnDestroy {
           event.currentIndex,
         );
       }
-      (event.item as any).dragRegister?.removeDragItem?.(event.item);
 
       const containerEl = event.container.el;
       const children = Array.from(containerEl.children);
@@ -266,11 +265,19 @@ export class PageBuilderService implements OnDestroy {
     if (!item || !list || !list.length) {
       throw new Error('Remove block failed: invalid item or list');
     }
-
+    const destroyInTree = (list: PageItem[]) => {
+      if (!list) {
+        return;
+      }
+      for (let c of list) {
+        destroyInTree(c.children);
+        this.dynamicElementService.destroy(c);
+      }
+    };
     const index = list.findIndex((i) => i.id === item.id);
     if (index !== -1 && item.el) {
       list.splice(index, 1);
-      this.dynamicElementService.destroy(item);
+      destroyInTree([item]);
       this.renderer.removeChild(this.renderer.parentNode(item.el), item.el);
     }
     this.activeEl.set(undefined);
