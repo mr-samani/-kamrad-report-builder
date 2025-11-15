@@ -7,6 +7,7 @@ export interface IPageItem {
   el?: HTMLElement;
   children?: PageItem[];
   tag?: string;
+  canHaveChild?: boolean;
   html?: string;
   /** content in html editor */
   content?: string;
@@ -21,6 +22,7 @@ export class PageItem implements IPageItem {
   el?: HTMLElement;
   children: PageItem[] = [];
   tag!: string;
+  canHaveChild?: boolean;
   html?: string;
   /** content in html editor */
   content?: string;

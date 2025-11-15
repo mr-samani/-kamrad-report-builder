@@ -1,4 +1,4 @@
-import { NgxDraggableDirective } from 'ngx-drag-drop-kit';
+import { NgxDraggableDirective, NgxDropListDirective } from 'ngx-drag-drop-kit';
 import { Directive, SourceItem } from '../models/SourceItem';
 import { PageItem } from '../models/PageItem';
 
@@ -20,9 +20,24 @@ export const LOCAL_STORAGE_SAVE_KEY = 'page';
 
 export const DEFAULT_IMAGE_URL = '/assets/default-image.png';
 
-export function getDefaultBlockDirective(pageItem: PageItem) {
+export function getDefaultBlockDirective(pageItem: PageItem, onDropFn: Function) {
+  let dir = [];
   if (pageItem.disableMovement) {
-    return DefaultBlockDirectives.filter((d) => d.directive !== NgxDraggableDirective);
+    dir = DefaultBlockDirectives.filter((d) => d.directive !== NgxDraggableDirective);
+  } else {
+    dir = DefaultBlockDirectives;
   }
-  return DefaultBlockDirectives;
+
+  if (pageItem.canHaveChild) {
+    dir.push({
+      directive: NgxDropListDirective,
+      inputs: {
+        data: pageItem.children,
+      },
+      outputs: {
+        drop: onDropFn,
+      },
+    });
+  }
+  return dir;
 }

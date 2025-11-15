@@ -81,7 +81,7 @@ export class PageBuilderService implements OnDestroy {
       // انتقال از یک container به container دیگه
       const source = new PageItem(this.sources[event.previousIndex]);
       source.options = {
-        directives: getDefaultBlockDirective(source),
+        directives: getDefaultBlockDirective(source, this.onDrop.bind(this)),
         attributes: {
           class: DefaultBlockClassName,
         },
@@ -207,7 +207,7 @@ export class PageBuilderService implements OnDestroy {
     if (this.mode == 'Edit') {
       item.options = {
         ...item.options,
-        directives: getDefaultBlockDirective(item),
+        directives: getDefaultBlockDirective(item, this.onDrop.bind(this)),
         attributes: {
           class: DefaultBlockClassName,
         },
