@@ -5,6 +5,7 @@ page-column {
   .flex-row {
     display: flex;
     .col-item {
+      position: relative;
       flex: auto;
     }
   }

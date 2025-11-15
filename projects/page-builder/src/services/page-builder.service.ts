@@ -228,25 +228,9 @@ export class PageBuilderService implements OnDestroy {
     this.deSelectBlock();
     const page = this.pageInfo.pages[pageIndex];
     if (!page) return;
-
-    for (let item of page.bodyItems) {
-      if (item.el) {
-        this.dynamicElementService.destroy(item);
-        this.renderer.removeChild(this.renderer.parentNode(item.el), item.el);
-      }
-    }
-    for (let item of page.headerItems) {
-      if (item.el) {
-        this.dynamicElementService.destroy(item);
-        this.renderer.removeChild(this.renderer.parentNode(item.el), item.el);
-      }
-    }
-    for (let item of page.footerItems) {
-      if (item.el) {
-        this.dynamicElementService.destroy(item);
-        this.renderer.removeChild(this.renderer.parentNode(item.el), item.el);
-      }
-    }
+    this.destroyInTree(page.bodyItems, true);
+    this.destroyInTree(page.headerItems, true);
+    this.destroyInTree(page.footerItems, true);
     this.pageBody()!.nativeElement.innerHTML = '';
     this.pageHeader()!.nativeElement.innerHTML = '';
     this.pageFooter()!.nativeElement.innerHTML = '';
@@ -265,24 +249,26 @@ export class PageBuilderService implements OnDestroy {
     if (!item || !list || !list.length) {
       throw new Error('Remove block failed: invalid item or list');
     }
-    const destroyInTree = (list: PageItem[]) => {
-      if (!list) {
-        return;
-      }
-      for (let c of list) {
-        destroyInTree(c.children);
-        this.dynamicElementService.destroy(c);
-      }
-    };
     const index = list.findIndex((i) => i.id === item.id);
     if (index !== -1 && item.el) {
       list.splice(index, 1);
-      destroyInTree([item]);
+      this.destroyInTree([item]);
       this.renderer.removeChild(this.renderer.parentNode(item.el), item.el);
     }
     this.activeEl.set(undefined);
   }
-
+  private destroyInTree(list: PageItem[], removeEl = false) {
+    if (!list) {
+      return;
+    }
+    for (let c of list) {
+      this.destroyInTree(c.children, removeEl);
+      this.dynamicElementService.destroy(c);
+      if (removeEl) {
+        this.renderer.removeChild(this.renderer.parentNode(c.el), c.el);
+      }
+    }
+  }
   private findBlockList(block: PageItem): PageItem[] {
     const page = this.pageInfo.pages[this.currentPageIndex()];
     if (!page) return [];

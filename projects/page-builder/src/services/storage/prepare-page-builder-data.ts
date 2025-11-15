@@ -28,11 +28,6 @@ export function preparePageDataForSave(pageInfo: PageBuilderDto): PageBuilderDto
             ['ngx-corner-resize', 'block-item', 'ngx-draggable', 'ngx-drop-list'],
             ['ngxDropList', 'ngxDraggable'],
           );
-
-          // remove style from first tag only
-          if (item.tag)
-            html = html.replace(new RegExp(item.tag.toLowerCase() + '.*style="[^"]*"'), item.tag);
-
           item.html = encodeURIComponent(html);
         }
       }
