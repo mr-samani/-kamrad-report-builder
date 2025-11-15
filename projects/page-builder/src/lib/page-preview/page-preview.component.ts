@@ -31,7 +31,7 @@ export class NgxPagePreviewComponent implements OnInit, AfterViewInit {
     this.dynamicDataService.dynamicData = val;
   }
 
-  data = new PageBuilderDto();
+  data?: PageBuilderDto;
   @Input('data') set setData(val: PageBuilderDto) {
     this.initializePreview(PageBuilderDto.fromJSON(val));
   }
@@ -91,6 +91,8 @@ export class NgxPagePreviewComponent implements OnInit, AfterViewInit {
 
     await waitForFontsToLoad(PREVIEW_CONSTS.TIMEOUT_LOAD_FONTS);
     await waitForRenderComplete();
+    this.chdRef.detectChanges();
+
     setTimeout(() => {
       window.opener?.postMessage({ type: PREVIEW_CONSTS.MESSAGE_TYPES.LOAD_ENDED }, '*');
     }, PREVIEW_CONSTS.TIMEOUT_READY);
@@ -201,7 +203,7 @@ export class NgxPagePreviewComponent implements OnInit, AfterViewInit {
     style.innerHTML = `
       @page {
         margin: 0px 0px 20px 0px;
-        size: ${size};
+        size: ${size}  ${orientation.toLowerCase()};
         orientation: ${orientation}; 
       }`;
     this.doc.head.appendChild(style);
