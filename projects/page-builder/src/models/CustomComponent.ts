@@ -15,9 +15,10 @@ export class CustomComponent {
 
   /**
    * Custom component settings reference
-   * @example MyChartSettingsComponent
+   * - lazy loaded component settings
+   * @example ()=> import(./chart/settings/chart-settings.component).then(c=>c.MyChartSettingsComponent)
    */
-  componentSettings?: Type<any>;
+  componentSettings?: () => Promise<Type<any>>;
 
   /**
    * Providers for the custom component

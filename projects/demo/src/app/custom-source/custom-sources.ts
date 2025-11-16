@@ -30,7 +30,10 @@ export const CustomSources: SourceItem[] = [
     customComponent: {
       componentKey: 'my-chart',
       component: () => import('./chart/chart.component').then((c) => c.SignalHighChartComponent),
-      componentSettings: ChartSettingComponent,
+      componentSettings: () =>
+        import('./chart/chart-setting/chart-setting.component').then(
+          (c) => c.ChartSettingComponent,
+        ),
       providers: [
         {
           provide: ChartService,
