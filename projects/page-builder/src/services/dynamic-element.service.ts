@@ -11,14 +11,14 @@ import {
   runInInjectionContext,
   createComponent,
   EventEmitter,
-  reflectComponentType,
-  ComponentRef,
 } from '@angular/core';
 import 'reflect-metadata';
 import { PageItem } from '../models/PageItem';
-import { DEFAULT_IMAGE_URL, LibConsts } from '../consts/defauls';
+import { DEFAULT_IMAGE_URL } from '../consts/defauls';
 import { Directive } from '../models/SourceItem';
 import { DynamicDataStructure } from '../models/DynamicData';
+import { COMPONENT_DATA, ComponentDataContext } from '../public-api';
+import { Subject } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class DynamicElementService {
@@ -81,9 +81,21 @@ export class DynamicElementService {
     const component = item.component;
     if (!component) throw new Error('SourceItem.component not defined');
 
+    const p = item.providers ?? [];
+    // دریافت تغییرات  تنظیمات داده‌های کامپوننت سفارشی
+    const onChangeCustomData = new Subject();
+    onChangeCustomData.subscribe((value) => {
+      item.componentData = value;
+    });
+    const context: ComponentDataContext = {
+      data: item.componentData,
+      onChange: onChangeCustomData,
+    };
+
+    p.push({ provide: COMPONENT_DATA, useValue: context });
     // ساخت Injector اختصاصی برای این instance
     item.compInjector = Injector.create({
-      providers: item.providers ?? [], // می‌تونی provider لیست هم بدی
+      providers: p,
       parent: this.envInjector,
     });
 

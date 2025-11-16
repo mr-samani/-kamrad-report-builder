@@ -1,6 +1,8 @@
-import { Component, computed, OnInit } from '@angular/core';
+import { Component, computed, Inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ChartService } from '../chart.service';
+import { COMPONENT_DATA, ComponentDataContext } from '@ngx-page-builder';
+import { IChartConfig } from '../chart-config.interface';
 
 @Component({
   selector: 'app-chart-setting',
@@ -9,9 +11,16 @@ import { ChartService } from '../chart.service';
   imports: [FormsModule],
 })
 export class ChartSettingComponent implements OnInit {
-  updateChart = computed(() => this.chartService.initializeChart());
+  constructor(
+    @Inject(COMPONENT_DATA) private context: ComponentDataContext<IChartConfig>,
 
-  constructor(public chartService: ChartService) {}
+    public chartService: ChartService,
+  ) {}
 
   ngOnInit() {}
+  update() {
+    // store config in pagebuilder
+    this.context.onChange.next(this.chartService.myConfig);
+    this.chartService.initializeChart();
+  }
 }

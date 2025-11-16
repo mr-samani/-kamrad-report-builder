@@ -1,11 +1,4 @@
-import {
-  EnvironmentProviders,
-  makeEnvironmentProviders,
-  ENVIRONMENT_INITIALIZER,
-  inject,
-  InjectionToken,
-  provideEnvironmentInitializer,
-} from '@angular/core';
+import { makeEnvironmentProviders, inject, provideEnvironmentInitializer } from '@angular/core';
 import { Router } from '@angular/router';
 import { STORAGE_SERVICE } from './services/storage/token.storage';
 import { LocalStorageService } from './services/storage/local.storage.service';
@@ -15,15 +8,8 @@ import { StorageType } from './services/storage/storage-type';
 import { SourceItem } from './models/SourceItem';
 import { SOURCE_ITEMS } from './sources/SOURCE_ITEMS';
 import { LibConsts } from './consts/defauls';
-
-export class PageBuilderConfiguration {
-  storageType?: StorageType = StorageType.LocalStorage;
-  customSources?: SourceItem[];
-}
-
-export const PAGE_BUILDER_CONFIGURATION = new InjectionToken<PageBuilderConfiguration>(
-  'PAGE_BUILDER_CONFIGURATION',
-);
+import { PageBuilderConfiguration } from './models/PageBuilderConfiguration';
+import { PAGE_BUILDER_CONFIGURATION } from './models/tokens';
 
 export function providePageBuilder(config: PageBuilderConfiguration) {
   let storage: any;

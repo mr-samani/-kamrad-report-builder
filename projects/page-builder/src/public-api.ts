@@ -20,3 +20,5 @@ export * from './models/SourceItem';
 export * from './models/PageBuilderDto';
 
 export * from './models/DynamicData';
+export * from './models/tokens';
+export * from './models/ComponentDataContext';

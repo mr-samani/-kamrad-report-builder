@@ -1,7 +1,7 @@
 <p>Title</p>
 <input
   type="text"
-  [(ngModel)]="chartService.chartTitle"
+  [(ngModel)]="chartService.myConfig.title"
   #chartTitleInput="ngModel"
-  (change)="updateChart()"
+  (change)="update()"
 />

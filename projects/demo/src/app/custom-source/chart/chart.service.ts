@@ -1,5 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import * as Highcharts from 'highcharts';
+import { IChartConfig } from './chart-config.interface';
 
 @Injectable()
 export class ChartService {
@@ -7,7 +8,10 @@ export class ChartService {
 
   data = signal<number[]>([3, 1, 2, 3, 4]);
 
-  chartTitle = 'my custom chart';
+  myConfig: IChartConfig = {
+    title: 'My Chart Title',
+  };
+
   highcharts: typeof Highcharts = Highcharts;
   chartOptions!: Highcharts.Options;
   initializeChart() {
@@ -30,7 +34,7 @@ export class ChartService {
         },
       },
       title: {
-        text: this.chartTitle,
+        text: this.myConfig.title,
       },
     };
     if (this.chart) {

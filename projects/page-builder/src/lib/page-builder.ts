@@ -19,11 +19,12 @@ import { ToolbarComponent } from './toolbar/toolbar.component';
 import { PageBuilderBaseComponent } from './page-builder-base-component';
 import { IStorageService } from '../services/storage/IStorageService';
 import { STORAGE_SERVICE } from '../services/storage/token.storage';
-import { PAGE_BUILDER_CONFIGURATION, PageBuilderConfiguration } from '../ngx-page-builder.provider';
+import { PageBuilderConfiguration } from '../models/PageBuilderConfiguration';
 import { PageBuilderDto } from '../public-api';
 import { DynamicDataStructure } from '../models/DynamicData';
 import { fromEvent, Subscription } from 'rxjs';
 import { SideConfigComponent } from '../components/side-config/side-config.component';
+import { PAGE_BUILDER_CONFIGURATION } from '../models/tokens';
 
 @Component({
   selector: 'ngx-page-builder',

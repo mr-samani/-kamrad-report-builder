@@ -7,6 +7,8 @@ export function preparePageDataForSave(pageInfo: PageBuilderDto): PageBuilderDto
   if (!pageInfo) {
     return new PageBuilderDto();
   }
+  const clonedData: PageBuilderDto = PageBuilderDto.fromJSON(pageInfo);
+
   let tree = (list: PageItem[]) => {
     for (let item of list) {
       if (item.el) {
@@ -16,6 +18,8 @@ export function preparePageDataForSave(pageInfo: PageBuilderDto): PageBuilderDto
       delete item.component;
       delete item.componentSettings;
       delete item.providers;
+      delete item.compInjector;
+
       cleanAttributes(item.options);
       delete item.options?.events;
       delete item.options?.directives;
@@ -42,14 +46,14 @@ export function preparePageDataForSave(pageInfo: PageBuilderDto): PageBuilderDto
       }
     }
   };
-  for (let page of pageInfo.pages) {
+  for (let page of clonedData.pages) {
     const list = [...page.headerItems, ...page.bodyItems, ...page.footerItems];
     tree(list);
   }
 
-  pageInfo.pages.map((m, index) => (m.order = index));
+  clonedData.pages.map((m, index) => (m.order = index));
 
-  const sanitized = sanitizeForStorage(pageInfo);
+  const sanitized = sanitizeForStorage(clonedData);
   return sanitized;
 }
 

@@ -1,4 +1,10 @@
-import { DestroyableInjector, reflectComponentType, Type } from '@angular/core';
+import {
+  DestroyableInjector,
+  InjectionToken,
+  Provider,
+  reflectComponentType,
+  Type,
+} from '@angular/core';
 import { randomStrnig } from '../utiles/generateUUID';
 import { ISourceOptions } from './SourceItem';
 import { LibConsts } from '../consts/defauls';
@@ -25,15 +31,6 @@ export class PageItem implements IPageItem {
   canHaveChild: boolean = false;
   /** content in html editor */
   content?: string;
-  /** custom component */
-  component?: Type<any>;
-  providers?: any[];
-  /** custom component key */
-  componentKey?: string;
-  /** custom component settings */
-  componentSettings?: Type<any>;
-  /** custom component injection providers */
-  compInjector?: DestroyableInjector;
   options?: ISourceOptions;
   style?: string;
 
@@ -42,6 +39,19 @@ export class PageItem implements IPageItem {
    * @example pagebreak cannot move to child items
    */
   disableMovement?: boolean = false;
+  //------------------------CUSTOM COMPONENT---------------------------
+  /** custom component */
+  component?: Type<any>;
+  providers?: Provider[];
+  /** custom component key */
+  componentKey?: string;
+  /** custom component settings */
+  componentSettings?: Type<any>;
+  /** custom component injection providers */
+  compInjector?: DestroyableInjector;
+  /** storage for component additional data */
+  componentData: any;
+  //---------------------------------------------------
 
   constructor(data?: IPageItem) {
     if (data) {
@@ -58,6 +68,8 @@ export class PageItem implements IPageItem {
         this.component = finded.component;
         this.componentSettings = finded.componentSettings;
         this.providers = finded.providers;
+      } else {
+        console.error(`Custom component with key ${this.componentKey} not found in CustomSources.`);
       }
     }
     // in new form
