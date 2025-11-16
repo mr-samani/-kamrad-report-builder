@@ -15,7 +15,6 @@ import {
 import { NgxDragDropKitModule } from 'ngx-drag-drop-kit';
 import { SafeHtmlPipe } from '../pipes/safe-html.pipe';
 import { BlockSelectorComponent } from '../components/block-selector/block-selector.component';
-import { BlockPropertiesComponent } from '../components/block-properties/block-properties.component';
 import { ToolbarComponent } from './toolbar/toolbar.component';
 import { PageBuilderBaseComponent } from './page-builder-base-component';
 import { IStorageService } from '../services/storage/IStorageService';
@@ -24,6 +23,7 @@ import { PAGE_BUILDER_CONFIGURATION, PageBuilderConfiguration } from '../ngx-pag
 import { PageBuilderDto } from '../public-api';
 import { DynamicDataStructure } from '../models/DynamicData';
 import { fromEvent, Subscription } from 'rxjs';
+import { SideConfigComponent } from '../components/side-config/side-config.component';
 
 @Component({
   selector: 'ngx-page-builder',
@@ -35,7 +35,7 @@ import { fromEvent, Subscription } from 'rxjs';
     SafeHtmlPipe,
     ToolbarComponent,
     BlockSelectorComponent,
-    BlockPropertiesComponent,
+    SideConfigComponent,
   ],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -80,9 +80,9 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
   preventDefault() {}
   async loadPageData() {
     try {
-      this.pageBuilderService.pageInfo = PageBuilderDto.fromJSON(
-        await this.storageService.loadData(),
-      );
+      let data = await this.storageService.loadData();
+      this.pageBuilderService.pageInfo = PageBuilderDto.fromJSON(data);
+      console.log('load data:', data, 'converted class:', this.pageBuilderService.pageInfo);
       if (this.pageBuilderService.pageInfo.pages.length == 0) {
         this.pageBuilderService.addPage();
         return;

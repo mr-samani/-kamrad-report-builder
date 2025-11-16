@@ -1,5 +1,6 @@
 import { PageBuilderDto } from '../../models/PageBuilderDto';
 import { PageItem } from '../../models/PageItem';
+import { ISourceOptions } from '../../public-api';
 import { sanitizeForStorage } from '../../utiles/sanitizeForStorage';
 
 export function preparePageDataForSave(pageInfo: PageBuilderDto): PageBuilderDto {
@@ -9,28 +10,30 @@ export function preparePageDataForSave(pageInfo: PageBuilderDto): PageBuilderDto
   let tree = (list: PageItem[]) => {
     for (let item of list) {
       if (item.el) {
-        item.style = encodeURIComponent(item.el.style.cssText);
+        item.style = item.el.style.cssText;
+        // item.style = encodeURIComponent(item.el.style.cssText);
       }
-      delete item.options?.attributes;
+      cleanAttributes(item.options);
       delete item.options?.events;
       delete item.options?.directives;
-      if (item.component) {
-        item.html = '';
-      } else {
-        //cleanup
-        if (item.el) {
-          let html = item.el.outerHTML;
-          html = html.replace(/\s*data-id="[^"]*"/g, '');
-          html = html.replace(/\s*contenteditable="[^"]*"/g, '');
+      // if (item.component) {
+      //   item.html = '';
+      // } else {
+      //   //cleanup
+      //   if (item.el) {
+      //     let html = item.el.outerHTML;
+      //     html = html.replace(/\s*data-id="[^"]*"/g, '');
+      //     html = html.replace(/\s*contenteditable="[^"]*"/g, '');
 
-          html = removeClassesFromHtml(
-            html,
-            ['ngx-corner-resize', 'block-item', 'ngx-draggable', 'ngx-drop-list'],
-            ['ngxDropList', 'ngxDraggable'],
-          );
-          item.html = encodeURIComponent(html);
-        }
-      }
+      //     html = removeClassesFromHtml(
+      //       html,
+      //       ['ngx-corner-resize', 'block-item', 'ngx-draggable', 'ngx-drop-list'],
+      //       ['ngxDropList', 'ngxDraggable'],
+      //     );
+      //     // item.html = encodeURIComponent(html);
+      //     item.html = ''; // html;
+      //   }
+      // }
       if (item.children && item.children.length > 0) {
         tree(item.children);
       }
@@ -47,7 +50,7 @@ export function preparePageDataForSave(pageInfo: PageBuilderDto): PageBuilderDto
   return sanitized;
 }
 
-export function removeClassesFromHtml(
+function removeClassesFromHtml(
   html: string,
   classesToRemove: string[],
   attributesToRemove: string[],
@@ -67,4 +70,17 @@ export function removeClassesFromHtml(
   }
 
   return doc.body.innerHTML.trim();
+}
+
+function cleanAttributes(opt?: ISourceOptions) {
+  if (!opt || !opt.attributes) return;
+  // clean up class
+  if (typeof opt.attributes['class'] == 'string') {
+    const filterdClasses = ['block-item'];
+    opt.attributes['class'] = opt.attributes['class']
+      .split(' ')
+      .map((m) => m.trim())
+      .filter((x) => filterdClasses.indexOf(x.toLowerCase()) === -1)
+      .join(' ');
+  }
 }

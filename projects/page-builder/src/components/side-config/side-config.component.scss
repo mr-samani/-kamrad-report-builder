@@ -1,0 +1,16 @@
+.page-builder-tabs {
+  display: flex;
+  .tab-item {
+    flex: auto;
+    background-color: var(--toolbar-bg);
+    color: var(--toolbar-fg);
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    &.active {
+      background: var(--active-button);
+    }
+  }
+}
+.page-builder-tab-content {
+}

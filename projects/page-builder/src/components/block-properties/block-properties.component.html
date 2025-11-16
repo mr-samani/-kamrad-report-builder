@@ -1,6 +1,7 @@
-<div class="sticky-top full-height properties-inner">
+<div class="inner">
   <p>Properties</p>
   @if (item) {
+    <p>{{ item.tag }}</p>
     <p>{{ item.id }}</p>
     @if (item.CanBeSetContent) {
       <div class="text" (click)="openTextEditor()">
@@ -39,5 +40,7 @@
       <summary>Advanced</summary>
       <textcss-control [(ngModel)]="item" (change)="onChangeProperties()"></textcss-control>
     </details>
+  } @else {
+    <p>None selected block</p>
   }
 </div>

@@ -1,0 +1,25 @@
+<div class="page-builder-tabs">
+  <button
+    type="button"
+    class="tab-item"
+    [class.active]="selectedTab == 'properties'"
+    (click)="selectedTab = 'properties'"
+  >
+    Properties
+  </button>
+  <button
+    type="button"
+    class="tab-item"
+    [class.active]="selectedTab == 'layouts'"
+    (click)="selectedTab = 'layouts'"
+  >
+    Layouts
+  </button>
+</div>
+<div class="page-builder-tab-content">
+  @if (selectedTab === 'properties') {
+    <block-properties></block-properties>
+  } @else {
+    <block-layouts></block-layouts>
+  }
+</div>

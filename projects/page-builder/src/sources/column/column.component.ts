@@ -40,7 +40,7 @@ export class ColumnComponent implements OnInit {
 
   loadChilds(childs: PageItem[], container: HTMLElement) {
     for (const child of childs) {
-      this.pageBuilderService.createElement(child, container);
+      this.pageBuilderService.createBlockElement(child, container);
     }
   }
   addNewColumn(index?: number) {
@@ -74,9 +74,8 @@ export class ColumnComponent implements OnInit {
         click: (ev: Event) => this.pageBuilderService.onSelectBlock(item, ev),
       };
     }
-    let el = this.dynamicElementService.createElement(container, index, item);
+    let el = this.dynamicElementService.createBlockElement(container, index, item);
     item.el = el;
-    item.html = el.outerHTML;
     return el;
   }
 

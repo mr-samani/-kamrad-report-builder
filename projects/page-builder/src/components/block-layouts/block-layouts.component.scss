@@ -1,0 +1,44 @@
+.inner {
+  padding: 10px;
+  max-height: calc(100vh - var(--topbar-height) - 31px);
+  overflow: auto;
+}
+.title {
+  background: var(--toolbar-bg);
+  color: var(--toolbar-fg);
+  margin: 0 -10px;
+  padding: 4px 10px;
+}
+ul.tree-list {
+  padding: 0px 15px;
+  margin: 0;
+  list-style: none;
+  display: none;
+  &.is-open {
+    display: block;
+  }
+  li {
+    > div {
+      display: flex;
+      padding: 3px 5px;
+      border-radius: 4px;
+      gap: 5px;
+    }
+    button {
+      background: none;
+      border: none;
+      padding: 0;
+      margin: 0;
+    }
+    svg {
+      width: 1em;
+      height: 1em;
+    }
+    &:hover {
+      cursor: pointer;
+    }
+    &.active > div {
+      background-color: var(--active-button);
+    }
+  }
+}

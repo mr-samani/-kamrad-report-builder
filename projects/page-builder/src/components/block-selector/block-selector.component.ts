@@ -39,6 +39,7 @@ export class BlockSelectorComponent extends BaseComponent implements OnDestroy {
     effect(() => {
       const newItem = this.pageBuilderService.activeEl();
       this.item = newItem;
+      // console.log('Active element changed:', newItem);
       this.observeActiveElement();
     });
   }

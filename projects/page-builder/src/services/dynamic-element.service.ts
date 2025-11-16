@@ -36,7 +36,7 @@ export class DynamicElementService {
    * create html element on droped to page
    * ایجاد المنت از روی سورس ها در هنگام افزودن با درگ اند دراپ
    */
-  createElement(
+  createBlockElement(
     container: HTMLElement | ViewContainerRef,
     index: number,
     item: PageItem,
@@ -60,15 +60,18 @@ export class DynamicElementService {
     }
 
     element = this.bindOptions(element, item);
+    if (item.content) {
+      this.renderer.setProperty(element, 'innerHTML', item.content);
+    }
     item.el = element;
-    item.html = element.outerHTML;
     return element;
   }
 
   /**
    * create html element from PageItem (Saved data)
+   * @deprecated Use createElement instead.
    */
-  createElementFromHTML(item: PageItem, container: HTMLElement): HTMLElement | undefined {
+  private createElementFromHTML(item: PageItem, container: HTMLElement): HTMLElement | undefined {
     let element: HTMLElement;
     if (item.componentKey) {
       let CustomSource = LibConsts.SourceItemList.find((x) => x.componentKey === item.componentKey);
@@ -81,13 +84,14 @@ export class DynamicElementService {
 
       element = this.createComponentElement(container, item, null);
     } else {
-      let html = item.html;
+      // html removed from pageItem
+      let html = (item as any).html;
       if (!html) {
         console.error('Create element: Invalid HTML content', item.id);
         return undefined;
       }
       const div: HTMLElement = this.renderer.createElement('div');
-      html = decodeURIComponent(html);
+      // html = decodeURIComponent(html);
       this.renderer.setProperty(div, 'innerHTML', html);
       element = div.firstChild as HTMLElement;
       if (element.nodeType !== 1) {
@@ -99,7 +103,7 @@ export class DynamicElementService {
 
     element = this.bindOptions(element, item);
     item.el = element;
-    item.html = element.outerHTML;
+
     return element;
   }
   updateElementContent(el: HTMLElement, data: PageItem) {
@@ -206,7 +210,8 @@ export class DynamicElementService {
     //   element.contentEditable = 'true';
     // }
     if (item.style) {
-      element.style.cssText = decodeURIComponent(item.style);
+      // element.style.cssText = decodeURIComponent(item.style);
+      element.style.cssText = item.style;
     }
     return element;
   }

@@ -25,7 +25,7 @@ export function getDefaultBlockDirective(pageItem: PageItem, onDropFn: Function)
   if (pageItem.disableMovement) {
     dir = DefaultBlockDirectives.filter((d) => d.directive !== NgxDraggableDirective);
   } else {
-    dir = DefaultBlockDirectives;
+    dir = [...DefaultBlockDirectives];
   }
 
   if (pageItem.canHaveChild) {

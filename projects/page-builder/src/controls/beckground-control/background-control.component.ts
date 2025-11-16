@@ -197,6 +197,7 @@ export class BackgroundControlComponent implements OnInit, ControlValueAccessor 
     }
     this.filePicker.openFilePicker('image').then((result) => {
       // TODO base address must be set with pipe
+      this.item?.setItemAttribute('src', this.filePicker?.baseUrlAddress + result);
       this.imageUrl = this.filePicker?.baseUrlAddress + result;
       this.update();
     });

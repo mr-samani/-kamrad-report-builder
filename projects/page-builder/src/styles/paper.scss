@@ -6,17 +6,24 @@
   --a5-height: 210mm;
   --letter-width: 216mm;
   --letter-height: 279mm;
+
+  --active-button: #0040ff;
+
   --tools-bg: #282828;
   --toolbar-bg: #353535;
   --toolbar-fg: #ffffff;
   --tools-fg: #fff;
-  --properties-fg: #fff;
-  --properties-bg: #1f2937;
+
+  --side-config-width: 300px;
+  --side-config-fg: #fff;
+  --side-config-bg: #1f2937;
+
   --tools-border: 1px solid #eeeeee76;
-  --active-button: #0040ff;
   --page-padding: 0px;
-  --toolbar-height: 40px;
+
+  --toolbar-width: 60px;
   --toolbar-sticky-offset: 0;
+  --topbar-height: 28px;
 }
 .paper {
   display: flex;

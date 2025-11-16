@@ -1,17 +1,6 @@
-import {
-  Component,
-  signal,
-  NgZone,
-  inject,
-  computed,
-  Signal,
-  ChangeDetectorRef,
-  ViewChild,
-  ElementRef,
-} from '@angular/core';
-import { importProvidersFrom } from '@angular/core';
+import { Component, signal, NgZone, inject, computed } from '@angular/core';
 import * as Highcharts from 'highcharts';
-import { HighchartsChartComponent, provideHighcharts } from 'highcharts-angular';
+import { HighchartsChartComponent } from 'highcharts-angular';
 
 @Component({
   selector: 'signal-highcart',
@@ -19,6 +8,11 @@ import { HighchartsChartComponent, provideHighcharts } from 'highcharts-angular'
   standalone: true,
   imports: [HighchartsChartComponent],
   providers: [],
+  styles: `
+    :host {
+      display: block;
+    }
+  `,
 })
 export class SignalHighcartComponent {
   ngZone = inject(NgZone);

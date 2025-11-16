@@ -1,5 +1,7 @@
-.properties-inner {
+.inner {
   padding: 10px;
+  max-height: calc(100vh - var(--topbar-height) - 31px);
+  overflow: auto;
 }
 .text {
   border: 1px solid #8d8d8d63;

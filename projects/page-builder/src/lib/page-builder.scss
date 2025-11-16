@@ -1,7 +1,7 @@
 .page-builder-container {
   display: grid;
-  grid-template-columns: var(--toolbar-height) auto 350px;
-  grid-template-rows: 28px auto;
+  grid-template-columns: var(--toolbar-width) auto var(--side-config-width);
+  grid-template-rows: var(--topbar-height) auto;
   gap: 0px 5px;
   min-height: 100vh;
   background: #f6f6f6;
@@ -10,12 +10,12 @@
     box-sizing: border-box;
   }
 }
-.properties {
+.side-config {
   border: none var(--tools-border);
-  background-color: var(--properties-bg);
-  color: var(--properties-fg);
+  background-color: var(--side-config-bg);
+  color: var(--side-config-fg);
   svg {
-    fill: var(--properties-fg);
+    fill: var(--side-config-fg);
   }
 }
 .components {
@@ -23,7 +23,9 @@
   flex-shrink: 0;
   background-color: var(--tools-bg);
   color: var(--tools-fg);
-
+  max-height: calc(100vh - var(--topbar-height));
+  overflow-y: auto;
+  overflow-x: hidden;
   .tool {
     padding: 6px;
     border-bottom: var(--tools-border);
@@ -109,9 +111,9 @@
 }
 .sticky-top {
   position: sticky !important;
-  top: var(--toolbar-height);
+  top: var(--topbar-height);
 }
 .full-height {
-  max-height: calc(100vh - var(--toolbar-height));
+  max-height: calc(100vh - var(--topbar-height));
   overflow: auto;
 }

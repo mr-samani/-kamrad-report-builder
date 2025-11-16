@@ -147,9 +147,9 @@ export class NgxPagePreviewComponent implements OnInit, AfterViewInit {
         const { header, body, footer } = this.createPageHtml(isLastPage);
         setTimeout(() => {
           const { headerItems, bodyItems, footerItems } = page;
-          headerItems.map((m) => (m.el = this.createElement(m, header)));
-          bodyItems.map((m) => (m.el = this.createElement(m, body)));
-          footerItems.map((m) => (m.el = this.createElement(m, footer)));
+          headerItems.map((m) => (m.el = this.createBlockElement(m, header)));
+          bodyItems.map((m) => (m.el = this.createBlockElement(m, body)));
+          footerItems.map((m) => (m.el = this.createBlockElement(m, footer)));
         }, 100);
       }
       this.dynamicDataService.replaceValues(this.data.pages);
@@ -187,8 +187,14 @@ export class NgxPagePreviewComponent implements OnInit, AfterViewInit {
     }
   }
 
-  private createElement(item: PageItem, container: HTMLElement) {
-    return this.dynamicElementService.createElementFromHTML(item, container);
+  private createBlockElement(item: PageItem, container: HTMLElement) {
+    let el = this.dynamicElementService.createBlockElement(container, -1, item);
+    if (item.children && item.children.length > 0 && el) {
+      for (const child of item.children) {
+        this.createBlockElement(child, el);
+      }
+    }
+    return el;
   }
 
   private setPrintStyle() {
