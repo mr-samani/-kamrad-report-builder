@@ -180,11 +180,15 @@ export class PageBuilderService implements OnDestroy {
           this.cleanCanvas(this.currentPageIndex());
           const { headerItems, bodyItems, footerItems } = this.pageInfo.pages[pageNumber - 1];
           headerItems.map(
-            (m) => (m.el = this.createBlockElement(m, this.pageHeader()!.nativeElement)),
+            async (m) =>
+              (m.el = await this.createBlockElement(m, this.pageHeader()!.nativeElement)),
           );
-          bodyItems.map((m) => (m.el = this.createBlockElement(m, this.pageBody()!.nativeElement)));
+          bodyItems.map(
+            async (m) => (m.el = await this.createBlockElement(m, this.pageBody()!.nativeElement)),
+          );
           footerItems.map(
-            (m) => (m.el = this.createBlockElement(m, this.pageFooter()!.nativeElement)),
+            async (m) =>
+              (m.el = await this.createBlockElement(m, this.pageFooter()!.nativeElement)),
           );
 
           this.currentPageIndex.set(pageNumber - 1);
@@ -199,7 +203,8 @@ export class PageBuilderService implements OnDestroy {
   reloadCurrentPage() {
     this.changePage(this.currentPageIndex() + 1);
   }
-  createBlockElement(item: PageItem, container: HTMLElement, index = -1) {
+
+  async createBlockElement(item: PageItem, container: HTMLElement, index = -1) {
     if (this.mode == 'Edit') {
       let directives = getDefaultBlockDirective(item, this.onDrop.bind(this));
       item.options ??= {};
@@ -213,10 +218,10 @@ export class PageBuilderService implements OnDestroy {
       item.options.events ??= {};
       item.options.events['click'] = (ev: Event) => this.onSelectBlock(item, ev);
     }
-    let el = this.dynamicElementService.createBlockElement(container, index, item);
+    let el = await this.dynamicElementService.createBlockElement(container, index, item);
     if (item.children && item.children.length > 0 && el) {
       for (const child of item.children) {
-        this.createBlockElement(child, el);
+        await this.createBlockElement(child, el);
       }
     }
     return el;

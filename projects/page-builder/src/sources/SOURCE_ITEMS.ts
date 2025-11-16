@@ -86,17 +86,35 @@ export const SOURCE_ITEMS: SourceItem[] = [
   },
   new SourceItem({
     icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path d="M0 96C0 60.65 28.65 32 64 32H576C611.3 32 640 60.65 640 96V416C640 451.3 611.3 480 576 480H64C28.65 480 0 451.3 0 416V96zM448 448H576C593.7 448 608 433.7 608 416V96C608 78.33 593.7 64 576 64H448V448zM416 64H224V448H416V64zM192 448V64H64C46.33 64 32 78.33 32 96V416C32 433.7 46.33 448 64 448H192z"/></svg>',
-    component: await import('./column/column.component').then((c) => c.ColumnComponent),
     title: 'Column',
     options: {
       inputs: {},
     },
+    customComponent: {
+      componentKey: 'NgxPg',
+      component: () => import('./column/column.component').then((c) => c.ColumnComponent),
+    },
   }),
   new SourceItem({
     icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 111.1c4.094 0 8.188-1.562 11.31-4.688L208 54.61v121.4c0 8.844 7.156 15.1 16 15.1s16-7.152 16-15.1V54.61l52.69 52.69C295.8 110.4 299.9 111.1 304 111.1c9.139 0 16-7.478 16-16.01c0-4.094-1.562-8.182-4.688-11.31L235.3 4.688C231.3 .6445 226.5 0 223.1 0S216.7 .6445 212.7 4.688L132.7 84.67C129.6 87.8 128 91.89 128 95.98C128 104.5 134.9 111.1 144 111.1zM304 399.1c-4.094 0-8.188 1.562-11.31 4.688L240 457.4v-121.4c0-8.844-7.156-16-16-16s-16 7.159-16 16v121.4l-52.69-52.69C152.2 401.6 148.1 399.1 144 399.1c-9.139 0-16 7.471-16 15.1c0 4.094 1.562 8.189 4.688 11.31l79.98 79.98C214.4 509 218.3 512 224 512s9.609-2.98 11.33-4.707l79.98-79.98C318.4 424.2 320 420.1 320 415.1C320 407.5 313.1 399.1 304 399.1zM432 240h-416C7.156 240 0 247.1 0 255.1S7.156 272 16 272h416c8.844 0 16-7.165 16-16.01S440.8 240 432 240z"/></svg>',
-    component: await import('./page-break/page-break.component').then((c) => c.PageBreakComponent),
     title: 'Page Break',
     tag: 'page-break',
     disableMovement: true,
+    customComponent: {
+      componentKey: 'NgxPgPageBreak',
+      component: () =>
+        import('./page-break/page-break.component').then((c) => c.PageBreakComponent),
+    },
+  }),
+  new SourceItem({
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M176 32C202.5 32 224 53.49 224 80V176C224 202.5 202.5 224 176 224H80C53.49 224 32 202.5 32 176V80C32 53.49 53.49 32 80 32H176zM176 64H80C71.16 64 64 71.16 64 80V176C64 184.8 71.16 192 80 192H176C184.8 192 192 184.8 192 176V80C192 71.16 184.8 64 176 64zM176 288C202.5 288 224 309.5 224 336V432C224 458.5 202.5 480 176 480H80C53.49 480 32 458.5 32 432V336C32 309.5 53.49 288 80 288H176zM176 320H80C71.16 320 64 327.2 64 336V432C64 440.8 71.16 448 80 448H176C184.8 448 192 440.8 192 432V336C192 327.2 184.8 320 176 320zM288 80C288 53.49 309.5 32 336 32H432C458.5 32 480 53.49 480 80V176C480 202.5 458.5 224 432 224H336C309.5 224 288 202.5 288 176V80zM320 80V176C320 184.8 327.2 192 336 192H432C440.8 192 448 184.8 448 176V80C448 71.16 440.8 64 432 64H336C327.2 64 320 71.16 320 80zM384 272C392.8 272 400 279.2 400 288V368H480C488.8 368 496 375.2 496 384C496 392.8 488.8 400 480 400H400V480C400 488.8 392.8 496 384 496C375.2 496 368 488.8 368 480V400H288C279.2 400 272 392.8 272 384C272 375.2 279.2 368 288 368H368V288C368 279.2 375.2 272 384 272z"/></svg>',
+    title: 'Collection Item',
+    customComponent: {
+      componentKey: 'NgxPgCollectionItem',
+      component: () =>
+        import('./collection-item/collection-item.component').then(
+          (c) => c.CollectionItemComponent,
+        ),
+    },
   }),
 ];

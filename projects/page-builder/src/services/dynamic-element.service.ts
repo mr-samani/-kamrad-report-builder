@@ -37,14 +37,14 @@ export class DynamicElementService {
    * create html element on droped to page
    * ایجاد المنت از روی سورس ها در هنگام افزودن با درگ اند دراپ
    */
-  createBlockElement(
+  async createBlockElement(
     container: HTMLElement | ViewContainerRef,
     index: number,
     item: PageItem,
-  ): HTMLElement {
+  ): Promise<HTMLElement> {
     let element: HTMLElement;
-    if (item.component) {
-      element = this.createComponentElement(container, item, index);
+    if (item.customComponent) {
+      element = await this.createComponentElement(container, item, index);
     } else {
       if (!item.tag) {
         item.tag = 'div';
@@ -73,35 +73,38 @@ export class DynamicElementService {
     return el;
   }
 
-  private createComponentElement(
+  private async createComponentElement(
     container: HTMLElement | ViewContainerRef,
     item: PageItem,
     index: number | null,
-  ): HTMLElement {
-    const component = item.component;
-    if (!component) throw new Error('SourceItem.component not defined');
+  ): Promise<HTMLElement> {
+    const component = await item.getComponentInstance();
+    if (!component) {
+      console.warn('Not exist custom component:', item.customComponent);
+      throw new Error('Not exist custom component');
+    }
 
-    const p = item.providers ?? [];
+    const p = item.customComponent?.providers ?? [];
     // دریافت تغییرات  تنظیمات داده‌های کامپوننت سفارشی
     const onChangeCustomData = new Subject();
     onChangeCustomData.subscribe((value) => {
-      item.componentData = value;
+      item.customComponent!.componentData = value;
     });
     const context: ComponentDataContext = {
-      data: item.componentData,
+      data: item.customComponent?.componentData,
       onChange: onChangeCustomData,
     };
 
     p.push({ provide: COMPONENT_DATA, useValue: context });
     // ساخت Injector اختصاصی برای این instance
-    item.compInjector = Injector.create({
+    item.customComponent!.compInjector = Injector.create({
       providers: p,
       parent: this.envInjector,
     });
 
     // ساخت کامپوننت در محیط Angular
     const compRef = createComponent(component, {
-      elementInjector: item.compInjector,
+      elementInjector: item.customComponent!.compInjector,
       environmentInjector: this.envInjector,
     });
 

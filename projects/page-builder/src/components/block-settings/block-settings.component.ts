@@ -30,16 +30,9 @@ export class BlockSettingsComponent extends BaseComponent implements OnInit {
     super(injector);
     effect(() => {
       this.item = this.pageBuilderService.activeEl();
-      this.createCustomComponentSettings();
       this.chdRef.detectChanges();
     });
   }
 
   ngOnInit() {}
-
-  createCustomComponentSettings() {
-    if (!this.item || !this.item.componentSettings || !this.item.component) {
-      return;
-    }
-  }
 }

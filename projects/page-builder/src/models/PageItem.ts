@@ -8,6 +8,7 @@ import {
 import { randomStrnig } from '../utiles/generateUUID';
 import { ISourceOptions } from './SourceItem';
 import { LibConsts } from '../consts/defauls';
+import { CustomComponent } from './CustomComponent';
 
 export interface IPageItem {
   id?: string;
@@ -17,7 +18,7 @@ export interface IPageItem {
   canHaveChild?: boolean;
   /** content in html editor */
   content?: string;
-  component?: Type<any>;
+  component?: () => Promise<Type<any>>;
   componentKey?: string;
   options?: ISourceOptions;
   style?: string;
@@ -41,16 +42,8 @@ export class PageItem implements IPageItem {
   disableMovement?: boolean = false;
   //------------------------CUSTOM COMPONENT---------------------------
   /** custom component */
-  component?: Type<any>;
-  providers?: Provider[];
-  /** custom component key */
-  componentKey?: string;
-  /** custom component settings */
-  componentSettings?: Type<any>;
-  /** custom component injection providers */
-  compInjector?: DestroyableInjector;
-  /** storage for component additional data */
-  componentData: any;
+  customComponent?: CustomComponent;
+
   //---------------------------------------------------
 
   constructor(data?: IPageItem) {
@@ -60,24 +53,6 @@ export class PageItem implements IPageItem {
       }
     }
     if (!this.id) this.id = randomStrnig(5);
-
-    // in edit form
-    if (this.componentKey && !this.component) {
-      const finded = LibConsts.SourceItemList.find((x) => x.componentKey === this.componentKey);
-      if (finded) {
-        this.component = finded.component;
-        this.componentSettings = finded.componentSettings;
-        this.providers = finded.providers;
-      } else {
-        console.error(`Custom component with key ${this.componentKey} not found in CustomSources.`);
-      }
-    }
-    // in new form
-    else if (this.component && typeof this.component === 'function') {
-      this.componentKey = this.component.name || 'UnknownComponent';
-      const metadata = reflectComponentType(this.component);
-      this.tag = metadata?.selector || '';
-    }
   }
   static fromJSON(data: any): PageItem {
     const item = new PageItem(data);
@@ -92,7 +67,8 @@ export class PageItem implements IPageItem {
    * @readonly
    */
   public get CanBeSetContent(): boolean {
-    const isComponent = this.component && typeof this.component === 'function';
+    const isComponent =
+      this.customComponent && typeof this.customComponent.component === 'function';
     return !(this.el?.tagName === 'IMG' || isComponent === true);
   }
 
@@ -116,5 +92,22 @@ export class PageItem implements IPageItem {
       this.options.attributes = {};
     }
     this.options.attributes[name] = value;
+  }
+
+  public async getComponentInstance() {
+    if (this.customComponent && this.customComponent.componentKey) {
+      const finded = LibConsts.SourceItemList.find(
+        (x) => x.customComponent?.componentKey === this.customComponent!.componentKey,
+      );
+      if (finded) {
+        this.customComponent = { ...this.customComponent, ...finded.customComponent! };
+        return await this.customComponent.component();
+      } else {
+        console.error(
+          `Custom component with key ${this.customComponent.componentKey} not found in CustomSources.`,
+        );
+      }
+    }
+    return undefined;
   }
 }
