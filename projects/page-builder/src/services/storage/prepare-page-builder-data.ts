@@ -1,7 +1,7 @@
 import { PageBuilderDto } from '../../models/PageBuilderDto';
 import { PageItem } from '../../models/PageItem';
 import { ISourceOptions } from '../../public-api';
-import { sanitizeForStorage } from '../../utiles/sanitizeForStorage';
+import { sanitizeForStorage } from './sanitizeForStorage';
 
 export function preparePageDataForSave(pageInfo: PageBuilderDto): PageBuilderDto {
   if (!pageInfo) {
@@ -13,6 +13,9 @@ export function preparePageDataForSave(pageInfo: PageBuilderDto): PageBuilderDto
         item.style = item.el.style.cssText;
         // item.style = encodeURIComponent(item.el.style.cssText);
       }
+      delete item.component;
+      delete item.componentSettings;
+      delete item.providers;
       cleanAttributes(item.options);
       delete item.options?.events;
       delete item.options?.directives;

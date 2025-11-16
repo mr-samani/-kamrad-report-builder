@@ -1,4 +1,4 @@
-import { reflectComponentType, Type } from '@angular/core';
+import { Provider, reflectComponentType, Type } from '@angular/core';
 
 export class Directive {
   directive!: Type<any>;
@@ -64,14 +64,10 @@ export class SourceItem {
   icon: string = '';
 
   /**
-   * Component reference
+   * Custom Component reference
    * @example MyChartComponent
    */
   component?: Type<any>;
-  /**
-   * Text content of html tags
-   */
-  content?: string;
 
   /**
    * Component key
@@ -79,6 +75,22 @@ export class SourceItem {
    * @readonly Set by library
    */
   readonly componentKey?: string;
+  /**
+   * Custom component settings reference
+   * @example MyChartSettingsComponent
+   */
+  componentSettings?: Type<any>;
+
+  /**
+   * Providers for the custom component
+   * - shared service between CustomComponent and CustomComponentSettings
+   */
+  providers?: Provider[];
+
+  /**
+   * Text content of html tags
+   */
+  content?: string;
 
   options?: ISourceOptions;
 
@@ -94,8 +106,8 @@ export class SourceItem {
       }
     }
     if (this.component && typeof this.component === 'function') {
-      this.componentKey = this.component.name || 'UnknownComponent';
       const metadata = reflectComponentType(this.component);
+      this.componentKey = this.component.name || 'UnknownComponent';
       this.tag = metadata?.selector || 'div';
     }
   }

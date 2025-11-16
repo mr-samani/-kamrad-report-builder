@@ -5,10 +5,18 @@
     background-color: var(--toolbar-bg);
     color: var(--toolbar-fg);
     border: none;
-    padding: 8px;
+    padding: 4px 8px;
+    cursor: pointer;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 5px;
     cursor: pointer;
     &.active {
       background: var(--active-button);
+    }
+    svg {
+      width: 20px;
     }
   }
 }

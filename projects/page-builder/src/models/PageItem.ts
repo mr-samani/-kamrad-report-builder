@@ -1,4 +1,4 @@
-import { reflectComponentType, Type } from '@angular/core';
+import { DestroyableInjector, reflectComponentType, Type } from '@angular/core';
 import { randomStrnig } from '../utiles/generateUUID';
 import { ISourceOptions } from './SourceItem';
 import { LibConsts } from '../consts/defauls';
@@ -25,8 +25,15 @@ export class PageItem implements IPageItem {
   canHaveChild: boolean = false;
   /** content in html editor */
   content?: string;
+  /** custom component */
   component?: Type<any>;
+  providers?: any[];
+  /** custom component key */
   componentKey?: string;
+  /** custom component settings */
+  componentSettings?: Type<any>;
+  /** custom component injection providers */
+  compInjector?: DestroyableInjector;
   options?: ISourceOptions;
   style?: string;
 
@@ -35,6 +42,7 @@ export class PageItem implements IPageItem {
    * @example pagebreak cannot move to child items
    */
   disableMovement?: boolean = false;
+
   constructor(data?: IPageItem) {
     if (data) {
       for (var property in data) {
@@ -45,9 +53,12 @@ export class PageItem implements IPageItem {
 
     // in edit form
     if (this.componentKey && !this.component) {
-      this.component = LibConsts.SourceItemList.find(
-        (x) => x.componentKey === this.componentKey,
-      )?.component;
+      const finded = LibConsts.SourceItemList.find((x) => x.componentKey === this.componentKey);
+      if (finded) {
+        this.component = finded.component;
+        this.componentSettings = finded.componentSettings;
+        this.providers = finded.providers;
+      }
     }
     // in new form
     else if (this.component && typeof this.component === 'function') {
@@ -77,7 +88,6 @@ export class PageItem implements IPageItem {
    * @readonly
    */
   public get isImageTag(): boolean {
-    console.log(this.el?.tagName);
     return this.el?.tagName === 'IMG';
   }
 

@@ -12,6 +12,7 @@ import {
   createComponent,
   EventEmitter,
   reflectComponentType,
+  ComponentRef,
 } from '@angular/core';
 import 'reflect-metadata';
 import { PageItem } from '../models/PageItem';
@@ -67,45 +68,6 @@ export class DynamicElementService {
     return element;
   }
 
-  /**
-   * create html element from PageItem (Saved data)
-   * @deprecated Use createElement instead.
-   */
-  private createElementFromHTML(item: PageItem, container: HTMLElement): HTMLElement | undefined {
-    let element: HTMLElement;
-    if (item.componentKey) {
-      let CustomSource = LibConsts.SourceItemList.find((x) => x.componentKey === item.componentKey);
-      if (!CustomSource || !CustomSource.component) {
-        console.error('component not found', item.componentKey);
-        return;
-      }
-      item.component = CustomSource.component;
-      item.options = Object.assign(item.options ?? {}, CustomSource.options);
-
-      element = this.createComponentElement(container, item, null);
-    } else {
-      // html removed from pageItem
-      let html = (item as any).html;
-      if (!html) {
-        console.error('Create element: Invalid HTML content', item.id);
-        return undefined;
-      }
-      const div: HTMLElement = this.renderer.createElement('div');
-      // html = decodeURIComponent(html);
-      this.renderer.setProperty(div, 'innerHTML', html);
-      element = div.firstChild as HTMLElement;
-      if (element.nodeType !== 1) {
-        console.error('Error on create elment:', element.nodeType, element);
-        return undefined;
-      }
-      this.renderer.appendChild(container, element);
-    }
-
-    element = this.bindOptions(element, item);
-    item.el = element;
-
-    return element;
-  }
   updateElementContent(el: HTMLElement, data: PageItem) {
     this.renderer.setProperty(el, 'innerHTML', data.content);
     return el;
@@ -118,8 +80,16 @@ export class DynamicElementService {
   ): HTMLElement {
     const component = item.component;
     if (!component) throw new Error('SourceItem.component not defined');
+
+    // ساخت Injector اختصاصی برای این instance
+    item.compInjector = Injector.create({
+      providers: item.providers ?? [], // می‌تونی provider لیست هم بدی
+      parent: this.envInjector,
+    });
+
     // ساخت کامپوننت در محیط Angular
     const compRef = createComponent(component, {
+      elementInjector: item.compInjector,
       environmentInjector: this.envInjector,
     });
 
@@ -168,6 +138,7 @@ export class DynamicElementService {
         }
       }
     }
+
     return element;
   }
 
