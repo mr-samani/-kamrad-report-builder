@@ -1,4 +1,4 @@
-import { NgxDraggableDirective, NgxDropListDirective } from 'ngx-drag-drop-kit';
+import { IDropEvent, NgxDraggableDirective, NgxDropListDirective } from 'ngx-drag-drop-kit';
 import { Directive, SourceItem } from '../models/SourceItem';
 import { PageItem } from '../models/PageItem';
 
@@ -35,7 +35,7 @@ export function getDefaultBlockDirective(pageItem: PageItem, onDropFn: Function)
         data: pageItem.children,
       },
       outputs: {
-        drop: onDropFn,
+        drop: (ev: IDropEvent<PageItem>) => onDropFn(ev, pageItem.id),
       },
     });
   }

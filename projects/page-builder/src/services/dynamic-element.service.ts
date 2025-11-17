@@ -127,12 +127,12 @@ export class DynamicElementService {
     (element as any).__componentRef__ = compRef;
 
     const instance = compRef.instance;
-
+    // set default propery pageItem
+    if ('pageItem' in instance) {
+      instance['pageItem'] = item;
+    }
     // ✅ Inputs
     if (item.options && item.options.inputs) {
-      if ('pageItem' in instance) {
-        instance['pageItem'] = item;
-      }
       for (const [key, val] of Object.entries(item.options.inputs)) {
         // if (key in instance) {
         instance[key] = val;

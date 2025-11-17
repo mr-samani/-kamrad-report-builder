@@ -1,24 +1,26 @@
 import { Injectable } from '@angular/core';
-import { DynamicDataStructure, DynamicNode, DynamicObjectNode } from '../models/DynamicData';
-import { PageBuilderDto } from '../public-api';
+import { DynamicDataStructure } from '../models/DynamicData';
 import { Page } from '../models/Page';
+import { PageItem } from '../models/PageItem';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DynamicDataService {
-  private _dynamicData?: DynamicDataStructure;
+  private _dynamicData: DynamicDataStructure[] = [];
 
   private _dynamicDataDictionary: { [key: string]: string } = {};
 
-  public get dynamicData(): DynamicDataStructure | undefined {
-    return this._dynamicData;
-  }
+  private map = new Map<string, DynamicDataStructure>();
+  private nearestCache = new Map<string, string | null>(); // itemId -> nearest datasource id
 
-  public set dynamicData(value: DynamicDataStructure | undefined) {
-    this._dynamicData = value;
+  public set dynamicData(value: DynamicDataStructure[]) {
+    this._dynamicData = value ?? [];
     this.createValueDictionary();
     console.log(this._dynamicDataDictionary);
+  }
+  public get dynamicData() {
+    return this._dynamicData;
   }
 
   private createValueDictionary() {
@@ -38,10 +40,10 @@ export class DynamicDataService {
       }
     };
 
-    for (let key in this._dynamicData) {
-      const value = this._dynamicData[key];
-      let path: string[] = [key];
-      recursiveTraverse(value, path);
+    for (let item of this._dynamicData) {
+      const values = item.values;
+      let path: string[] = [item.name];
+      recursiveTraverse(values, path);
     }
   }
 
@@ -68,5 +70,38 @@ export class DynamicDataService {
         page.footerItems.forEach((item) => replace(item.el));
       }
     }, 100);
+  }
+
+  /*------------------------------------------------------------------------------------------*/
+  register(ds: DynamicDataStructure) {
+    this.map.set(ds.id, ds);
+  }
+  get(id: string) {
+    return this.map.get(id) ?? null;
+  }
+  list() {
+    return Array.from(this.map.values());
+  }
+
+  // walk up model parent pointers to find nearest datasource
+  findNearestDataSource(itemId: string, pageModel: Map<string, PageItem>): string | null {
+    if (this.nearestCache.has(itemId)) return this.nearestCache.get(itemId)!;
+    let cur = pageModel.get(itemId);
+    while (cur) {
+      if (cur.dataSource?.id) {
+        this.nearestCache.set(itemId, cur.dataSource.id);
+        return cur.dataSource.id;
+      }
+      if (!cur.parentId) break;
+      cur = pageModel.get(cur.parentId!);
+    }
+    this.nearestCache.set(itemId, null);
+    return null;
+  }
+
+  // call this whenever tree structure or datasource references change
+  invalidateNearestCacheFor(itemIds?: string[]) {
+    if (!itemIds) this.nearestCache.clear();
+    else itemIds.forEach((id) => this.nearestCache.delete(id));
   }
 }

@@ -1,0 +1,22 @@
+<p>Collection settings</p>
+
+<select [(ngModel)]="settings.id" name="datasource" (change)="update()">
+  @for (item of dynamicDataService.dynamicData; track item.id) {
+    <option [value]="item.id">{{ item.displayName }}</option>
+  }
+</select>
+
+<input
+  type="number"
+  [(ngModel)]="settings.skipCount"
+  name="skipCount"
+  placeholder="skip count"
+  (change)="update()"
+/>
+<input
+  type="number"
+  [(ngModel)]="settings.maxResultCount"
+  name="maxResultCount"
+  placeholder="max count"
+  (change)="update()"
+/>

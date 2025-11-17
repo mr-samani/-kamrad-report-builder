@@ -1,4 +1,11 @@
-import { Component, ElementRef, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  OnInit,
+  ViewChild,
+  ViewEncapsulation,
+} from '@angular/core';
 import { NgxDragDropKitModule, NgxDropListDirective } from 'ngx-drag-drop-kit';
 import { PageItem } from '../../models/PageItem';
 import { DynamicElementService } from '../../services/dynamic-element.service';
@@ -10,6 +17,7 @@ import { PageBuilderService } from '../../services/page-builder.service';
   styleUrls: ['./column.component.scss'],
   imports: [NgxDragDropKitModule],
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ColumnComponent implements OnInit {
   pageItem!: PageItem;
@@ -44,9 +52,12 @@ export class ColumnComponent implements OnInit {
     }
   }
   addNewColumn(index?: number) {
-    const newColumn = new PageItem({
-      tag: 'div',
-    });
+    const newColumn = new PageItem(
+      {
+        tag: 'div',
+      },
+      this.pageItem.id,
+    );
     let el = this.createElementCell(newColumn, this.colContainer.nativeElement, index);
     this.pageItem.children.splice(index ?? this.pageItem.children.length, 0, newColumn);
   }
@@ -79,8 +90,8 @@ export class ColumnComponent implements OnInit {
     return el;
   }
 
-  private onDrop(ev: any) {
-    this.pageBuilderService.onDrop(ev);
+  private onDrop(ev: any, parentId?: string) {
+    this.pageBuilderService.onDrop(ev, parentId);
   }
 
   addColumnToLast() {

@@ -27,7 +27,7 @@ import { waitForFontsToLoad, waitForRenderComplete } from '../../utiles/renderin
   imports: [CommonModule],
 })
 export class NgxPagePreviewComponent implements OnInit, AfterViewInit {
-  @Input('dynamicData') set setDynamicData(val: DynamicDataStructure) {
+  @Input('dynamicData') set setDynamicData(val: DynamicDataStructure[]) {
     this.dynamicDataService.dynamicData = val;
   }
 
@@ -70,7 +70,7 @@ export class NgxPagePreviewComponent implements OnInit, AfterViewInit {
     window.addEventListener('message', (event) => {
       console.log('Received message from parent:', event.data);
       if (event.data?.type === PREVIEW_CONSTS.MESSAGE_TYPES.GET_DATA) {
-        const data: { pageInfo: string; dynamicData: DynamicDataStructure } = event.data.payload;
+        const data: { pageInfo: string; dynamicData: DynamicDataStructure[] } = event.data.payload;
         this.dynamicDataService.dynamicData = data.dynamicData;
         this.initializePreview(PageBuilderDto.fromJSON(JSON.parse(data.pageInfo)));
       }

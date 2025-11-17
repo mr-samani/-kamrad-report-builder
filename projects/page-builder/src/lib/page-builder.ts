@@ -42,8 +42,8 @@ import { PAGE_BUILDER_CONFIGURATION } from '../models/tokens';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, OnDestroy {
-  @Input('dynamicData') set setDynamicData(val: DynamicDataStructure) {
-    this.dynamicDataService.dynamicData = val;
+  @Input('dynamicData') set setDynamicData(val: DynamicDataStructure[]) {
+    this.dynamicDataService.dynamicData = val ?? [];
   }
   private _pageBody = viewChild<ElementRef<HTMLElement>>('PageBody');
   private _pageHeader = viewChild<ElementRef<HTMLElement>>('PageHeader');

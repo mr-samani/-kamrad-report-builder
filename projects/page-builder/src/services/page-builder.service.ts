@@ -70,7 +70,7 @@ export class PageBuilderService implements OnDestroy {
     this.pageInfo.pages[this.currentPageIndex()] = page;
   }
 
-  async onDrop(event: IDropEvent) {
+  async onDrop(event: IDropEvent, parentId?: string) {
     console.log('Dropped:', event);
     if (event.container == event.previousContainer && event.currentIndex == event.previousIndex) {
       return;
@@ -82,7 +82,7 @@ export class PageBuilderService implements OnDestroy {
     this.activeEl.set(undefined);
     if (event.previousContainer.el.id == 'blockSourceList') {
       // انتقال از یک container به container دیگه
-      const source = new PageItem(this.sources[event.previousIndex]);
+      const source = new PageItem(this.sources[event.previousIndex], parentId);
       source.children = []; // very important to create reference to droplist data
       this.createBlockElement(source, event.container.el, event.currentIndex);
       event.container.data.splice(event.currentIndex, 0, source);

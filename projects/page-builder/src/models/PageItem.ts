@@ -1,17 +1,15 @@
-import {
-  DestroyableInjector,
-  InjectionToken,
-  Provider,
-  reflectComponentType,
-  Type,
-} from '@angular/core';
+import { Type } from '@angular/core';
 import { randomStrnig } from '../utiles/generateUUID';
 import { ISourceOptions } from './SourceItem';
 import { LibConsts } from '../consts/defauls';
 import { CustomComponent } from './CustomComponent';
+import { DataSourceSetting } from './DataSourceSetting';
 
 export interface IPageItem {
   id?: string;
+  dataSource?: DataSourceSetting;
+  parentId?: string;
+
   el?: HTMLElement;
   children?: PageItem[];
   tag?: string;
@@ -26,6 +24,8 @@ export interface IPageItem {
 
 export class PageItem implements IPageItem {
   id: string = '';
+  dataSource?: DataSourceSetting;
+  parentId?: string;
   el?: HTMLElement;
   children: PageItem[] = [];
   tag!: string;
@@ -46,19 +46,20 @@ export class PageItem implements IPageItem {
 
   //---------------------------------------------------
 
-  constructor(data?: IPageItem) {
+  constructor(data?: IPageItem, parentId?: string) {
     if (data) {
       for (var property in data) {
         if (this.hasOwnProperty(property)) (<any>this)[property] = (<any>data)[property];
       }
     }
     if (!this.id) this.id = randomStrnig(5);
+    this.parentId = parentId;
   }
   static fromJSON(data: any): PageItem {
     const item = new PageItem(data);
     Object.assign(item, data);
     if (item.children) {
-      item.children = item.children.map((child) => new PageItem(child));
+      item.children = item.children.map((child) => new PageItem(child, item.id));
     }
     return item;
   }

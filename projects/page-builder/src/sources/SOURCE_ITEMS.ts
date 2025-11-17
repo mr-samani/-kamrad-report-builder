@@ -115,6 +115,10 @@ export const SOURCE_ITEMS: SourceItem[] = [
         import('./collection-item/collection-item.component').then(
           (c) => c.CollectionItemComponent,
         ),
+      componentSettings: () =>
+        import('./collection-item/collection-settings/collection-settings.component').then(
+          (c) => c.DataSourceSettingsComponent,
+        ),
     },
   }),
 ];
