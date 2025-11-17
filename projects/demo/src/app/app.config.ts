@@ -6,10 +6,9 @@ import {
 import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
-import { providePageBuilder, STORAGE_SERVICE, StorageType } from '@ngx-page-builder';
+import { providePageBuilder } from '@ngx-page-builder';
 import { CustomSources } from './custom-source/custom-sources';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { MessagePackStorageService } from './custom-storage/msgpack.service';
 import { provideHighcharts } from 'highcharts-angular';
 
 export const appConfig: ApplicationConfig = {

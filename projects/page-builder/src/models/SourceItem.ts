@@ -1,4 +1,5 @@
-import { Provider, reflectComponentType, Type } from '@angular/core';
+import { Type } from '@angular/core';
+import { CustomComponent } from './CustomComponent';
 
 export class Directive {
   directive!: Type<any>;
@@ -64,30 +65,6 @@ export class SourceItem {
   icon: string = '';
 
   /**
-   * Custom Component reference
-   * @example MyChartComponent
-   */
-  component?: Type<any>;
-
-  /**
-   * Component key
-   * - name of component
-   * @readonly Set by library
-   */
-  readonly componentKey?: string;
-  /**
-   * Custom component settings reference
-   * @example MyChartSettingsComponent
-   */
-  componentSettings?: Type<any>;
-
-  /**
-   * Providers for the custom component
-   * - shared service between CustomComponent and CustomComponentSettings
-   */
-  providers?: Provider[];
-
-  /**
    * Text content of html tags
    */
   content?: string;
@@ -99,16 +76,13 @@ export class SourceItem {
    * @example pagebreak cannot move to child items
    */
   disableMovement?: boolean = false;
+
+  customComponent?: CustomComponent;
   constructor(data?: SourceItem) {
     if (data) {
       for (var property in data) {
         if (this.hasOwnProperty(property)) (<any>this)[property] = (<any>data)[property];
       }
-    }
-    if (this.component && typeof this.component === 'function') {
-      const metadata = reflectComponentType(this.component);
-      this.componentKey = this.component.name || 'UnknownComponent';
-      this.tag = metadata?.selector || 'div';
     }
   }
 }

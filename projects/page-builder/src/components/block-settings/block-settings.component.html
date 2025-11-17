@@ -1,9 +1,9 @@
 <div class="inner">
   <p>{{ item?.tag }}</p>
-  @if (item && item.componentSettings) {
+  @if (item && item.customComponent && settingComponent) {
     <ng-container
-      [ngComponentOutlet]="item.componentSettings"
-      [ngComponentOutletInjector]="item.compInjector"
+      [ngComponentOutlet]="settingComponent"
+      [ngComponentOutletInjector]="item.customComponent.compInjector"
     ></ng-container>
   } @else {
     <p>No settings available.</p>

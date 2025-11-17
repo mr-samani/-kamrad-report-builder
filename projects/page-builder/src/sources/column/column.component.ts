@@ -28,9 +28,9 @@ export class ColumnComponent implements OnInit {
       this.loadCols();
     }
   }
-  loadCols() {
+  async loadCols() {
     for (const child of this.pageItem.children) {
-      let el = this.createElementCell(child, this.colContainer.nativeElement);
+      let el = await this.createElementCell(child, this.colContainer.nativeElement);
       if (!el) continue;
       if (child.children && child.children.length > 0 && el) {
         this.loadChilds(child.children, el);
@@ -51,7 +51,7 @@ export class ColumnComponent implements OnInit {
     this.pageItem.children.splice(index ?? this.pageItem.children.length, 0, newColumn);
   }
 
-  private createElementCell(item: PageItem, container: HTMLElement, index: number = -1) {
+  private async createElementCell(item: PageItem, container: HTMLElement, index: number = -1) {
     item.options = {
       ...item.options,
       attributes: {
@@ -74,7 +74,7 @@ export class ColumnComponent implements OnInit {
         click: (ev: Event) => this.pageBuilderService.onSelectBlock(item, ev),
       };
     }
-    let el = this.dynamicElementService.createBlockElement(container, index, item);
+    let el = await this.dynamicElementService.createBlockElement(container, index, item);
     item.el = el;
     return el;
   }

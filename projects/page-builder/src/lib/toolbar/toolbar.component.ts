@@ -68,14 +68,20 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
     }
   }
   nextPage() {
-    this.pageBuilderService.nextPage().then((index) => {
-      this.pageNumber = index + 1;
-    });
+    this.pageBuilderService
+      .nextPage()
+      .then((index) => {
+        this.pageNumber = index + 1;
+      })
+      .catch(() => {});
   }
   previousPage() {
-    this.pageBuilderService.previousPage().then((index) => {
-      this.pageNumber = index + 1;
-    });
+    this.pageBuilderService
+      .previousPage()
+      .then((index) => {
+        this.pageNumber = index + 1;
+      })
+      .catch(() => {});
   }
 
   onSave() {

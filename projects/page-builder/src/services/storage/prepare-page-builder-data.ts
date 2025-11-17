@@ -15,10 +15,12 @@ export function preparePageDataForSave(pageInfo: PageBuilderDto): PageBuilderDto
         item.style = item.el.style.cssText;
         // item.style = encodeURIComponent(item.el.style.cssText);
       }
-      delete item.component;
-      delete item.componentSettings;
-      delete item.providers;
-      delete item.compInjector;
+      if (item.customComponent) {
+        delete (item.customComponent as any).component;
+        delete item.customComponent.componentSettings;
+        delete item.customComponent.providers;
+        delete item.customComponent.compInjector;
+      }
 
       cleanAttributes(item.options);
       delete item.options?.events;

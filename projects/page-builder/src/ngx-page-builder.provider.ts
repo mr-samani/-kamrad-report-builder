@@ -38,6 +38,18 @@ export function providePageBuilder(config: PageBuilderConfiguration) {
     ...SOURCE_ITEMS,
     ...(config.customSources ?? []).map((item) => new SourceItem(item)),
   ];
+  // check duplicates
+  const ids = new Set();
+  for (const item of LibConsts.SourceItemList) {
+    if (!item.customComponent) continue;
+    if (ids.has(item.customComponent.componentKey)) {
+      throw new Error(
+        'NgxPageBuilder: ' +
+          `Custom component has Duplicate componentKey: ${item.customComponent.componentKey}`,
+      );
+    }
+    ids.add(item.customComponent.componentKey);
+  }
 
   return makeEnvironmentProviders([
     {
