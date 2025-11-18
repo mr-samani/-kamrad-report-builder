@@ -92,8 +92,8 @@ export class DynamicDataService {
         this.nearestCache.set(itemId, cur.dataSource.id);
         return cur.dataSource.id;
       }
-      if (!cur.parentId) break;
-      cur = pageModel.get(cur.parentId!);
+      if (!cur.parent?.id) break;
+      cur = pageModel.get(cur.parent.id);
     }
     this.nearestCache.set(itemId, null);
     return null;

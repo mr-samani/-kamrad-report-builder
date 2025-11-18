@@ -20,11 +20,12 @@ import { PageBuilderBaseComponent } from './page-builder-base-component';
 import { IStorageService } from '../services/storage/IStorageService';
 import { STORAGE_SERVICE } from '../services/storage/token.storage';
 import { PageBuilderConfiguration } from '../models/PageBuilderConfiguration';
-import { PageBuilderDto } from '../public-api';
 import { DynamicDataStructure } from '../models/DynamicData';
 import { fromEvent, Subscription } from 'rxjs';
 import { SideConfigComponent } from '../components/side-config/side-config.component';
 import { PAGE_BUILDER_CONFIGURATION } from '../models/tokens';
+import { PageItemChange } from '../services/page-builder.service';
+import { PageBuilderDto } from '../models/PageBuilderDto';
 
 @Component({
   selector: 'ngx-page-builder',
@@ -62,8 +63,10 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
     this.pageBuilderService.pageBody = this._pageBody;
     this.pageBuilderService.pageHeader = this._pageHeader;
     this.pageBuilderService.pageFooter = this._pageFooter;
-    this.pageBuilderService.changed$.subscribe(() => {
-      this.chdRef.detectChanges();
+    this.pageBuilderService.changed$.subscribe((data: PageItemChange) => {
+      if (data.type == 'ChangePageConfig') {
+        this.chdRef.detectChanges();
+      }
     });
   }
 

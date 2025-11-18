@@ -18,6 +18,11 @@ import { DefaultBlockClassName, getDefaultBlockDirective, LibConsts } from '../c
 import { IDropEvent, moveItemInArray, transferArrayItem } from 'ngx-drag-drop-kit';
 import { SourceItem } from '../models/SourceItem';
 
+export interface PageItemChange {
+  item: PageItem | null;
+  type: 'ChangePageConfig' | 'AddBlock' | 'ChangeBlockContent' | 'RemoveBlock';
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -39,9 +44,11 @@ export class PageBuilderService implements OnDestroy {
   showOutlines = true;
   pageInfo = new PageBuilderDto();
 
-  private _changed$ = new Subject<string>();
+  private _changed$ = new Subject<PageItemChange>();
+  /** تغییر کردن pageitem ها */
   changed$ = this._changed$.asObservable();
 
+  /** جابجایی بین صفحات */
   onPageChange$ = new BehaviorSubject<Page | undefined>(undefined);
 
   private renderer!: Renderer2;
@@ -56,8 +63,8 @@ export class PageBuilderService implements OnDestroy {
     this._changed$.complete();
     this.onPageChange$.unsubscribe();
   }
-  updateChangeDetection(arg0: string) {
-    this._changed$.next(arg0);
+  updateChangeDetection(data: PageItemChange) {
+    this._changed$.next(data);
   }
 
   public get currentPage(): Page {
@@ -70,7 +77,7 @@ export class PageBuilderService implements OnDestroy {
     this.pageInfo.pages[this.currentPageIndex()] = page;
   }
 
-  async onDrop(event: IDropEvent, parentId?: string) {
+  async onDrop(event: IDropEvent, parent?: PageItem) {
     console.log('Dropped:', event);
     if (event.container == event.previousContainer && event.currentIndex == event.previousIndex) {
       return;
@@ -82,11 +89,12 @@ export class PageBuilderService implements OnDestroy {
     this.activeEl.set(undefined);
     if (event.previousContainer.el.id == 'blockSourceList') {
       // انتقال از یک container به container دیگه
-      const source = new PageItem(this.sources[event.previousIndex], parentId);
+      const source = new PageItem(this.sources[event.previousIndex], parent);
       source.children = []; // very important to create reference to droplist data
       this.createBlockElement(source, event.container.el, event.currentIndex);
       event.container.data.splice(event.currentIndex, 0, source);
       this.onSelectBlock(source);
+      this.updateChangeDetection({ item: source, type: 'AddBlock' });
     } else {
       const nativeEl = event.previousContainer.data[event.previousIndex].el;
       if (event.container == event.previousContainer) {
@@ -114,6 +122,7 @@ export class PageBuilderService implements OnDestroy {
       }
       // update register item
       (event.item as any).dragRegister?.registerDragItem?.(event.item);
+      this.updateChangeDetection({ item: event.item as any, type: 'AddBlock' });
     }
     // this.pageBuilderService.items = items;
     // this.chdRef.detectChanges();
@@ -206,10 +215,14 @@ export class PageBuilderService implements OnDestroy {
 
   async createBlockElement(item: PageItem, container: HTMLElement, index = -1) {
     if (this.mode == 'Edit') {
-      let directives = getDefaultBlockDirective(item, this.onDrop.bind(this));
       item.options ??= {};
       item.options.directives ??= [];
-      item.options.directives.push(...directives);
+      let directives = getDefaultBlockDirective(item, this.onDrop.bind(this));
+      for (let d of directives) {
+        if (item.options.directives.findIndex((x) => x == d) === -1) {
+          item.options.directives.push(d);
+        }
+      }
       item.options.attributes ??= {};
       item.options.attributes['class'] ??= DefaultBlockClassName;
       if (!item.options.attributes['class'].includes(DefaultBlockClassName)) {
@@ -221,7 +234,7 @@ export class PageBuilderService implements OnDestroy {
     let el = await this.dynamicElementService.createBlockElement(container, index, item);
     if (item.children && item.children.length > 0 && el) {
       for (const child of item.children) {
-        await this.createBlockElement(child, el);
+        await this.createBlockElement(child, el, -1);
       }
     }
     return el;
@@ -264,13 +277,17 @@ export class PageBuilderService implements OnDestroy {
       this.renderer.removeChild(this.renderer.parentNode(item.el), item.el);
     }
     this.activeEl.set(undefined);
+    this.updateChangeDetection({ item: item, type: 'RemoveBlock' });
   }
-  private destroyInTree(list: PageItem[], removeEl = false) {
+  destroyInTree(list: PageItem[], removeEl = false) {
     if (!list) {
       return;
     }
     for (let c of list) {
       this.destroyInTree(c.children, removeEl);
+      if (c.template) {
+        this.destroyInTree([c.template], removeEl);
+      }
       this.dynamicElementService.destroy(c);
       if (removeEl && c.el) {
         this.renderer.removeChild(this.renderer.parentNode(c.el), c.el);
@@ -307,14 +324,8 @@ export class PageBuilderService implements OnDestroy {
   }
 
   writeItemValue(data: PageItem) {
-    const list = this.findBlockList(data);
-    if (!data || !list || !list.length) return;
-    this.activeEl.set(data);
-    const index = list.findIndex((x) => x.id == data.id);
-    if (index > -1 && list[index].el) {
-      list[index].el = this.dynamicElementService.updateElementContent(list[index].el, data);
+    this.dynamicElementService.updateElementContent(data);
 
-      list[index] = data;
-    }
+    // this.updateChangeDetection({ item: data, type: 'ChangeBlockContent' });
   }
 }

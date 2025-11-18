@@ -27,7 +27,7 @@ export class ConfigDialogComponent implements OnInit {
 
   ok() {
     this.pageBuilderService.pageInfo.config = this.configs;
-    this.pageBuilderService.updateChangeDetection('config');
+    this.pageBuilderService.updateChangeDetection({ item: null, type: 'ChangePageConfig' });
     this.dialogRef.close(true);
   }
 }

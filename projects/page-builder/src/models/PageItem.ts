@@ -8,8 +8,6 @@ import { DataSourceSetting } from './DataSourceSetting';
 export interface IPageItem {
   id?: string;
   dataSource?: DataSourceSetting;
-  parentId?: string;
-
   el?: HTMLElement;
   children?: PageItem[];
   tag?: string;
@@ -20,12 +18,15 @@ export interface IPageItem {
   componentKey?: string;
   options?: ISourceOptions;
   style?: string;
+  template?: PageItem;
+  disableMovement?: boolean;
+  lockMoveInnerChild?: boolean;
 }
 
 export class PageItem implements IPageItem {
   id: string = '';
   dataSource?: DataSourceSetting;
-  parentId?: string;
+  parent?: PageItem;
   el?: HTMLElement;
   children: PageItem[] = [];
   tag!: string;
@@ -40,27 +41,39 @@ export class PageItem implements IPageItem {
    * @example pagebreak cannot move to child items
    */
   disableMovement?: boolean = false;
+  /**
+   * disable move inner child item to outside of self list
+   * @example prevent dragging child item of Item-Collection to another list
+   */
+  lockMoveInnerChild?: boolean = false;
   //------------------------CUSTOM COMPONENT---------------------------
   /** custom component */
   customComponent?: CustomComponent;
 
   //---------------------------------------------------
 
-  constructor(data?: IPageItem, parentId?: string) {
+  /**
+   * item template collection
+   */
+  template?: PageItem;
+
+  constructor(data?: IPageItem, parent?: PageItem) {
     if (data) {
       for (var property in data) {
         if (this.hasOwnProperty(property)) (<any>this)[property] = (<any>data)[property];
       }
+      if (data.children) {
+        this.children = data.children.map((child) => new PageItem(child, this));
+      }
+      if (data.template) {
+        this.template = new PageItem(data.template, this);
+      }
     }
     if (!this.id) this.id = randomStrnig(5);
-    this.parentId = parentId;
+    this.parent = parent;
   }
-  static fromJSON(data: any): PageItem {
+  static fromJSON(data: IPageItem): PageItem {
     const item = new PageItem(data);
-    Object.assign(item, data);
-    if (item.children) {
-      item.children = item.children.map((child) => new PageItem(child, item.id));
-    }
     return item;
   }
 

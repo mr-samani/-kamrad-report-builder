@@ -117,3 +117,22 @@
   max-height: calc(100vh - var(--topbar-height));
   overflow: auto;
 }
+
+.ngx-page-alert {
+  color: #303030;
+  padding: 10px;
+  border-radius: 5px;
+  margin: 10px;
+  &.danger {
+    background: #ff000057;
+    border: 2px #ff7878 solid;
+  }
+  &.sucess {
+    background: #00ff0057;
+    border: 2px #78ff78 solid;
+  }
+  &.info {
+    background: #0000ff57;
+    border: 2px #7878ff solid;
+  }
+}

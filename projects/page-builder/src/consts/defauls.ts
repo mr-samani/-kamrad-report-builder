@@ -33,9 +33,10 @@ export function getDefaultBlockDirective(pageItem: PageItem, onDropFn: Function)
       directive: NgxDropListDirective,
       inputs: {
         data: pageItem.children,
+        connectedTo: pageItem.lockMoveInnerChild ? `[data-id="${pageItem.id}"]` : undefined,
       },
       outputs: {
-        drop: (ev: IDropEvent<PageItem>) => onDropFn(ev, pageItem.id),
+        drop: (ev: IDropEvent<PageItem>) => onDropFn(ev, pageItem),
       },
     });
   }

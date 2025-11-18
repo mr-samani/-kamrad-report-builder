@@ -71,8 +71,8 @@ export class BlockPropertiesComponent extends BaseComponent implements OnInit {
       .subscribe((result) => {
         if (result && this.item) {
           this.item.content = result;
+          debugger;
           this.pageBuilderService.writeItemValue(this.item);
-          this.chdRef.detectChanges();
         }
       });
   }

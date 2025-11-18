@@ -8,7 +8,7 @@ import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-collection-settings',
   templateUrl: './collection-settings.component.html',
-  styleUrls: ['./collection-settings.component.css'],
+  styleUrls: ['./collection-settings.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule],
 })

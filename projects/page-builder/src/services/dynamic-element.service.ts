@@ -11,6 +11,8 @@ import {
   runInInjectionContext,
   createComponent,
   EventEmitter,
+  Inject,
+  DOCUMENT,
 } from '@angular/core';
 import 'reflect-metadata';
 import { PageItem } from '../models/PageItem';
@@ -29,6 +31,7 @@ export class DynamicElementService {
     rendererFactory: RendererFactory2,
     private appRef: ApplicationRef,
     private envInjector: EnvironmentInjector,
+    @Inject(DOCUMENT) private doc: Document,
   ) {
     this.renderer = rendererFactory.createRenderer(null, null);
   }
@@ -68,9 +71,12 @@ export class DynamicElementService {
     return element;
   }
 
-  updateElementContent(el: HTMLElement, data: PageItem) {
-    this.renderer.setProperty(el, 'innerHTML', data.content);
-    return el;
+  updateElementContent(data: PageItem) {
+    let els = this.doc.querySelectorAll('[data-id="' + data.id + '"]');
+    els.forEach((el) => {
+      this.renderer.setProperty(el, 'innerHTML', data.content);
+    });
+    return data.el;
   }
 
   private async createComponentElement(
@@ -207,7 +213,6 @@ export class DynamicElementService {
     const { inputs, outputs } = directive;
     if (!DirType) return;
     const elRef = new ElementRef(element);
-
     // ساخت یک EnvironmentInjector کامل که به همه سرویس‌های root دسترسی داره
     const dirInjector = Injector.create({
       providers: [

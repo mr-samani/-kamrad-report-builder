@@ -56,7 +56,7 @@ export class ColumnComponent implements OnInit {
       {
         tag: 'div',
       },
-      this.pageItem.id,
+      this.pageItem,
     );
     let el = this.createElementCell(newColumn, this.colContainer.nativeElement, index);
     this.pageItem.children.splice(index ?? this.pageItem.children.length, 0, newColumn);
@@ -90,8 +90,8 @@ export class ColumnComponent implements OnInit {
     return el;
   }
 
-  private onDrop(ev: any, parentId?: string) {
-    this.pageBuilderService.onDrop(ev, parentId);
+  private onDrop(ev: any, parent?: PageItem) {
+    this.pageBuilderService.onDrop(ev, parent);
   }
 
   addColumnToLast() {
