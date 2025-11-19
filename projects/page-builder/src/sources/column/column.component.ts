@@ -38,7 +38,10 @@ export class ColumnComponent implements OnInit {
   }
   async loadCols() {
     for (const child of this.pageItem.children) {
-      let el = await this.createElementCell(child, this.colContainer.nativeElement);
+      let el = await this.pageBuilderService.createBlockElement(
+        child,
+        this.colContainer.nativeElement,
+      );
       if (!el) continue;
       if (child.children && child.children.length > 0 && el) {
         this.loadChilds(child.children, el);
@@ -55,43 +58,17 @@ export class ColumnComponent implements OnInit {
     const newColumn = new PageItem(
       {
         tag: 'div',
+        canHaveChild: true,
+        options: {
+          attributes: {
+            class: 'col-item',
+          },
+        },
       },
       this.pageItem,
     );
-    let el = this.createElementCell(newColumn, this.colContainer.nativeElement, index);
+    this.pageBuilderService.createBlockElement(newColumn, this.colContainer.nativeElement, index);
     this.pageItem.children.splice(index ?? this.pageItem.children.length, 0, newColumn);
-  }
-
-  private async createElementCell(item: PageItem, container: HTMLElement, index: number = -1) {
-    item.options = {
-      ...item.options,
-      attributes: {
-        class: 'col-item',
-      },
-    };
-    if (this.pageBuilderService.mode == 'Edit') {
-      item.options.directives = [
-        {
-          directive: NgxDropListDirective,
-          inputs: {
-            data: item.children,
-          },
-          outputs: {
-            drop: this.onDrop.bind(this),
-          },
-        },
-      ];
-      item.options.events = {
-        click: (ev: Event) => this.pageBuilderService.onSelectBlock(item, ev),
-      };
-    }
-    let el = await this.dynamicElementService.createBlockElement(container, index, item);
-    item.el = el;
-    return el;
-  }
-
-  private onDrop(ev: any, parent?: PageItem) {
-    this.pageBuilderService.onDrop(ev, parent);
   }
 
   addColumnToLast() {

@@ -12,8 +12,6 @@ export const LibConsts: {
   SourceItemList: [],
 };
 
-const DefaultBlockDirectives: Directive[] = [{ directive: NgxDraggableDirective }];
-
 export const DefaultBlockClassName = 'block-item';
 
 export const LOCAL_STORAGE_SAVE_KEY = 'page';
@@ -21,11 +19,9 @@ export const LOCAL_STORAGE_SAVE_KEY = 'page';
 export const DEFAULT_IMAGE_URL = '/assets/default-image.png';
 
 export function getDefaultBlockDirective(pageItem: PageItem, onDropFn: Function) {
-  let dir = [];
-  if (pageItem.disableMovement) {
-    dir = DefaultBlockDirectives.filter((d) => d.directive !== NgxDraggableDirective);
-  } else {
-    dir = [...DefaultBlockDirectives];
+  const dir: Directive[] = [];
+  if (!pageItem.disableMovement) {
+    dir.push({ directive: NgxDraggableDirective });
   }
 
   if (pageItem.canHaveChild) {

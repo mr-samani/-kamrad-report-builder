@@ -20,7 +20,13 @@ import { SourceItem } from '../models/SourceItem';
 
 export interface PageItemChange {
   item: PageItem | null;
-  type: 'ChangePageConfig' | 'AddBlock' | 'ChangeBlockContent' | 'RemoveBlock' | 'MoveBlock';
+  type:
+    | 'ChangePageConfig'
+    | 'AddBlock'
+    | 'ChangeBlockContent'
+    | 'ChangeBlockProperties'
+    | 'RemoveBlock'
+    | 'MoveBlock';
 }
 
 @Injectable({
@@ -91,7 +97,7 @@ export class PageBuilderService implements OnDestroy {
       // انتقال از یک container به container دیگه
       const source = new PageItem(this.sources[event.previousIndex], parent);
       source.children = []; // very important to create reference to droplist data
-      this.createBlockElement(source, event.container.el, event.currentIndex);
+      await this.createBlockElement(source, event.container.el, event.currentIndex);
       event.container.data.splice(event.currentIndex, 0, source);
       this.onSelectBlock(source);
       this.updateChangeDetection({ item: source, type: 'AddBlock' });
@@ -109,7 +115,9 @@ export class PageBuilderService implements OnDestroy {
       }
 
       const containerEl = event.container.el;
-      const children = Array.from(containerEl.children);
+      const children = Array.from(containerEl.children).filter(
+        (x) => !x.classList.contains('ngx-drag-placeholder'),
+      );
       // اگر باید به آخر لیست اضافه بشه
       if (event.currentIndex >= children.length - 1) {
         this.renderer.appendChild(containerEl, nativeEl);
@@ -121,8 +129,12 @@ export class PageBuilderService implements OnDestroy {
         // this.renderer.removeChild(containerEl, nativeEl);
       }
       // update register item
+      // TODO: probably not needed
       (event.item as any).dragRegister?.registerDragItem?.(event.item);
-      this.updateChangeDetection({ item: event.item as any, type: 'MoveBlock' });
+      this.updateChangeDetection({
+        item: event.container.data[event.currentIndex],
+        type: 'MoveBlock',
+      });
     }
     // this.pageBuilderService.items = items;
     // this.chdRef.detectChanges();
@@ -213,6 +225,9 @@ export class PageBuilderService implements OnDestroy {
     this.changePage(this.currentPageIndex() + 1);
   }
 
+  /**
+   *  ایجاد المنت جدید حتما باید با await انجام شود
+   */
   async createBlockElement(item: PageItem, container: HTMLElement, index = -1) {
     if (this.mode == 'Edit') {
       item.options ??= {};
@@ -249,15 +264,16 @@ export class PageBuilderService implements OnDestroy {
     this.deSelectBlock();
     const page = this.pageInfo.pages[pageIndex];
     if (!page) return;
-    this.destroyInTree(page.bodyItems, true);
-    this.destroyInTree(page.headerItems, true);
-    this.destroyInTree(page.footerItems, true);
+    this.dynamicElementService.destroyBatch(page.bodyItems);
+    this.dynamicElementService.destroyBatch(page.headerItems);
+    this.dynamicElementService.destroyBatch(page.footerItems);
     this.pageBody()!.nativeElement.innerHTML = '';
     this.pageHeader()!.nativeElement.innerHTML = '';
     this.pageFooter()!.nativeElement.innerHTML = '';
   }
 
   onSelectBlock(c: PageItem, ev?: Event) {
+    console.log('click on block', c.el);
     ev?.stopPropagation();
     ev?.preventDefault();
     this.activeEl.set(c);
@@ -275,45 +291,13 @@ export class PageBuilderService implements OnDestroy {
     if (!item || !parent) {
       throw new Error('Remove block failed: invalid parent item in list');
     }
-    debugger;
     const index = parent.children.findIndex((i) => i.id === item.id);
     if (index !== -1 && item.el) {
       parent.children.splice(index, 1);
-      this.destroyInTree([item], true);
+      this.dynamicElementService.destroy(item);
     }
     this.activeEl.set(undefined);
     this.updateChangeDetection({ item: item, type: 'RemoveBlock' });
-  }
-  destroyInTree(list: PageItem[], removeEl = false) {
-    if (!list) {
-      return;
-    }
-    for (let c of list) {
-      if (c.children && c.children.length > 0) {
-        this.destroyInTree(c.children, removeEl);
-      }
-      if (c.template) {
-        this.destroyInTree([c.template], removeEl);
-      }
-      this.dynamicElementService.destroy(c);
-      if (removeEl && c.el) {
-        // console.log('remove', c.id, c.el);
-        c.el.remove();
-      }
-    }
-  }
-  private findBlockList(block: PageItem): PageItem[] {
-    const page = this.pageInfo.pages[this.currentPageIndex()];
-    if (!page) return [];
-
-    const lists = [page.headerItems, page.bodyItems, page.footerItems];
-
-    for (const list of lists) {
-      const found = this.findInTree(list, block.id);
-      if (found) return found;
-    }
-
-    return [];
   }
 
   private findInTree(list: PageItem[], id: string): PageItem[] | null {
@@ -333,7 +317,9 @@ export class PageBuilderService implements OnDestroy {
 
   writeItemValue(data: PageItem) {
     this.dynamicElementService.updateElementContent(data);
-
-    // this.updateChangeDetection({ item: data, type: 'ChangeBlockContent' });
+    this.updateChangeDetection({ item: data, type: 'ChangeBlockContent' });
+  }
+  changedProperties(item: PageItem) {
+    this.updateChangeDetection({ item: item, type: 'ChangeBlockProperties' });
   }
 }

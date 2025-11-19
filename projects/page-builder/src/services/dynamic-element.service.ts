@@ -1,4 +1,3 @@
-// dynamic-element.service.ts
 import {
   ApplicationRef,
   ElementRef,
@@ -13,6 +12,7 @@ import {
   EventEmitter,
   Inject,
   DOCUMENT,
+  ComponentRef,
 } from '@angular/core';
 import 'reflect-metadata';
 import { PageItem } from '../models/PageItem';
@@ -25,8 +25,8 @@ import { Subject } from 'rxjs';
 @Injectable({ providedIn: 'root' })
 export class DynamicElementService {
   public dynamicData?: DynamicDataStructure;
-
   private renderer!: Renderer2;
+
   constructor(
     rendererFactory: RendererFactory2,
     private appRef: ApplicationRef,
@@ -38,7 +38,7 @@ export class DynamicElementService {
 
   /**
    * create html element on droped to page
-   * ایجاد المنت از روی سورس ها در هنگام افزودن با درگ اند دراپ
+   * ایجاد المنت از روی سورس ها
    */
   async createBlockElement(
     container: HTMLElement | ViewContainerRef,
@@ -46,6 +46,9 @@ export class DynamicElementService {
     item: PageItem,
   ): Promise<HTMLElement> {
     let element: HTMLElement;
+    const parentEl: HTMLElement =
+      container instanceof ViewContainerRef ? container.element.nativeElement : container;
+
     if (item.customComponent) {
       element = await this.createComponentElement(container, item, index);
     } else {
@@ -53,8 +56,7 @@ export class DynamicElementService {
         item.tag = 'div';
       }
       element = this.renderer.createElement(item.tag);
-      const parentEl: HTMLElement =
-        container instanceof ViewContainerRef ? container.element.nativeElement : container;
+
       if (index != null && index >= 0) {
         const refNode = parentEl.children[index] || null;
         this.renderer.insertBefore(parentEl, element, refNode);
@@ -63,19 +65,19 @@ export class DynamicElementService {
       }
     }
 
+    // Bind options و directives
     element = this.bindOptions(element, item);
+
     if (item.content) {
       this.renderer.setProperty(element, 'innerHTML', item.content);
     }
+
     item.el = element;
     return element;
   }
 
   updateElementContent(data: PageItem) {
-    let els = this.doc.querySelectorAll('[data-id="' + data.id + '"]');
-    els.forEach((el) => {
-      this.renderer.setProperty(el, 'innerHTML', data.content);
-    });
+    this.renderer.setProperty(data.el, 'innerHTML', data.content);
     return data.el;
   }
 
@@ -96,33 +98,35 @@ export class DynamicElementService {
     onChangeCustomData.subscribe((value) => {
       item.customComponent!.componentData = value;
     });
+
     const context: ComponentDataContext = {
       data: item.customComponent?.componentData,
       onChange: onChangeCustomData,
     };
 
     p.push({ provide: COMPONENT_DATA, useValue: context });
-    // ساخت Injector اختصاصی برای این instance
-    item.customComponent!.compInjector = Injector.create({
+
+    // ✅ ساخت Injector اختصاصی با DestroyRef
+    const componentInjector = Injector.create({
       providers: p,
       parent: this.envInjector,
     });
 
-    // ساخت کامپوننت در محیط Angular
-    const compRef = createComponent(component, {
-      elementInjector: item.customComponent!.compInjector,
+    item.customComponent!.compInjector = componentInjector;
+
+    // ساخت component
+    const compRef: ComponentRef<any> = createComponent(component, {
+      elementInjector: componentInjector,
       environmentInjector: this.envInjector,
     });
 
-    // اتصال view به برنامه Angular
     this.appRef.attachView(compRef.hostView);
 
-    // گرفتن المنت خود کامپوننت
     let element = compRef.location.nativeElement as HTMLElement;
 
-    // افزودن به DOM
     const parentEl =
       container instanceof ViewContainerRef ? container.element.nativeElement : container;
+
     if (index != null && index >= 0) {
       const refNode = parentEl.children[index] || null;
       this.renderer.insertBefore(parentEl, element, refNode);
@@ -137,14 +141,11 @@ export class DynamicElementService {
     if ('pageItem' in instance) {
       instance['pageItem'] = item;
     }
+
     // ✅ Inputs
     if (item.options && item.options.inputs) {
       for (const [key, val] of Object.entries(item.options.inputs)) {
-        // if (key in instance) {
         instance[key] = val;
-        // } else {
-        //   this.renderer.setAttribute(element, key, val);
-        // }
       }
     }
 
@@ -159,7 +160,6 @@ export class DynamicElementService {
         }
       }
     }
-
     return element;
   }
 
@@ -171,11 +171,28 @@ export class DynamicElementService {
       }
     }
 
+    // ✅ Attach کردن directive‌ها
+    const directiveInstances: any[] = [];
+    let directiveInjector: Injector | undefined;
+
     if (item.options && item.options.directives?.length) {
+      // ساخت یه injector مشترک برای همه directive‌ها
+      directiveInjector = Injector.create({
+        providers: [
+          { provide: ElementRef, useValue: new ElementRef(element) },
+          { provide: Renderer2, useValue: this.renderer },
+        ],
+        parent: this.envInjector,
+      });
+
       for (const DirType of item.options.directives) {
-        this.attachDirective(element, DirType);
+        const dirInstance = this.attachDirective(element, DirType, directiveInjector);
+        if (dirInstance) {
+          directiveInstances.push(dirInstance);
+        }
       }
     }
+
     if (item.options?.events) {
       for (const [k, v] of Object.entries(item.options.events)) {
         this.renderer.listen(element, k, v);
@@ -202,25 +219,20 @@ export class DynamicElementService {
     //   element.contentEditable = 'true';
     // }
     if (item.style) {
-      // element.style.cssText = decodeURIComponent(item.style);
       element.style.cssText = item.style;
     }
+
     return element;
   }
 
-  private attachDirective<T>(element: HTMLElement, directive: Directive) {
+  private attachDirective<T>(
+    element: HTMLElement,
+    directive: Directive,
+    dirInjector: Injector,
+  ): any {
     const DirType = directive.directive;
     const { inputs, outputs } = directive;
-    if (!DirType) return;
-    const elRef = new ElementRef(element);
-    // ساخت یک EnvironmentInjector کامل که به همه سرویس‌های root دسترسی داره
-    const dirInjector = Injector.create({
-      providers: [
-        { provide: ElementRef, useValue: elRef },
-        { provide: Renderer2, useValue: this.renderer },
-      ],
-      parent: this.envInjector, // این مهمه! از envInjector به جای injector استفاده کن
-    });
+    if (!DirType) return null;
 
     // خواندن metadata پارامترهای سازنده
     let paramTypes: any[] = [];
@@ -230,7 +242,7 @@ export class DynamicElementService {
       paramTypes = [];
     }
 
-    // ساخت instance داخل injection context
+    // ساخت instance
     let dirInstance: any;
     try {
       dirInstance = runInInjectionContext(dirInjector, () => {
@@ -245,13 +257,14 @@ export class DynamicElementService {
           });
           return new (DirType as any)(...deps);
         } else {
-          return new (DirType as any)(elRef);
+          return new (DirType as any)(new ElementRef(element));
         }
       });
     } catch (err) {
       console.error('Error creating directive instance:', err);
-      dirInstance = new (DirType as any)(elRef);
+      dirInstance = new (DirType as any)(new ElementRef(element));
     }
+
     // ✅ Inputs
     if (inputs) {
       for (const [key, val] of Object.entries(inputs)) {
@@ -272,8 +285,10 @@ export class DynamicElementService {
     }
 
     const selectorName = (DirType as any).ɵdir?.selectors?.[0]?.find((x: any) => x !== '');
-    elRef.nativeElement.setAttribute(selectorName, '');
-    // فراخوانی lifecycle hooks
+    if (selectorName) {
+      element.setAttribute(selectorName, '');
+    }
+    // ✅ فراخوانی ngOnInit
     if (typeof dirInstance.ngOnInit === 'function') {
       try {
         dirInstance.ngOnInit();
@@ -282,8 +297,7 @@ export class DynamicElementService {
       }
     }
 
-    // CRITICAL: ngAfterViewInit باید بعد از اینکه element به DOM اضاف شد اجرا بشه
-    // برای اطمینان از setTimeout استفاده میکنیم
+    // ✅ فراخوانی ngAfterViewInit بعد از اضافه شدن به DOM
     setTimeout(() => {
       if (typeof dirInstance.ngAfterViewInit === 'function') {
         try {
@@ -294,9 +308,6 @@ export class DynamicElementService {
       }
     }, 0);
 
-    // شبیه‌سازی HostListener برای window events
-    // توجه: دایرکتیو از fromEvent استفاده میکنه، پس نیازی به این قسمت نیست
-    // ولی اگر بخوای میتونی نگهش داری
     const cleanupFns: (() => void)[] = [];
 
     // wrap ngOnDestroy
@@ -312,40 +323,55 @@ export class DynamicElementService {
       }
     };
 
-    // ذخیره instance برای cleanup بعدی
-    if (!(element as any).__ngDirectives__) (element as any).__ngDirectives__ = [];
+    // ذخیره برای fallback
+    if (!(element as any).__ngDirectives__) {
+      (element as any).__ngDirectives__ = [];
+    }
     (element as any).__ngDirectives__.push(dirInstance);
 
     return dirInstance;
   }
 
+  /**
+   * ⚠️ Destroy element
+   */
   public destroy(item: PageItem) {
-    if (!item.el) {
-      return;
-    }
-    this.destroyComponent(item.el);
-    this.destroyDirective(item.el);
-  }
+    if (!item.el) return;
 
-  // متد برای cleanup دستی اگر لازم شد
-  private destroyDirective(element: HTMLElement) {
-    const directiveInstances = (element as any).__ngDirectives__;
+    if (item.children && item.children.length > 0) {
+      for (let child of item.children) {
+        this.destroy(child);
+      }
+    }
+
+    // Manual cleanup قبل از حذف
+    // component
+    const compRef = (item.el as any).__componentRef__;
+    if (compRef) {
+      this.appRef.detachView(compRef.hostView);
+      compRef.destroy();
+      delete (item.el as any).__componentRef__;
+    }
+    // directive
+    const directiveInstances = (item.el as any).__ngDirectives__;
     if (Array.isArray(directiveInstances)) {
       for (const d of directiveInstances) {
         if (d && typeof d.ngOnDestroy === 'function') {
           d.ngOnDestroy?.();
         }
       }
-      delete (element as any).__ngDirectives__;
+      delete (item.el as any).__ngDirectives__;
+    }
+
+    // حذف از DOM
+    if (item.el.parentNode) {
+      this.renderer.removeChild(item.el.parentNode, item.el);
     }
   }
 
-  private destroyComponent(element: HTMLElement) {
-    const compRef = (element as any).__componentRef__;
-    if (compRef) {
-      this.appRef.detachView(compRef.hostView);
-      compRef.destroy();
-      delete (element as any).__componentRef__;
+  destroyBatch(items: PageItem[]) {
+    for (let item of items) {
+      this.destroy(item);
     }
   }
 

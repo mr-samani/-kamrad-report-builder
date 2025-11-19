@@ -23,6 +23,7 @@ export interface IPageItem {
   disableMovement?: boolean;
   lockMoveInnerChild?: boolean;
   disableDelete?: boolean;
+  isTemplateContainer?: boolean;
 }
 
 export class PageItem implements IPageItem {
@@ -49,6 +50,7 @@ export class PageItem implements IPageItem {
    */
   lockMoveInnerChild?: boolean = false;
   disableDelete?: boolean = false;
+  isTemplateContainer?: boolean | undefined;
   //------------------------CUSTOM COMPONENT---------------------------
   /** custom component */
   customComponent?: CustomComponent;
@@ -62,19 +64,19 @@ export class PageItem implements IPageItem {
 
   constructor(data?: IPageItem, parent?: PageItem) {
     if (data) {
+      for (var property in data) {
+        if (property == 'children' || property == 'template') continue;
+        if (this.hasOwnProperty(property)) (<any>this)[property] = (<any>data)[property];
+      }
       if (data.children) {
         this.children = data.children.map((child) => new PageItem(child, this));
       }
       if (data.template) {
         this.template = new PageItem(data.template, this);
       }
-      for (var property in data) {
-        if (property == 'children' || property == 'template') continue;
-        if (this.hasOwnProperty(property)) (<any>this)[property] = (<any>data)[property];
-      }
     }
     if (!this.id) this.id = randomStrnig(5);
-    this.parent = parent;
+    if (parent) this.parent = parent;
   }
   static fromJSON(data: IPageItem): PageItem {
     const item = new PageItem(data);
