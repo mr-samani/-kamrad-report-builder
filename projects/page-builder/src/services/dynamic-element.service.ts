@@ -77,10 +77,7 @@ export class DynamicElementService {
   }
 
   updateElementContent(data: PageItem) {
-    let els = this.doc.querySelectorAll('[data-id="' + data.id + '"]');
-    els.forEach((el) => {
-      this.renderer.setProperty(el, 'innerHTML', data.content);
-    });
+    this.renderer.setProperty(data.el, 'innerHTML', data.content);
     return data.el;
   }
 

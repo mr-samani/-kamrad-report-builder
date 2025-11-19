@@ -76,5 +76,7 @@ export class BlockPropertiesComponent extends BaseComponent implements OnInit {
       });
   }
 
-  onChangeProperties() {}
+  onChangeProperties() {
+    if (this.item) this.pageBuilderService.changedProperties(this.item);
+  }
 }

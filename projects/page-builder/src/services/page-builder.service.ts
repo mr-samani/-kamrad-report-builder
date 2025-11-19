@@ -20,7 +20,13 @@ import { SourceItem } from '../models/SourceItem';
 
 export interface PageItemChange {
   item: PageItem | null;
-  type: 'ChangePageConfig' | 'AddBlock' | 'ChangeBlockContent' | 'RemoveBlock' | 'MoveBlock';
+  type:
+    | 'ChangePageConfig'
+    | 'AddBlock'
+    | 'ChangeBlockContent'
+    | 'ChangeBlockProperties'
+    | 'RemoveBlock'
+    | 'MoveBlock';
 }
 
 @Injectable({
@@ -267,6 +273,7 @@ export class PageBuilderService implements OnDestroy {
   }
 
   onSelectBlock(c: PageItem, ev?: Event) {
+    console.log('click on block', c.el);
     ev?.stopPropagation();
     ev?.preventDefault();
     this.activeEl.set(c);
@@ -310,7 +317,9 @@ export class PageBuilderService implements OnDestroy {
 
   writeItemValue(data: PageItem) {
     this.dynamicElementService.updateElementContent(data);
-
-    // this.updateChangeDetection({ item: data, type: 'ChangeBlockContent' });
+    this.updateChangeDetection({ item: data, type: 'ChangeBlockContent' });
+  }
+  changedProperties(item: PageItem) {
+    this.updateChangeDetection({ item: item, type: 'ChangeBlockProperties' });
   }
 }

@@ -66,9 +66,21 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
       this.getData();
       this.chdRef.detectChanges();
     });
-
+    /**
+     * TODO: need enhancement for improve performance and avoid unnecessary updates
+     * - change block content -> not rebuild all: only update same contents
+     * - move block -> not rebuild all: only move same contents
+     * - addd block only add new block
+     */
     this.pageBuilderService.changed$.subscribe((data) => {
-      if (data.type == 'AddBlock' || data.type == 'RemoveBlock' || data.type == 'MoveBlock') {
+      if (
+        data.type == 'AddBlock' ||
+        data.type == 'RemoveBlock' ||
+        data.type == 'MoveBlock' ||
+        data.type == 'ChangeBlockContent' ||
+        data.type == 'ChangeBlockProperties'
+      ) {
+        console.log('Block changed:', data.item?.id, data.type);
         if (this.itemInThisTemplate(data.item)) {
           this.pageItem.template = this.findCellContainer(data.item!);
           this.update(data);

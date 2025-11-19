@@ -6,7 +6,6 @@ import {
   forwardRef,
   Inject,
   OnInit,
-  Optional,
   Output,
   Renderer2,
 } from '@angular/core';
@@ -97,7 +96,6 @@ export class BackgroundControlComponent implements OnInit, ControlValueAccessor 
         this.imageUrl = this.el.getAttribute('src') ?? '';
       }
       this.detectMode();
-      this.update();
     }
     this.cdr.detectChanges();
   }
