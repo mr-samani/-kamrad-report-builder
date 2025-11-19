@@ -1,15 +1,19 @@
 :host {
   display: block;
 }
-
-.collection-container {
-  display: flex;
-  padding: 12px 0;
-  position: relative;
-  gap: 10px;
-  padding: 10px;
-  item-generator {
-    flex: auto;
-    display: block;
+::ng-deep {
+  .collection-container {
+    display: flex;
+    padding: 12px 0;
+    position: relative;
+    gap: 10px;
+    padding: 10px;
+    item-generator {
+      flex: auto;
+      display: block;
+    }
+    .template-container {
+      width: 100%;
+    }
   }
 }

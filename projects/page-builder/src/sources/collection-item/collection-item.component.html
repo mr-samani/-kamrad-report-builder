@@ -1,11 +1,7 @@
 @if (pageItem.template) {
-  {{ list.length }}
-  @if (list.length == 0 || !pageItem.dataSource || !pageItem.dataSource.maxResultCount) {
+  {{ templateList.length }}
+  @if (templateList.length == 0 || !pageItem.dataSource || !pageItem.dataSource.maxResultCount) {
     <div class="ngx-page-alert info">View setting for set data source and filters</div>
   }
-  <div class="collection-container">
-    @for (item of list; track $index) {
-      <item-generator [template]="pageItem.template"></item-generator>
-    }
-  </div>
+  <div class="collection-container" #collectionContainer></div>
 }

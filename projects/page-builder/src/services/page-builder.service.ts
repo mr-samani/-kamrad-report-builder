@@ -20,7 +20,7 @@ import { SourceItem } from '../models/SourceItem';
 
 export interface PageItemChange {
   item: PageItem | null;
-  type: 'ChangePageConfig' | 'AddBlock' | 'ChangeBlockContent' | 'RemoveBlock';
+  type: 'ChangePageConfig' | 'AddBlock' | 'ChangeBlockContent' | 'RemoveBlock' | 'MoveBlock';
 }
 
 @Injectable({
@@ -122,7 +122,7 @@ export class PageBuilderService implements OnDestroy {
       }
       // update register item
       (event.item as any).dragRegister?.registerDragItem?.(event.item);
-      this.updateChangeDetection({ item: event.item as any, type: 'AddBlock' });
+      this.updateChangeDetection({ item: event.item as any, type: 'MoveBlock' });
     }
     // this.pageBuilderService.items = items;
     // this.chdRef.detectChanges();
@@ -266,15 +266,20 @@ export class PageBuilderService implements OnDestroy {
     this.activeEl.set(undefined);
   }
   removeBlock(item: PageItem) {
-    const list = this.findBlockList(item);
-    if (!item || !list || !list.length) {
-      throw new Error('Remove block failed: invalid item or list');
+    let parent = item.parent;
+    if (!parent) {
+      const page = this.pageInfo.pages[this.currentPageIndex()];
+      const lists = [...page.headerItems, ...page.bodyItems, ...page.footerItems];
+      parent = lists.find((x) => x.children && x.children.includes(item));
     }
-    const index = list.findIndex((i) => i.id === item.id);
+    if (!item || !parent) {
+      throw new Error('Remove block failed: invalid parent item in list');
+    }
+    debugger;
+    const index = parent.children.findIndex((i) => i.id === item.id);
     if (index !== -1 && item.el) {
-      list.splice(index, 1);
-      this.destroyInTree([item]);
-      this.renderer.removeChild(this.renderer.parentNode(item.el), item.el);
+      parent.children.splice(index, 1);
+      this.destroyInTree([item], true);
     }
     this.activeEl.set(undefined);
     this.updateChangeDetection({ item: item, type: 'RemoveBlock' });
@@ -284,13 +289,16 @@ export class PageBuilderService implements OnDestroy {
       return;
     }
     for (let c of list) {
-      this.destroyInTree(c.children, removeEl);
+      if (c.children && c.children.length > 0) {
+        this.destroyInTree(c.children, removeEl);
+      }
       if (c.template) {
         this.destroyInTree([c.template], removeEl);
       }
       this.dynamicElementService.destroy(c);
       if (removeEl && c.el) {
-        this.renderer.removeChild(this.renderer.parentNode(c.el), c.el);
+        // console.log('remove', c.id, c.el);
+        c.el.remove();
       }
     }
   }

@@ -1,10 +1,13 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  ElementRef,
   Inject,
   OnInit,
   QueryList,
+  ViewChild,
   ViewChildren,
 } from '@angular/core';
 import { ComponentDataContext } from '../../models/ComponentDataContext';
@@ -12,26 +15,26 @@ import { COMPONENT_DATA } from '../../models/tokens';
 import { DataSourceSetting } from '../../models/DataSourceSetting';
 import { PageItem } from '../../models/PageItem';
 import { Subscription } from 'rxjs';
-import { ItemGeneratorComponent } from './item-generator/item-generator.component';
-import { PageBuilderService } from '../../services/page-builder.service';
+import { PageBuilderService, PageItemChange } from '../../services/page-builder.service';
 
 @Component({
   selector: 'app-collection-item',
   templateUrl: './collection-item.component.html',
   styleUrls: ['./collection-item.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ItemGeneratorComponent],
+  imports: [],
 })
-export class CollectionItemComponent implements OnInit {
-  list = [];
+export class CollectionItemComponent implements OnInit, AfterViewInit {
+  templateList: PageItem[] = [];
   pageItem!: PageItem;
   subscription: Subscription;
 
-  template: PageItem = PageItem.fromJSON({
-    tag: 'div',
+  _template: PageItem = PageItem.fromJSON({
+    tag: 'article',
     canHaveChild: true,
     disableMovement: true,
     lockMoveInnerChild: true,
+    disableDelete: true,
     style: `
         position: relative;
         flex: auto;
@@ -45,9 +48,11 @@ export class CollectionItemComponent implements OnInit {
         class: 'template-container',
       },
     },
+    children: [],
+    parent: this.pageItem,
   });
 
-  @ViewChildren(ItemGeneratorComponent) itemGenerators!: QueryList<ItemGeneratorComponent>;
+  @ViewChild('collectionContainer') collectionContainer!: ElementRef<HTMLDivElement>;
 
   constructor(
     @Inject(COMPONENT_DATA) private context: ComponentDataContext<DataSourceSetting>,
@@ -61,13 +66,10 @@ export class CollectionItemComponent implements OnInit {
     });
 
     this.pageBuilderService.changed$.subscribe((data) => {
-      if (
-        data.type == 'AddBlock' ||
-        data.type == 'RemoveBlock' ||
-        data.type == 'ChangeBlockContent'
-      ) {
+      if (data.type == 'AddBlock' || data.type == 'RemoveBlock' || data.type == 'MoveBlock') {
         if (this.itemInThisTemplate(data.item)) {
-          this.renderAllItems(true);
+          this.pageItem.template = this.findFirstParent(data.item!);
+          this.update(data);
         }
       }
     });
@@ -75,45 +77,67 @@ export class CollectionItemComponent implements OnInit {
 
   ngOnInit() {
     if (!this.pageItem.template) {
-      this.pageItem.template = this.template;
+      this.pageItem.template = this._template;
     }
+  }
+
+  ngAfterViewInit(): void {
     this.getData();
   }
 
   async getData() {
-    if (!this.pageItem.dataSource) {
+    if (!this.pageItem.dataSource || !this.pageItem.template) {
       return;
     }
     const count = this.pageItem.dataSource?.maxResultCount || 10;
-    this.list = Array.from({ length: count });
-
-    setTimeout(() => {
-      this.renderAllItems();
-    }, 100);
-  }
-
-  private renderAllItems(force: boolean = false) {
-    console.log('Rendering all items', this.itemGenerators.length);
-    this.itemGenerators.forEach((itemGenerator, index) => {
-      itemGenerator.generate(this.pageItem.template, force);
-    });
+    this.clearContainer();
+    this.templateList = [];
+    for (let i = 0; i < count; i++) {
+      let cell = PageItem.fromJSON(this.pageItem.template);
+      this.pageBuilderService.createBlockElement(cell, this.collectionContainer.nativeElement);
+      this.templateList.push(cell);
+    }
     this.chdRef.detectChanges();
   }
 
   itemInThisTemplate(item?: PageItem | null): boolean {
-    if (!item || !this.pageItem || !this.pageItem.template) {
+    if (!item || !this.pageItem || !this.templateList.length) {
       return false;
     }
-    for (let t of this.pageItem.template.children) {
-      if (t.id == item.id) {
+    let p = this.findFirstParent(item);
+    for (let t of this.templateList) {
+      if (t.id == p.id) {
         return true;
-      }
-      if (t.children && t.children.length > 0) {
-        if (this.itemInThisTemplate(item)) {
-          return true;
-        }
       }
     }
     return false;
+  }
+
+  private findFirstParent(item: PageItem): PageItem {
+    if (item.parent) {
+      return this.findFirstParent(item.parent);
+    } else {
+      return item;
+    }
+  }
+
+  async update(change: PageItemChange) {
+    if (!this.pageItem || !this.pageItem.template || !change.item) return;
+
+    this.clearContainer();
+    this.templateList = [];
+
+    const count = this.pageItem.dataSource?.maxResultCount || 10;
+
+    for (let i = 0; i < count; i++) {
+      let cloned = PageItem.fromJSON(this.pageItem.template);
+      this.pageBuilderService.createBlockElement(cloned, this.collectionContainer.nativeElement);
+      this.templateList.push(cloned);
+    }
+    this.chdRef.detectChanges();
+  }
+
+  private clearContainer() {
+    this.pageBuilderService.destroyInTree(this.templateList, true);
   }
 }
