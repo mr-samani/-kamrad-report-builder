@@ -13,9 +13,10 @@ import {
 import { ComponentDataContext } from '../../models/ComponentDataContext';
 import { COMPONENT_DATA } from '../../models/tokens';
 import { DataSourceSetting } from '../../models/DataSourceSetting';
-import { PageItem } from '../../models/PageItem';
+import { IPageItem, PageItem } from '../../models/PageItem';
 import { Subscription } from 'rxjs';
 import { PageBuilderService, PageItemChange } from '../../services/page-builder.service';
+import { DynamicElementService } from '../../services/dynamic-element.service';
 
 @Component({
   selector: 'app-collection-item',
@@ -29,8 +30,9 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
   pageItem!: PageItem;
   subscription: Subscription;
 
-  _template: PageItem = PageItem.fromJSON({
+  _template: IPageItem = {
     tag: 'article',
+    isTemplateContainer: true,
     canHaveChild: true,
     disableMovement: true,
     lockMoveInnerChild: true,
@@ -49,8 +51,7 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
       },
     },
     children: [],
-    parent: this.pageItem,
-  });
+  };
 
   @ViewChild('collectionContainer') collectionContainer!: ElementRef<HTMLDivElement>;
 
@@ -58,6 +59,7 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
     @Inject(COMPONENT_DATA) private context: ComponentDataContext<DataSourceSetting>,
     private chdRef: ChangeDetectorRef,
     private pageBuilderService: PageBuilderService,
+    private dynamicElementService: DynamicElementService,
   ) {
     this.subscription = this.context.onChange.subscribe((data) => {
       this.pageItem.dataSource = data;
@@ -68,7 +70,7 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
     this.pageBuilderService.changed$.subscribe((data) => {
       if (data.type == 'AddBlock' || data.type == 'RemoveBlock' || data.type == 'MoveBlock') {
         if (this.itemInThisTemplate(data.item)) {
-          this.pageItem.template = this.findFirstParent(data.item!);
+          this.pageItem.template = this.findCellContainer(data.item!);
           this.update(data);
         }
       }
@@ -77,7 +79,9 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     if (!this.pageItem.template) {
-      this.pageItem.template = this._template;
+      this.pageItem.template = new PageItem(this._template, this.pageItem);
+    } else {
+      this.pageItem.template.isTemplateContainer = true;
     }
   }
 
@@ -93,8 +97,12 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
     this.clearContainer();
     this.templateList = [];
     for (let i = 0; i < count; i++) {
-      let cell = PageItem.fromJSON(this.pageItem.template);
-      this.pageBuilderService.createBlockElement(cell, this.collectionContainer.nativeElement);
+      let cell = this.cloneTemplate();
+      await this.pageBuilderService.createBlockElement(
+        cell,
+        this.collectionContainer.nativeElement,
+      );
+      console.log(cell);
       this.templateList.push(cell);
     }
     this.chdRef.detectChanges();
@@ -104,7 +112,8 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
     if (!item || !this.pageItem || !this.templateList.length) {
       return false;
     }
-    let p = this.findFirstParent(item);
+    let p = this.findCellContainer(item);
+    if (!p) return false;
     for (let t of this.templateList) {
       if (t.id == p.id) {
         return true;
@@ -113,12 +122,14 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
     return false;
   }
 
-  private findFirstParent(item: PageItem): PageItem {
-    if (item.parent) {
-      return this.findFirstParent(item.parent);
-    } else {
+  private findCellContainer(item: PageItem): PageItem | undefined {
+    if (item.isTemplateContainer) {
       return item;
     }
+    if (item.parent) {
+      return this.findCellContainer(item.parent);
+    }
+    return undefined;
   }
 
   async update(change: PageItemChange) {
@@ -130,7 +141,7 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
     const count = this.pageItem.dataSource?.maxResultCount || 10;
 
     for (let i = 0; i < count; i++) {
-      let cloned = PageItem.fromJSON(this.pageItem.template);
+      let cloned = this.cloneTemplate();
       this.pageBuilderService.createBlockElement(cloned, this.collectionContainer.nativeElement);
       this.templateList.push(cloned);
     }
@@ -138,6 +149,22 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
   }
 
   private clearContainer() {
-    this.pageBuilderService.destroyInTree(this.templateList, true);
+    this.dynamicElementService.destroyBatch(this.templateList);
+  }
+
+  private cloneTemplate() {
+    const cleanTree = (list: PageItem[]) => {
+      for (let item of list) {
+        delete item.options?.events;
+        delete item.options?.directives;
+        delete item.options?.inputs;
+        delete item.options?.outputs;
+        if (item.children && item.children.length > 0) {
+          cleanTree(item.children);
+        }
+      }
+    };
+    cleanTree([this.pageItem.template!]);
+    return PageItem.fromJSON(this.pageItem.template!);
   }
 }

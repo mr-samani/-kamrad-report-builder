@@ -57,22 +57,21 @@ export class BlockSelectorComponent extends BaseComponent implements OnDestroy {
     this.disconnectObservers();
 
     if (this.item) {
-      const el = this.doc.querySelector<HTMLElement>(`[data-id="${this.item.id}"]`);
-      if (!el) return;
+      if (!this.item.el) return;
 
-      this.currentElement = el;
+      this.currentElement = this.item.el;
 
       // Watch for resize
       this.resizeObserver = new ResizeObserver(() => {
         this.updatePosition();
       });
-      this.resizeObserver.observe(el);
+      this.resizeObserver.observe(this.currentElement);
 
       // Watch for style/class changes (margin/padding/etc.)
       this.mutationObserver = new MutationObserver(() => {
         this.updatePosition();
       });
-      this.mutationObserver.observe(el, {
+      this.mutationObserver.observe(this.currentElement, {
         attributes: true,
         attributeFilter: ['style', 'class'],
       });
@@ -103,10 +102,9 @@ export class BlockSelectorComponent extends BaseComponent implements OnDestroy {
       return;
     }
 
-    const el = this.doc.querySelector<HTMLElement>(`[data-id="${this.item.id}"]`);
-    if (!el) return;
+    if (!this.currentElement) return;
 
-    const rect = el.getBoundingClientRect();
+    const rect = this.currentElement.getBoundingClientRect();
     this.x = window.scrollX + rect.x;
     this.y = window.scrollY + rect.y;
     this.width = rect.width;

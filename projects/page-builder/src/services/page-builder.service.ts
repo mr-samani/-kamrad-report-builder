@@ -249,9 +249,9 @@ export class PageBuilderService implements OnDestroy {
     this.deSelectBlock();
     const page = this.pageInfo.pages[pageIndex];
     if (!page) return;
-    this.destroyInTree(page.bodyItems, true);
-    this.destroyInTree(page.headerItems, true);
-    this.destroyInTree(page.footerItems, true);
+    this.dynamicElementService.destroyBatch(page.bodyItems);
+    this.dynamicElementService.destroyBatch(page.headerItems);
+    this.dynamicElementService.destroyBatch(page.footerItems);
     this.pageBody()!.nativeElement.innerHTML = '';
     this.pageHeader()!.nativeElement.innerHTML = '';
     this.pageFooter()!.nativeElement.innerHTML = '';
@@ -275,45 +275,13 @@ export class PageBuilderService implements OnDestroy {
     if (!item || !parent) {
       throw new Error('Remove block failed: invalid parent item in list');
     }
-    debugger;
     const index = parent.children.findIndex((i) => i.id === item.id);
     if (index !== -1 && item.el) {
       parent.children.splice(index, 1);
-      this.destroyInTree([item], true);
+      this.dynamicElementService.destroy(item);
     }
     this.activeEl.set(undefined);
     this.updateChangeDetection({ item: item, type: 'RemoveBlock' });
-  }
-  destroyInTree(list: PageItem[], removeEl = false) {
-    if (!list) {
-      return;
-    }
-    for (let c of list) {
-      if (c.children && c.children.length > 0) {
-        this.destroyInTree(c.children, removeEl);
-      }
-      if (c.template) {
-        this.destroyInTree([c.template], removeEl);
-      }
-      this.dynamicElementService.destroy(c);
-      if (removeEl && c.el) {
-        // console.log('remove', c.id, c.el);
-        c.el.remove();
-      }
-    }
-  }
-  private findBlockList(block: PageItem): PageItem[] {
-    const page = this.pageInfo.pages[this.currentPageIndex()];
-    if (!page) return [];
-
-    const lists = [page.headerItems, page.bodyItems, page.footerItems];
-
-    for (const list of lists) {
-      const found = this.findInTree(list, block.id);
-      if (found) return found;
-    }
-
-    return [];
   }
 
   private findInTree(list: PageItem[], id: string): PageItem[] | null {

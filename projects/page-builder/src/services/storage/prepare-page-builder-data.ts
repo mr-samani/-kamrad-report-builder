@@ -25,26 +25,12 @@ export function preparePageDataForSave(pageInfo: PageBuilderDto): PageBuilderDto
       cleanAttributes(item.options);
       delete item.options?.events;
       delete item.options?.directives;
-      // if (item.component) {
-      //   item.html = '';
-      // } else {
-      //   //cleanup
-      //   if (item.el) {
-      //     let html = item.el.outerHTML;
-      //     html = html.replace(/\s*data-id="[^"]*"/g, '');
-      //     html = html.replace(/\s*contenteditable="[^"]*"/g, '');
 
-      //     html = removeClassesFromHtml(
-      //       html,
-      //       ['ngx-corner-resize', 'block-item', 'ngx-draggable', 'ngx-drop-list'],
-      //       ['ngxDropList', 'ngxDraggable'],
-      //     );
-      //     // item.html = encodeURIComponent(html);
-      //     item.html = ''; // html;
-      //   }
-      // }
       if (item.children && item.children.length > 0) {
         tree(item.children);
+      }
+      if (item.template) {
+        tree([item.template]);
       }
     }
   };
