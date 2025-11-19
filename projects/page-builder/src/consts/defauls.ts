@@ -25,7 +25,6 @@ export function getDefaultBlockDirective(pageItem: PageItem, onDropFn: Function)
   }
 
   if (pageItem.canHaveChild) {
-    console.log('parentDroplist is ', pageItem);
     dir.push({
       directive: NgxDropListDirective,
       inputs: {

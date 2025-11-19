@@ -97,13 +97,12 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
     this.clearContainer();
     this.templateList = [];
     for (let i = 0; i < count; i++) {
-      let cell = this.cloneTemplate();
+      let cloned = this.cloneTemplate();
       await this.pageBuilderService.createBlockElement(
-        cell,
+        cloned,
         this.collectionContainer.nativeElement,
       );
-      console.log(cell);
-      this.templateList.push(cell);
+      this.templateList.push(cloned);
     }
     this.chdRef.detectChanges();
   }
@@ -142,7 +141,10 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
 
     for (let i = 0; i < count; i++) {
       let cloned = this.cloneTemplate();
-      this.pageBuilderService.createBlockElement(cloned, this.collectionContainer.nativeElement);
+      await this.pageBuilderService.createBlockElement(
+        cloned,
+        this.collectionContainer.nativeElement,
+      );
       this.templateList.push(cloned);
     }
     this.chdRef.detectChanges();

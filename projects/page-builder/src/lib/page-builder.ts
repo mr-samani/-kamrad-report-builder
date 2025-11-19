@@ -88,13 +88,14 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
       this.pageBuilderService.pageInfo = PageBuilderDto.fromJSON(data);
       console.log('load data:', data, 'converted class:', this.pageBuilderService.pageInfo);
       if (this.pageBuilderService.pageInfo.pages.length == 0) {
-        this.pageBuilderService.addPage();
+        await this.pageBuilderService.addPage();
         return;
       } else {
-        this.pageBuilderService.changePage(1);
+        await this.pageBuilderService.changePage(1);
+        console.log('after load:', this.pageBuilderService.pageInfo);
       }
     } catch (error) {
-      this.pageBuilderService.addPage();
+      await this.pageBuilderService.addPage();
       console.error('Error loading page data:', error);
       alert('Error loading page data: ' + error);
     }

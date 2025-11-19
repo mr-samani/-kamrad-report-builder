@@ -91,7 +91,7 @@ export class PageBuilderService implements OnDestroy {
       // انتقال از یک container به container دیگه
       const source = new PageItem(this.sources[event.previousIndex], parent);
       source.children = []; // very important to create reference to droplist data
-      this.createBlockElement(source, event.container.el, event.currentIndex);
+      await this.createBlockElement(source, event.container.el, event.currentIndex);
       event.container.data.splice(event.currentIndex, 0, source);
       this.onSelectBlock(source);
       this.updateChangeDetection({ item: source, type: 'AddBlock' });
@@ -109,7 +109,9 @@ export class PageBuilderService implements OnDestroy {
       }
 
       const containerEl = event.container.el;
-      const children = Array.from(containerEl.children);
+      const children = Array.from(containerEl.children).filter(
+        (x) => !x.classList.contains('ngx-drag-placeholder'),
+      );
       // اگر باید به آخر لیست اضافه بشه
       if (event.currentIndex >= children.length - 1) {
         this.renderer.appendChild(containerEl, nativeEl);
@@ -121,8 +123,12 @@ export class PageBuilderService implements OnDestroy {
         // this.renderer.removeChild(containerEl, nativeEl);
       }
       // update register item
+      // TODO: probably not needed
       (event.item as any).dragRegister?.registerDragItem?.(event.item);
-      this.updateChangeDetection({ item: event.item as any, type: 'MoveBlock' });
+      this.updateChangeDetection({
+        item: event.container.data[event.currentIndex],
+        type: 'MoveBlock',
+      });
     }
     // this.pageBuilderService.items = items;
     // this.chdRef.detectChanges();
@@ -213,6 +219,9 @@ export class PageBuilderService implements OnDestroy {
     this.changePage(this.currentPageIndex() + 1);
   }
 
+  /**
+   *  ایجاد المنت جدید حتما باید با await انجام شود
+   */
   async createBlockElement(item: PageItem, container: HTMLElement, index = -1) {
     if (this.mode == 'Edit') {
       item.options ??= {};

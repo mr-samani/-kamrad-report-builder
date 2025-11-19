@@ -21,7 +21,6 @@ import { Directive } from '../models/SourceItem';
 import { DynamicDataStructure } from '../models/DynamicData';
 import { COMPONENT_DATA, ComponentDataContext } from '../public-api';
 import { Subject } from 'rxjs';
-import { LifecycleManagerService } from './lifecycle-manager.service';
 
 @Injectable({ providedIn: 'root' })
 export class DynamicElementService {
@@ -32,7 +31,6 @@ export class DynamicElementService {
     rendererFactory: RendererFactory2,
     private appRef: ApplicationRef,
     private envInjector: EnvironmentInjector,
-    private lifecycleManager: LifecycleManagerService,
     @Inject(DOCUMENT) private doc: Document,
   ) {
     this.renderer = rendererFactory.createRenderer(null, null);
@@ -165,13 +163,6 @@ export class DynamicElementService {
         }
       }
     }
-
-    // ✅ ثبت component در lifecycle manager با DestroyRef
-    this.lifecycleManager.register(element, [instance], componentInjector, compRef);
-
-    // Component lifecycle hooks خودش توسط Angular مدیریت میشه
-    // DestroyRef خودکار ngOnDestroy رو صدا میزنه!
-
     return element;
   }
 
@@ -202,11 +193,6 @@ export class DynamicElementService {
         if (dirInstance) {
           directiveInstances.push(dirInstance);
         }
-      }
-
-      // ✅ ثبت همه directive‌ها با یه DestroyRef مشترک
-      if (directiveInstances.length > 0) {
-        this.lifecycleManager.register(element, directiveInstances, directiveInjector!);
       }
     }
 
@@ -325,6 +311,21 @@ export class DynamicElementService {
       }
     }, 0);
 
+    const cleanupFns: (() => void)[] = [];
+
+    // wrap ngOnDestroy
+    const originalDestroy = dirInstance.ngOnDestroy?.bind(dirInstance);
+    dirInstance.ngOnDestroy = () => {
+      try {
+        cleanupFns.forEach((f) => f());
+      } catch {}
+      if (originalDestroy) {
+        try {
+          originalDestroy();
+        } catch {}
+      }
+    };
+
     // ذخیره برای fallback
     if (!(element as any).__ngDirectives__) {
       (element as any).__ngDirectives__ = [];
@@ -336,48 +337,45 @@ export class DynamicElementService {
 
   /**
    * ⚠️ Destroy element
-   * DestroyRef خودکار cleanup میکنه وقتی injector destroy میشه
-   * این متد فقط برای حذف دستی و forced cleanup است
    */
   public destroy(item: PageItem) {
     if (!item.el) return;
 
+    if (item.children && item.children.length > 0) {
+      for (let child of item.children) {
+        this.destroy(child);
+      }
+    }
+
     // Manual cleanup قبل از حذف
-    this.lifecycleManager.manualDestroy(item.el);
+    // component
+    const compRef = (item.el as any).__componentRef__;
+    if (compRef) {
+      this.appRef.detachView(compRef.hostView);
+      compRef.destroy();
+      delete (item.el as any).__componentRef__;
+    }
+    // directive
+    const directiveInstances = (item.el as any).__ngDirectives__;
+    if (Array.isArray(directiveInstances)) {
+      for (const d of directiveInstances) {
+        if (d && typeof d.ngOnDestroy === 'function') {
+          d.ngOnDestroy?.();
+        }
+      }
+      delete (item.el as any).__ngDirectives__;
+    }
 
     // حذف از DOM
     if (item.el.parentNode) {
       this.renderer.removeChild(item.el.parentNode, item.el);
     }
-
-    // detach component view اگه هست
-    const compRef = (item.el as any).__componentRef__;
-    if (compRef) {
-      this.appRef.detachView(compRef.hostView);
-    }
   }
 
-  /**
-   * پاکسازی چندین element با یک دستور (Batch Cleanup)
-   * بسیار بهینه‌تر از حذف یکی یکی
-   */
-  public destroyBatch(items: PageItem[]) {
-    const parent = items[0]?.el?.parentNode;
-    if (!parent) return;
-
-    // ابتدا همه رو cleanup کن
-    items.forEach((item) => {
-      if (item.el) {
-        this.lifecycleManager.manualDestroy(item.el);
-      }
-    });
-
-    // سپس همه رو یکجا از DOM حذف کن (بهینه‌تر!)
-    items.forEach((item) => {
-      if (item.el && item.el.parentNode) {
-        this.renderer.removeChild(item.el.parentNode, item.el);
-      }
-    });
+  destroyBatch(items: PageItem[]) {
+    for (let item of items) {
+      this.destroy(item);
+    }
   }
 
   isContentEditable(tag: string): boolean {
