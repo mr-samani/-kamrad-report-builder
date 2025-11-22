@@ -7,7 +7,7 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-preview',
   templateUrl: './preview.component.html',
-  styleUrls: ['./preview.component.css'],
+  styleUrls: ['./preview.component.scss'],
   imports: [NgxPagePreviewComponent, FormsModule, CommonModule],
 })
 export class PreviewComponent implements OnInit {

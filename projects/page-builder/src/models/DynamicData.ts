@@ -1,8 +1,9 @@
 export interface DynamicDataStructure {
-  id: string;
+  id?: string;
   name: string;
   displayName: string;
   values?: DynamicDataStructure[];
+  list?: DynamicDataStructure[][];
   type: DynamicValueType;
   value?: string | number | boolean | Date | null;
 }

@@ -17,6 +17,8 @@ import { IPageItem, PageItem } from '../../models/PageItem';
 import { Subscription } from 'rxjs';
 import { PageBuilderService, PageItemChange } from '../../services/page-builder.service';
 import { DynamicElementService } from '../../services/dynamic-element.service';
+import { DynamicDataStructure } from '../../models/DynamicData';
+import { DynamicDataService } from '../../services/dynamic-data.service';
 
 @Component({
   selector: 'app-collection-item',
@@ -53,6 +55,7 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
     children: [],
   };
 
+  dataList: DynamicDataStructure[][] = [];
   @ViewChild('collectionContainer') collectionContainer!: ElementRef<HTMLDivElement>;
 
   constructor(
@@ -60,6 +63,7 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
     private chdRef: ChangeDetectorRef,
     private pageBuilderService: PageBuilderService,
     private dynamicElementService: DynamicElementService,
+    private dynamicDataService: DynamicDataService,
   ) {
     this.subscription = this.context.onChange.subscribe((data) => {
       this.pageItem.dataSource = data;
@@ -102,14 +106,25 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
   }
 
   async getData() {
+    this.dataList = [];
     if (!this.pageItem.dataSource || !this.pageItem.template) {
       return;
     }
     const count = this.pageItem.dataSource?.maxResultCount || 10;
+    const skip = this.pageItem.dataSource?.skipCount || 0;
+    if (this.pageItem.dataSource.id) {
+      this.dataList = this.dynamicDataService.getCollectionData(
+        this.pageItem.dataSource.id,
+        skip,
+        count,
+      );
+    }
+
     this.clearContainer();
     this.templateList = [];
     for (let i = 0; i < count; i++) {
-      let cloned = this.cloneTemplate();
+      let cloned = this.cloneTemplate(i);
+
       await this.pageBuilderService.createBlockElement(
         cloned,
         this.collectionContainer.nativeElement,
@@ -152,7 +167,7 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
     const count = this.pageItem.dataSource?.maxResultCount || 10;
 
     for (let i = 0; i < count; i++) {
-      let cloned = this.cloneTemplate();
+      let cloned = this.cloneTemplate(i);
       await this.pageBuilderService.createBlockElement(
         cloned,
         this.collectionContainer.nativeElement,
@@ -166,13 +181,21 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
     this.dynamicElementService.destroyBatch(this.templateList);
   }
 
-  private cloneTemplate() {
+  private cloneTemplate(index: number) {
     const cleanTree = (list: PageItem[]) => {
       for (let item of list) {
         delete item.options?.events;
         delete item.options?.directives;
         delete item.options?.inputs;
         delete item.options?.outputs;
+        if (item.dataSource && item.dataSource.binding) {
+          const row = this.dataList[index];
+          if (row) {
+            const col = row.find((x) => x.name == item.dataSource!.binding);
+            item.content = (col?.value ?? '').toString();
+          }
+          console.log(item.content);
+        }
         if (item.children && item.children.length > 0) {
           cleanTree(item.children);
         }

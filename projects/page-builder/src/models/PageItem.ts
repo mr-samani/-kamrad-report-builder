@@ -29,6 +29,7 @@ export interface IPageItem {
 export class PageItem implements IPageItem {
   id: string = '';
   dataSource?: DataSourceSetting;
+
   parent?: PageItem;
   el?: HTMLElement;
   children: PageItem[] = [];

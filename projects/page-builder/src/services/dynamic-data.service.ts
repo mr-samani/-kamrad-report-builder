@@ -9,7 +9,7 @@ import { PageItem } from '../models/PageItem';
 export class DynamicDataService {
   private _dynamicData: DynamicDataStructure[] = [];
 
-  private _dynamicDataDictionary: { [key: string]: string } = {};
+  private _valueDictionary: { [key: string]: string | undefined } = {};
 
   private map = new Map<string, DynamicDataStructure>();
   private nearestCache = new Map<string, string | null>(); // itemId -> nearest datasource id
@@ -17,45 +17,54 @@ export class DynamicDataService {
   public set dynamicData(value: DynamicDataStructure[]) {
     this._dynamicData = value ?? [];
     this.createValueDictionary();
-    console.log(this._dynamicDataDictionary);
+    console.log(this._dynamicData, this._valueDictionary);
   }
   public get dynamicData() {
     return this._dynamicData;
   }
 
   private createValueDictionary() {
-    this._dynamicDataDictionary = {};
+    this._valueDictionary = {};
     if (!this._dynamicData) {
       return;
     }
 
-    let recursiveTraverse = (obj: any, path: string[] = []) => {
-      if (obj.value) {
-        this._dynamicDataDictionary[path.join('.')] = obj.value;
-        return;
-      }
-
-      for (const key in obj.properties) {
-        recursiveTraverse(obj.properties[key], [...path, key]);
+    let recursiveTraverse = (list: DynamicDataStructure[], path: string[] = []) => {
+      for (let obj of list) {
+        if (obj.name) {
+          let p = [...path, obj.name];
+          let k = p.join('.');
+          this._valueDictionary[k] = obj.value as any;
+        }
+        if (obj.values) {
+          recursiveTraverse(obj.values, [...path, obj.name]);
+        }
       }
     };
 
     for (let item of this._dynamicData) {
-      const values = item.values;
       let path: string[] = [item.name];
-      recursiveTraverse(values, path);
+      if (item.values) {
+        const values = item.values;
+        recursiveTraverse(values, path);
+      } else if (item.list) {
+        for (let i = 0; i < item.list.length; i++) {
+          let p = path[path.length - 1] + `[${i}]`;
+          recursiveTraverse(item.list[i], [...path, p]);
+        }
+      }
     }
   }
 
   public replaceValues(pages: Page[]) {
     setTimeout(() => {
-      // console.log('Replacing values...', pages, this._dynamicDataDictionary);
+      // console.log('Replacing values...', pages, this._valueDictionary);
       let replace = (item?: HTMLElement) => {
         if (!item) return;
         let txt = item.innerHTML;
         let isReplaced = false;
-        for (const key in this._dynamicDataDictionary) {
-          const value = this._dynamicDataDictionary[key];
+        for (const key in this._valueDictionary) {
+          const value = this._valueDictionary[key] ?? '';
           const regEx = new RegExp(`\\[%${key}%\\]`, 'g');
           isReplaced = isReplaced || regEx.test(txt);
           txt = txt.replace(regEx, value);
@@ -74,7 +83,7 @@ export class DynamicDataService {
 
   /*------------------------------------------------------------------------------------------*/
   register(ds: DynamicDataStructure) {
-    this.map.set(ds.id, ds);
+    this.map.set(ds.id!, ds);
   }
   get(id: string) {
     return this.map.get(id) ?? null;
@@ -103,5 +112,14 @@ export class DynamicDataService {
   invalidateNearestCacheFor(itemIds?: string[]) {
     if (!itemIds) this.nearestCache.clear();
     else itemIds.forEach((id) => this.nearestCache.delete(id));
+  }
+
+  /**
+   * get collection data by datasource id
+   * @TODO: must be can call api and cache data
+   * @param id datasource id
+   */
+  getCollectionData(id: string, skip = 0, take: number): DynamicDataStructure[][] {
+    return (this.dynamicData.find((x) => x.id === id)?.list ?? []).slice(skip, skip + take);
   }
 }

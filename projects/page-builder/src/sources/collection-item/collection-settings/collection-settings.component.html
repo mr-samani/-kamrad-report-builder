@@ -3,7 +3,7 @@
 <div class="data-field">
   <label for="datasource">Data Source</label>
   <select [(ngModel)]="settings.id" id="datasource" name="datasource" (change)="update()">
-    @for (item of dynamicDataService.dynamicData; track item.id) {
+    @for (item of collectionDataSource; track item.id) {
       <option [value]="item.id">{{ item.displayName }}</option>
     }
   </select>

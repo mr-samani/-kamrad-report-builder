@@ -4,6 +4,7 @@ import { COMPONENT_DATA } from '../../../models/tokens';
 import { DataSourceSetting } from '../../../models/DataSourceSetting';
 import { DynamicDataService } from '../../../services/dynamic-data.service';
 import { FormsModule } from '@angular/forms';
+import { DynamicDataStructure } from '../../../models/DynamicData';
 
 @Component({
   selector: 'app-collection-settings',
@@ -14,11 +15,14 @@ import { FormsModule } from '@angular/forms';
 })
 export class DataSourceSettingsComponent implements OnInit {
   settings: DataSourceSetting = {};
+
+  collectionDataSource: DynamicDataStructure[] = [];
   constructor(
     @Inject(COMPONENT_DATA) private context: ComponentDataContext<DataSourceSetting>,
     public dynamicDataService: DynamicDataService,
   ) {
     this.settings = this.context.data || new DataSourceSetting();
+    this.collectionDataSource = this.dynamicDataService.dynamicData.filter((x) => x.list);
   }
 
   ngOnInit() {}

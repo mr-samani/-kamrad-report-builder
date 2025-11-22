@@ -147,15 +147,20 @@ export class NgxPagePreviewComponent implements OnInit, AfterViewInit {
         const { header, body, footer } = this.createPageHtml(isLastPage);
         setTimeout(() => {
           const { headerItems, bodyItems, footerItems } = page;
-          headerItems.map(async (m) => (m.el = await this.createBlockElement(m, header)));
-          bodyItems.map(async (m) => (m.el = await this.createBlockElement(m, body)));
-          footerItems.map(async (m) => (m.el = await this.createBlockElement(m, footer)));
+          this.genElms(headerItems, header);
+          this.genElms(bodyItems, body);
+          this.genElms(footerItems, footer);
         }, 100);
       }
       this.dynamicDataService.replaceValues(this.data.pages);
     } catch (error) {
       console.error('Error loading page data:', error);
       alert('Error loading page data: ' + error);
+    }
+  }
+  private async genElms(list: PageItem[], container: HTMLElement, index = -1) {
+    for (let i = 0; i < list.length; i++) {
+      list[i].el = await this.createBlockElement(list[i], container, index);
     }
   }
 
@@ -187,8 +192,8 @@ export class NgxPagePreviewComponent implements OnInit, AfterViewInit {
     }
   }
 
-  private async createBlockElement(item: PageItem, container: HTMLElement) {
-    let el = await this.dynamicElementService.createBlockElement(container, -1, item);
+  private async createBlockElement(item: PageItem, container: HTMLElement, index = -1) {
+    let el = await this.dynamicElementService.createBlockElement(container, index, item);
     if (item.children && item.children.length > 0 && el) {
       for (const child of item.children) {
         await this.createBlockElement(child, el);

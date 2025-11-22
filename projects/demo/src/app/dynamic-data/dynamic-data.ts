@@ -8,28 +8,24 @@ export const DynamicData: DynamicDataStructure[] = [
     type: DynamicValueType.Array,
     values: [
       {
-        id: '1',
         displayName: 'First name',
         name: 'firstName',
         type: DynamicValueType.String,
         value: 'Mohammadreza',
       },
       {
-        id: '2',
         displayName: 'Last name',
         name: 'lastName',
         type: DynamicValueType.String,
         value: 'Samani',
       },
       {
-        id: '3',
         displayName: 'Age',
         name: 'age',
         type: DynamicValueType.Int,
         value: 36,
       },
       {
-        id: '4',
         displayName: 'Email',
         name: 'email',
         type: DynamicValueType.String,
@@ -44,40 +40,96 @@ export const DynamicData: DynamicDataStructure[] = [
     type: DynamicValueType.Array,
     values: [
       {
-        id: '1',
         displayName: 'Title',
         name: 'title',
         type: DynamicValueType.String,
         value: 'Software Engineer',
       },
       {
-        id: '2',
         displayName: 'Company',
         name: 'company',
         type: DynamicValueType.String,
         value: 'Example Corp',
       },
       {
-        id: '3',
         displayName: 'Location',
         name: 'location',
         type: DynamicValueType.String,
         value: 'New York',
       },
       {
-        id: '4',
         displayName: 'Start Date',
         name: 'startDate',
         type: DynamicValueType.Date,
         value: new Date('2020-01-01'),
       },
       {
-        id: '5',
         displayName: 'End Date',
         name: 'endDate',
         type: DynamicValueType.Date,
         value: new Date('2023-12-31'),
       },
+    ],
+  },
+
+  {
+    id: 'cat-3',
+    name: 'category',
+    displayName: 'Product categories',
+    type: DynamicValueType.Array,
+    list: [
+      [
+        {
+          displayName: 'id',
+          name: 'id',
+          type: DynamicValueType.String,
+          value: '123-456',
+        },
+        {
+          displayName: 'name',
+          name: 'name',
+          type: DynamicValueType.String,
+          value: 'Clothing',
+        },
+        {
+          displayName: 'description',
+          name: 'description',
+          type: DynamicValueType.String,
+          value: 'description of clothing and accessories and more',
+        },
+        {
+          displayName: 'image',
+          name: 'image',
+          type: DynamicValueType.String,
+          value: 'image-url.jpg',
+        },
+      ],
+      [
+        {
+          displayName: 'id',
+          name: 'id',
+          type: DynamicValueType.String,
+          value: '785',
+        },
+        {
+          displayName: 'name',
+          name: 'name',
+          type: DynamicValueType.String,
+          value: 'electronics',
+        },
+        {
+          displayName: 'description',
+          name: 'description',
+          type: DynamicValueType.String,
+          value: 'description of electronics and gadgets',
+        },
+        {
+          displayName: 'image',
+          name: 'image',
+          type: DynamicValueType.String,
+          value: 'image-url.jpg',
+        },
+      ],
     ],
   },
 ];

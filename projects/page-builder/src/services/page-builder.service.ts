@@ -191,7 +191,7 @@ export class PageBuilderService implements OnDestroy {
    * @param pageNumber start from 1
    */
   changePage(pageNumber: number): Promise<number> {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       try {
         this.deSelectBlock();
         if (pageNumber == undefined || pageNumber == null) reject('Required page number');
@@ -200,17 +200,9 @@ export class PageBuilderService implements OnDestroy {
         } else {
           this.cleanCanvas(this.currentPageIndex());
           const { headerItems, bodyItems, footerItems } = this.pageInfo.pages[pageNumber - 1];
-          headerItems.map(
-            async (m) =>
-              (m.el = await this.createBlockElement(m, this.pageHeader()!.nativeElement)),
-          );
-          bodyItems.map(
-            async (m) => (m.el = await this.createBlockElement(m, this.pageBody()!.nativeElement)),
-          );
-          footerItems.map(
-            async (m) =>
-              (m.el = await this.createBlockElement(m, this.pageFooter()!.nativeElement)),
-          );
+          await this.genElms(headerItems, this.pageHeader()!.nativeElement);
+          await this.genElms(bodyItems, this.pageBody()!.nativeElement);
+          await this.genElms(footerItems, this.pageFooter()!.nativeElement);
 
           this.currentPageIndex.set(pageNumber - 1);
           resolve(this.currentPageIndex());
@@ -220,6 +212,12 @@ export class PageBuilderService implements OnDestroy {
         console.error('Error changing page:', error);
       }
     });
+  }
+
+  private async genElms(list: PageItem[], container: HTMLElement, index = -1) {
+    for (let i = 0; i < list.length; i++) {
+      list[i].el = await this.createBlockElement(list[i], container, index);
+    }
   }
   reloadCurrentPage() {
     this.changePage(this.currentPageIndex() + 1);
@@ -273,7 +271,7 @@ export class PageBuilderService implements OnDestroy {
   }
 
   onSelectBlock(c: PageItem, ev?: Event) {
-    console.log('click on block', c.el);
+    // console.log('click on block', c.el);
     ev?.stopPropagation();
     ev?.preventDefault();
     this.activeEl.set(c);
