@@ -1,4 +1,4 @@
-@if (isChildOfCollection) {
+@if (parentCollection) {
   <p>Collection Binding:</p>
   <data-source-selector
     [selectedItem]="item.dataSource?.binding"
@@ -24,7 +24,7 @@
     [list]="dsList"
     (selectedKey)="onChangeKey($event)"
   ></data-source-selector>
-} @else if (!item.dataSource?.binding) {
+} @else if (!item.dataSource?.binding && !item.isImageTag) {
   <div class="text" (click)="openTextEditor()">
     <span [innerHTML]="item.content | safeHtml" class="content"></span>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512">
@@ -33,4 +33,8 @@
       />
     </svg>
   </div>
+}
+
+@if (item.isImageTag) {
+  <button type="button" (click)="onChangeSrcImage()">Change Image</button>
 }

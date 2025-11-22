@@ -99,6 +99,9 @@ export class PageItem implements IPageItem {
   public get isImageTag(): boolean {
     return this.el?.tagName === 'IMG';
   }
+  public static isImage(item: PageItem): boolean {
+    return item.tag.toLowerCase() === 'img';
+  }
 
   /**
    * Save element attribute

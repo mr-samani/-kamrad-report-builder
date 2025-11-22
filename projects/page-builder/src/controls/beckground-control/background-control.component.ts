@@ -15,7 +15,6 @@ import { NgxInputColorModule, NgxInputGradientModule } from 'ngx-input-color';
 import { parseBackground } from '../../utiles/parseBackground';
 import { IPageBuilderFilePicker } from '../../services/file-picker/IFilePicker';
 import { NGX_PAGE_BUILDER_FILE_PICKER } from '../../services/file-picker/token.filepicker';
-import { DEFAULT_IMAGE_URL } from '../../consts/defauls';
 import { PageItem } from '../../models/PageItem';
 
 export type BackgroundMode = 'color' | 'gradient' | 'image' | 'color+gradient' | 'color+image';
@@ -45,8 +44,6 @@ export class BackgroundControlComponent implements OnInit, ControlValueAccessor 
   backgroundGradient = '';
   /** css bacground-image  */
   backgroundImage = '';
-  /** img tag src url */
-  imageUrl = '';
   backgroundRepeat = '';
   backgroundSize = '';
   backgroundPosition = '';
@@ -92,9 +89,7 @@ export class BackgroundControlComponent implements OnInit, ControlValueAccessor 
       this.backgroundAttachment = val.backgroundAttachment;
       this.backgroundOrigin = val.backgroundOrigin;
       this.backgroundClip = val.backgroundClip;
-      if (this.item.isImageTag) {
-        this.imageUrl = this.el.getAttribute('src') ?? '';
-      }
+
       this.detectMode();
     }
     this.cdr.detectChanges();
@@ -149,14 +144,6 @@ export class BackgroundControlComponent implements OnInit, ControlValueAccessor 
     this.renderer.setStyle(this.el, 'background-origin', this.backgroundOrigin);
     this.renderer.setStyle(this.el, 'background-clip', this.backgroundClip);
 
-    if (this.item?.isImageTag) {
-      if (this.imageUrl) {
-        this.renderer.setAttribute(this.el, 'src', this.imageUrl);
-      } else {
-        this.renderer.setAttribute(this.el, 'src', DEFAULT_IMAGE_URL);
-      }
-    }
-
     this.style = {
       backgroundColor: this.backgroundColor,
       backgroundImage:
@@ -184,19 +171,6 @@ export class BackgroundControlComponent implements OnInit, ControlValueAccessor 
     this.filePicker.openFilePicker('image').then((result) => {
       // TODO base address must be set with pipe
       this.backgroundImage = `url(${this.filePicker?.baseUrlAddress + result})`;
-      this.update();
-    });
-  }
-
-  onChangeSrcImage() {
-    if (!this.filePicker) {
-      console.warn('Provider for file picker is not available');
-      return;
-    }
-    this.filePicker.openFilePicker('image').then((result) => {
-      // TODO base address must be set with pipe
-      this.item?.setItemAttribute('src', this.filePicker?.baseUrlAddress + result);
-      this.imageUrl = this.filePicker?.baseUrlAddress + result;
       this.update();
     });
   }

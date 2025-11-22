@@ -192,9 +192,16 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
           const row = this.dataList[index];
           if (row) {
             const col = row.find((x) => x.name == item.dataSource!.binding);
-            item.content = (col?.value ?? '').toString();
+            const isImage = PageItem.isImage(item);
+            if (isImage) {
+              item.options ??= {};
+              item.options.attributes ??= {};
+              item.options.attributes['src'] = (col?.value ?? '').toString();
+            } else {
+              item.content = (col?.value ?? '').toString();
+            }
           }
-          console.log(item.content);
+          console.log(index + '=>', item.content);
         }
         if (item.children && item.children.length > 0) {
           cleanTree(item.children);

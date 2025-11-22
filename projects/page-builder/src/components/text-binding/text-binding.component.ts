@@ -1,5 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Injector, Input, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Inject,
+  Injector,
+  Input,
+  OnInit,
+  Output,
+  Renderer2,
+} from '@angular/core';
 import { BaseComponent } from '../BaseComponent';
 import { MatDialog } from '@angular/material/dialog';
 import { PageItem } from '../../models/PageItem';
@@ -9,6 +18,9 @@ import { FormsModule } from '@angular/forms';
 import { SafeHtmlPipe } from '../../pipes/safe-html.pipe';
 import { DynamicDataService } from '../../services/dynamic-data.service';
 import { DataSourceSelectorComponent } from './data-source-selector/data-source-selector.component';
+import { DEFAULT_IMAGE_URL } from '../../consts/defauls';
+import { IPageBuilderFilePicker } from '../../services/file-picker/IFilePicker';
+import { NGX_PAGE_BUILDER_FILE_PICKER } from '../../services/file-picker/token.filepicker';
 
 @Component({
   selector: 'text-binding',
@@ -19,6 +31,8 @@ import { DataSourceSelectorComponent } from './data-source-selector/data-source-
 })
 export class TextBindingComponent extends BaseComponent implements OnInit {
   @Input() item!: PageItem;
+  @Input() parentCollection?: PageItem;
+  @Input() collectionDsList: DynamicDataStructure[] = [];
   @Output() change = new EventEmitter<string>();
 
   isCollectionItem: boolean = false;
@@ -29,12 +43,15 @@ export class TextBindingComponent extends BaseComponent implements OnInit {
   dsList: DynamicDataStructure[] = [];
   selectedNamespace = '';
   useDynamicData = false;
-  isChildOfCollection = false;
-  collectionDsList: DynamicDataStructure[] = [];
+
+  /** img tag src url */
+  imageUrl = '';
   constructor(
     injector: Injector,
     private matDialog: MatDialog,
     public dynamicDataService: DynamicDataService,
+    private renderer: Renderer2,
+    @Inject(NGX_PAGE_BUILDER_FILE_PICKER) private filePicker: IPageBuilderFilePicker | null,
   ) {
     super(injector);
     // dynamic data if is not item collection
@@ -50,25 +67,11 @@ export class TextBindingComponent extends BaseComponent implements OnInit {
       this.selectedNamespace = c.substring(2, c.length - 2);
       this.useDynamicData = true;
     }
-    // check parent is collection list
-    let parentCollection = this.parentCollectionItem(this.item);
-    this.isChildOfCollection = parentCollection !== undefined;
-    if (this.isChildOfCollection && parentCollection) {
-      let dsList =
-        this.dynamicDataService.dynamicData.find((x) => x.id === parentCollection.dataSource?.id)
-          ?.list ?? [];
-      this.collectionDsList = dsList.length > 0 ? dsList[0] : [];
-    }
-  }
 
-  parentCollectionItem(item: PageItem): PageItem | undefined {
-    if (item.template) {
-      return item;
+    this.imageUrl = '';
+    if (this.item && this.item.isImageTag) {
+      this.imageUrl = this.item.el?.getAttribute('src') ?? '';
     }
-    if (item.parent) {
-      return this.parentCollectionItem(item.parent);
-    }
-    return undefined;
   }
 
   openTextEditor() {
@@ -104,5 +107,22 @@ export class TextBindingComponent extends BaseComponent implements OnInit {
     if (this.useDynamicData) {
       this.item.dataSource!.binding = '';
     }
+  }
+
+  onChangeSrcImage() {
+    this.item.dataSource!.binding = '';
+    if (!this.filePicker) {
+      console.warn('Provider for file picker is not available');
+      return;
+    }
+    this.filePicker.openFilePicker('image').then((result) => {
+      // TODO base address must be set with pipe
+      this.imageUrl = result ? this.filePicker?.baseUrlAddress + result : DEFAULT_IMAGE_URL;
+      this.item.options ??= {};
+      this.item.options.attributes ??= {};
+      this.item.options.attributes['src'] = this.imageUrl;
+      this.renderer.setAttribute(this.item!.el, 'src', this.imageUrl);
+      this.change.emit(this.imageUrl);
+    });
   }
 }

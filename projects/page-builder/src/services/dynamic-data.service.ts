@@ -119,7 +119,11 @@ export class DynamicDataService {
    * @TODO: must be can call api and cache data
    * @param id datasource id
    */
-  getCollectionData(id: string, skip = 0, take: number): DynamicDataStructure[][] {
-    return (this.dynamicData.find((x) => x.id === id)?.list ?? []).slice(skip, skip + take);
+  getCollectionData(id: string | undefined, skip = 0, take?: number): DynamicDataStructure[][] {
+    if (!id) return [];
+    return (this.dynamicData.find((x) => x.id === id)?.list ?? []).slice(
+      skip,
+      take ? skip + take : undefined,
+    );
   }
 }

@@ -2,17 +2,15 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   effect,
+  Inject,
   Injector,
   OnInit,
+  Renderer2,
   ViewEncapsulation,
 } from '@angular/core';
 import { BaseComponent } from '../BaseComponent';
 import { PageItem } from '../../models/PageItem';
-import { MatDialog } from '@angular/material/dialog';
-import { TextEditorComponent } from '../text-editor/text-editor.component';
-import { SafeHtmlPipe } from '../../pipes/safe-html.pipe';
 import { SpacingControlComponent } from '../../controls/spacing-control/spacing-control.component';
 import { FormsModule } from '@angular/forms';
 import { TypographyControlComponent } from '../../controls/typography-control/typography-control.component';
@@ -22,6 +20,10 @@ import { TextCssControlComponent } from '../../controls/textcss-control/textcss-
 import { SizeControlComponent } from '../../controls/size-control/size-control.component';
 import { DynamicDataStructure } from '../../models/DynamicData';
 import { TextBindingComponent } from '../text-binding/text-binding.component';
+import { DynamicDataService } from '../../services/dynamic-data.service';
+import { IPageBuilderFilePicker } from '../../services/file-picker/IFilePicker';
+import { NGX_PAGE_BUILDER_FILE_PICKER } from '../../services/file-picker/token.filepicker';
+import { DEFAULT_IMAGE_URL } from '../../consts/defauls';
 
 @Component({
   selector: 'block-properties',
@@ -31,7 +33,6 @@ import { TextBindingComponent } from '../text-binding/text-binding.component';
   imports: [
     CommonModule,
     FormsModule,
-    SafeHtmlPipe,
     SpacingControlComponent,
     TypographyControlComponent,
     BackgroundControlComponent,
@@ -45,11 +46,19 @@ import { TextBindingComponent } from '../text-binding/text-binding.component';
 })
 export class BlockPropertiesComponent extends BaseComponent implements OnInit {
   item?: PageItem;
-  constructor(injector: Injector) {
+
+  parentCollection?: PageItem;
+  collectionDsList: DynamicDataStructure[] = [];
+
+  constructor(
+    injector: Injector,
+    private dynamicDataService: DynamicDataService,
+  ) {
     super(injector);
     effect(() => {
       this.item = this.pageBuilderService.activeEl();
       // console.log('updated properties', this.item);
+      this.checkParentIsCollection();
 
       this.chdRef.detectChanges();
     });
@@ -59,5 +68,24 @@ export class BlockPropertiesComponent extends BaseComponent implements OnInit {
 
   onChangeProperties() {
     if (this.item) this.pageBuilderService.changedProperties(this.item);
+  }
+
+  checkParentIsCollection() {
+    this.parentCollection = this.parentCollectionItem(this.item);
+    if (this.parentCollection) {
+      let dsList = this.dynamicDataService.getCollectionData(this.parentCollection.dataSource?.id);
+      this.collectionDsList = dsList.length > 0 ? dsList[0] : [];
+    }
+  }
+
+  parentCollectionItem(item?: PageItem): PageItem | undefined {
+    if (!item) return undefined;
+    if (item.template) {
+      return item;
+    }
+    if (item.parent) {
+      return this.parentCollectionItem(item.parent);
+    }
+    return undefined;
   }
 }

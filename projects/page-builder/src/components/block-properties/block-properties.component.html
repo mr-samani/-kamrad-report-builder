@@ -2,9 +2,15 @@
   @if (item) {
     <p>{{ item.tag }}</p>
     <p>{{ item.id }}</p>
-    @if (item.CanBeSetContent) {
-      <text-binding [item]="item" (change)="onChangeProperties()"></text-binding>
+    @if (item.CanBeSetContent || item.isImageTag) {
+      <text-binding
+        [item]="item"
+        [parentCollection]="parentCollection"
+        [collectionDsList]="collectionDsList"
+        (change)="onChangeProperties()"
+      ></text-binding>
     }
+
     <details>
       <summary>Display</summary>
       <display-control [(ngModel)]="item" (change)="onChangeProperties()"></display-control>
