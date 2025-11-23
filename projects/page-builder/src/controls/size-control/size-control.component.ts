@@ -3,13 +3,15 @@ import {
   Component,
   EventEmitter,
   forwardRef,
+  Injector,
   OnInit,
   Output,
-  Renderer2,
 } from '@angular/core';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { PageItem } from '../../models/PageItem';
 import { CommonModule } from '@angular/common';
+import { mergeCssStyles } from '../../utiles/merge-css-styles';
+import { BaseControl } from '../base-control';
 
 export interface ISizeModel {
   width: string;
@@ -21,7 +23,7 @@ export interface ISizeModel {
 }
 
 export interface ISizeValue {
-  value: number | string;
+  value: number | string | undefined;
   unit: 'px' | '%' | 'em' | 'rem' | 'vh' | 'vw' | 'auto';
 }
 
@@ -41,11 +43,8 @@ export type SizeProperty = 'width' | 'minWidth' | 'maxWidth' | 'height' | 'minHe
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule],
 })
-export class SizeControlComponent implements OnInit, ControlValueAccessor {
-  el: HTMLElement | null = null;
-  isDisabled: boolean = false;
-
-  @Output() change = new EventEmitter<Partial<CSSStyleDeclaration> | undefined>();
+export class SizeControlComponent extends BaseControl implements OnInit, ControlValueAccessor {
+  @Output() change = new EventEmitter<PageItem>();
 
   widthProperties: SizeProperty[] = ['width', 'minWidth', 'maxWidth'];
   heightProperties: SizeProperty[] = ['height', 'minHeight', 'maxHeight'];
@@ -66,13 +65,9 @@ export class SizeControlComponent implements OnInit, ControlValueAccessor {
     maxHeight: { value: 'none', unit: 'auto' },
   };
 
-  style?: Partial<CSSStyleDeclaration>;
-  item?: PageItem;
-
-  onChange = (_: PageItem | undefined) => {};
-  onTouched = () => {};
-
-  constructor(private renderer: Renderer2) {}
+  constructor(injector: Injector) {
+    super(injector);
+  }
 
   ngOnInit() {}
 
@@ -93,27 +88,15 @@ export class SizeControlComponent implements OnInit, ControlValueAccessor {
     };
 
     // Parse size values
-    this.sizes.width = this.parseSizeValue(this.style.width || 'auto');
-    this.sizes.minWidth = this.parseSizeValue(this.style.minWidth || '0px');
-    this.sizes.maxWidth = this.parseSizeValue(this.style.maxWidth || 'none');
-    this.sizes.height = this.parseSizeValue(this.style.height || 'auto');
-    this.sizes.minHeight = this.parseSizeValue(this.style.minHeight || '0px');
-    this.sizes.maxHeight = this.parseSizeValue(this.style.maxHeight || 'none');
+    this.sizes.width = this.parseSizeValue(this.style.width);
+    this.sizes.minWidth = this.parseSizeValue(this.style.minWidth);
+    this.sizes.maxWidth = this.parseSizeValue(this.style.maxWidth);
+    this.sizes.height = this.parseSizeValue(this.style.height);
+    this.sizes.minHeight = this.parseSizeValue(this.style.minHeight);
+    this.sizes.maxHeight = this.parseSizeValue(this.style.maxHeight);
   }
 
-  registerOnChange(fn: any): void {
-    this.onChange = fn;
-  }
-
-  registerOnTouched(fn: any): void {
-    this.onTouched = fn;
-  }
-
-  setDisabledState(isDisabled: boolean): void {
-    this.isDisabled = isDisabled;
-  }
-
-  parseSizeValue(value: string): ISizeValue {
+  parseSizeValue(value: string | undefined): ISizeValue {
     if (!value || value === 'auto' || value === 'none') {
       return { value: value, unit: 'auto' };
     }
@@ -167,7 +150,7 @@ export class SizeControlComponent implements OnInit, ControlValueAccessor {
   }
 
   update() {
-    if (!this.style || !this.el) return;
+    if (!this.style || !this.el || !this.item) return;
 
     // Update style object with formatted CSS values
     this.style.width = this.formatSizeValue(this.sizes.width);
@@ -184,8 +167,8 @@ export class SizeControlComponent implements OnInit, ControlValueAccessor {
     this.renderer.setStyle(this.el, 'height', this.style.height);
     this.renderer.setStyle(this.el, 'min-height', this.style.minHeight);
     this.renderer.setStyle(this.el, 'max-height', this.style.maxHeight);
-
+    this.item.style = mergeCssStyles(this.item.style, this.el.style.cssText);
     this.onChange(this.item);
-    this.change.emit(this.style);
+    this.change.emit(this.item);
   }
 }

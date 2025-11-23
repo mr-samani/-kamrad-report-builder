@@ -4,13 +4,15 @@ import {
   Component,
   EventEmitter,
   forwardRef,
+  Injector,
   OnInit,
   Output,
-  Renderer2,
 } from '@angular/core';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { PageItem } from '../../models/PageItem';
+import { BaseControl } from '../base-control';
+import { mergeCssStyles } from '../../utiles/merge-css-styles';
 
 export type DisplayType =
   | 'block'
@@ -42,12 +44,8 @@ export type DisplayType =
   imports: [CommonModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DisplayControlComponent implements OnInit, ControlValueAccessor {
-  @Output() change = new EventEmitter<Partial<CSSStyleDeclaration>>();
-
-  el?: HTMLElement;
-  isDisabled = false;
-  item?: PageItem;
+export class DisplayControlComponent extends BaseControl implements OnInit, ControlValueAccessor {
+  @Output() change = new EventEmitter<PageItem>();
 
   // Display Properties
   display: DisplayType = 'block';
@@ -141,13 +139,12 @@ export class DisplayControlComponent implements OnInit, ControlValueAccessor {
     { value: 'flow-root', label: 'Flow Root', icon: '↯' },
   ];
 
-  onChange = (_: PageItem | undefined) => {};
-  onTouched = () => {};
-
   constructor(
-    private renderer: Renderer2,
+    injector: Injector,
     private cdr: ChangeDetectorRef,
-  ) {}
+  ) {
+    super(injector);
+  }
 
   ngOnInit() {}
 
@@ -208,25 +205,13 @@ export class DisplayControlComponent implements OnInit, ControlValueAccessor {
     this.cdr.detectChanges();
   }
 
-  registerOnChange(fn: any): void {
-    this.onChange = fn;
-  }
-
-  registerOnTouched(fn: any): void {
-    this.onTouched = fn;
-  }
-
-  setDisabledState(isDisabled: boolean): void {
-    this.isDisabled = isDisabled;
-  }
-
   setDisplay(displayType: DisplayType) {
     this.display = displayType;
     this.update();
   }
 
   update() {
-    if (!this.el) return;
+    if (!this.el || !this.item) return;
 
     // Apply Display
     this.renderer.setStyle(this.el, 'display', this.display);
@@ -292,7 +277,8 @@ export class DisplayControlComponent implements OnInit, ControlValueAccessor {
 
     this.cdr.detectChanges();
     this.onChange(this.item);
-    this.change.emit(this.getStyles());
+    this.item.style = mergeCssStyles(this.item.style, this.el.style.cssText);
+    this.change.emit(this.item);
   }
 
   private getStyles(): Partial<CSSStyleDeclaration> {

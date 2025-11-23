@@ -1,1 +1,6 @@
-<p>collection-item works!</p>
+@if (pageItem.template) {
+  @if (templateList.length == 0 || !pageItem.dataSource || !pageItem.dataSource.maxResultCount) {
+    <div class="ngx-page-alert info">View setting for set data source and filters</div>
+  }
+  <div class="collection-container" #collectionContainer></div>
+}

@@ -1,4 +1,4 @@
-import { NgxDraggableDirective, NgxDropListDirective } from 'ngx-drag-drop-kit';
+import { IDropEvent, NgxDraggableDirective, NgxDropListDirective } from 'ngx-drag-drop-kit';
 import { Directive, SourceItem } from '../models/SourceItem';
 import { PageItem } from '../models/PageItem';
 
@@ -12,8 +12,6 @@ export const LibConsts: {
   SourceItemList: [],
 };
 
-const DefaultBlockDirectives: Directive[] = [{ directive: NgxDraggableDirective }];
-
 export const DefaultBlockClassName = 'block-item';
 
 export const LOCAL_STORAGE_SAVE_KEY = 'page';
@@ -21,11 +19,9 @@ export const LOCAL_STORAGE_SAVE_KEY = 'page';
 export const DEFAULT_IMAGE_URL = '/assets/default-image.png';
 
 export function getDefaultBlockDirective(pageItem: PageItem, onDropFn: Function) {
-  let dir = [];
-  if (pageItem.disableMovement) {
-    dir = DefaultBlockDirectives.filter((d) => d.directive !== NgxDraggableDirective);
-  } else {
-    dir = [...DefaultBlockDirectives];
+  const dir: Directive[] = [];
+  if (!pageItem.disableMovement) {
+    dir.push({ directive: NgxDraggableDirective });
   }
 
   if (pageItem.canHaveChild) {
@@ -33,9 +29,11 @@ export function getDefaultBlockDirective(pageItem: PageItem, onDropFn: Function)
       directive: NgxDropListDirective,
       inputs: {
         data: pageItem.children,
+        // must be check in ondrop event
+        /// connectedTo: pageItem.lockMoveInnerChild ? `[data-id="${pageItem.id}"]` : undefined,
       },
       outputs: {
-        drop: onDropFn,
+        drop: (ev: IDropEvent<PageItem>) => onDropFn(ev, pageItem),
       },
     });
   }

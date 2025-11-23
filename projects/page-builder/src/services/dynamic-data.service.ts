@@ -1,59 +1,70 @@
 import { Injectable } from '@angular/core';
-import { DynamicDataStructure, DynamicNode, DynamicObjectNode } from '../models/DynamicData';
-import { PageBuilderDto } from '../public-api';
+import { DynamicDataStructure } from '../models/DynamicData';
 import { Page } from '../models/Page';
+import { PageItem } from '../models/PageItem';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DynamicDataService {
-  private _dynamicData?: DynamicDataStructure;
+  private _dynamicData: DynamicDataStructure[] = [];
 
-  private _dynamicDataDictionary: { [key: string]: string } = {};
+  private _valueDictionary: { [key: string]: string | undefined } = {};
 
-  public get dynamicData(): DynamicDataStructure | undefined {
+  private map = new Map<string, DynamicDataStructure>();
+  private nearestCache = new Map<string, string | null>(); // itemId -> nearest datasource id
+
+  public set dynamicData(value: DynamicDataStructure[]) {
+    this._dynamicData = value ?? [];
+    this.createValueDictionary();
+    console.log(this._dynamicData, this._valueDictionary);
+  }
+  public get dynamicData() {
     return this._dynamicData;
   }
 
-  public set dynamicData(value: DynamicDataStructure | undefined) {
-    this._dynamicData = value;
-    this.createValueDictionary();
-    console.log(this._dynamicDataDictionary);
-  }
-
   private createValueDictionary() {
-    this._dynamicDataDictionary = {};
+    this._valueDictionary = {};
     if (!this._dynamicData) {
       return;
     }
 
-    let recursiveTraverse = (obj: any, path: string[] = []) => {
-      if (obj.value) {
-        this._dynamicDataDictionary[path.join('.')] = obj.value;
-        return;
-      }
-
-      for (const key in obj.properties) {
-        recursiveTraverse(obj.properties[key], [...path, key]);
+    let recursiveTraverse = (list: DynamicDataStructure[], path: string[] = []) => {
+      for (let obj of list) {
+        if (obj.name) {
+          let p = [...path, obj.name];
+          let k = p.join('.');
+          this._valueDictionary[k] = obj.value as any;
+        }
+        if (obj.values) {
+          recursiveTraverse(obj.values, [...path, obj.name]);
+        }
       }
     };
 
-    for (let key in this._dynamicData) {
-      const value = this._dynamicData[key];
-      let path: string[] = [key];
-      recursiveTraverse(value, path);
+    for (let item of this._dynamicData) {
+      let path: string[] = [item.name];
+      if (item.values) {
+        const values = item.values;
+        recursiveTraverse(values, path);
+      } else if (item.list) {
+        for (let i = 0; i < item.list.length; i++) {
+          let p = path[path.length - 1] + `[${i}]`;
+          recursiveTraverse(item.list[i], [...path, p]);
+        }
+      }
     }
   }
 
   public replaceValues(pages: Page[]) {
     setTimeout(() => {
-      // console.log('Replacing values...', pages, this._dynamicDataDictionary);
+      // console.log('Replacing values...', pages, this._valueDictionary);
       let replace = (item?: HTMLElement) => {
         if (!item) return;
         let txt = item.innerHTML;
         let isReplaced = false;
-        for (const key in this._dynamicDataDictionary) {
-          const value = this._dynamicDataDictionary[key];
+        for (const key in this._valueDictionary) {
+          const value = this._valueDictionary[key] ?? '';
           const regEx = new RegExp(`\\[%${key}%\\]`, 'g');
           isReplaced = isReplaced || regEx.test(txt);
           txt = txt.replace(regEx, value);
@@ -68,5 +79,51 @@ export class DynamicDataService {
         page.footerItems.forEach((item) => replace(item.el));
       }
     }, 100);
+  }
+
+  /*------------------------------------------------------------------------------------------*/
+  register(ds: DynamicDataStructure) {
+    this.map.set(ds.id!, ds);
+  }
+  get(id: string) {
+    return this.map.get(id) ?? null;
+  }
+  list() {
+    return Array.from(this.map.values());
+  }
+
+  // walk up model parent pointers to find nearest datasource
+  findNearestDataSource(itemId: string, pageModel: Map<string, PageItem>): string | null {
+    if (this.nearestCache.has(itemId)) return this.nearestCache.get(itemId)!;
+    let cur = pageModel.get(itemId);
+    while (cur) {
+      if (cur.dataSource?.id) {
+        this.nearestCache.set(itemId, cur.dataSource.id);
+        return cur.dataSource.id;
+      }
+      if (!cur.parent?.id) break;
+      cur = pageModel.get(cur.parent.id);
+    }
+    this.nearestCache.set(itemId, null);
+    return null;
+  }
+
+  // call this whenever tree structure or datasource references change
+  invalidateNearestCacheFor(itemIds?: string[]) {
+    if (!itemIds) this.nearestCache.clear();
+    else itemIds.forEach((id) => this.nearestCache.delete(id));
+  }
+
+  /**
+   * get collection data by datasource id
+   * @TODO: must be can call api and cache data
+   * @param id datasource id
+   */
+  getCollectionData(id: string | undefined, skip = 0, take?: number): DynamicDataStructure[][] {
+    if (!id) return [];
+    return (this.dynamicData.find((x) => x.id === id)?.list ?? []).slice(
+      skip,
+      take ? skip + take : undefined,
+    );
   }
 }

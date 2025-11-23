@@ -17,7 +17,8 @@ export function sanitizeForStorage(obj: any): any {
         key.startsWith('__') ||
         key === 'directive' ||
         key === 'elementRef' ||
-        key === 'nativeElement'
+        key === 'nativeElement' ||
+        key === 'parent'
       ) {
         continue;
       }

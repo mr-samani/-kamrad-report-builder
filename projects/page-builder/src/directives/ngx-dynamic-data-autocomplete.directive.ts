@@ -9,14 +9,14 @@ import {
   Output,
   OnDestroy,
 } from '@angular/core';
-import { DynamicDataStructure, DynamicNode, DynamicObjectNode } from '../models/DynamicData';
+import { DynamicDataStructure, DynamicValueType } from '../models/DynamicData';
 
 @Directive({
   selector: '[ngxDynamicAutocomplete]',
   standalone: true,
 })
 export class DynamicAutocompleteDirective implements OnDestroy {
-  @Input() dynamicData?: DynamicDataStructure;
+  @Input() dynamicData?: DynamicDataStructure[];
   @Output() inserted = new EventEmitter<string>();
 
   private popupEl?: HTMLElement;
@@ -260,7 +260,7 @@ export class DynamicAutocompleteDirective implements OnDestroy {
     console.log('🔍 Current token:', currentToken);
 
     // Start from synthetic root
-    let current: DynamicNode = { type: 'object', properties: root } as DynamicObjectNode;
+    let current: DynamicDataStructure = root as DynamicDataStructure;
 
     // Traverse parent path
     for (const seg of parentPath) {
@@ -269,31 +269,31 @@ export class DynamicAutocompleteDirective implements OnDestroy {
         return [];
       }
 
-      if (current.type === 'object') {
-        if (current.properties && seg in current.properties) {
-          current = current.properties[seg];
+      if (current.type === DynamicValueType.Object) {
+        if (current.values && seg in current.values) {
+          current = current.values.find((x) => x.name == seg)!;
           console.log('✅ Navigated to object property:', seg);
         } else {
           console.log('❌ Property not found:', seg);
           return [];
         }
-      } else if (current.type === 'array') {
+      } else if (current.type === DynamicValueType.Array) {
         // Handle array navigation
-        if (seg === '[index]') {
-          current = current.items;
-          console.log('✅ Navigated to array items');
-        } else if (current.items && current.items.type === 'object') {
-          if (current.items.properties && seg in current.items.properties) {
-            current = current.items.properties[seg];
-            console.log('✅ Navigated to array item property:', seg);
-          } else {
-            console.log('❌ Array item property not found:', seg);
-            return [];
-          }
-        } else {
-          console.log('❌ Cannot navigate array with segment:', seg);
-          return [];
-        }
+        // // // if (seg === '[index]') {
+        // // //   current = current.values;
+        // // //   console.log('✅ Navigated to array items');
+        // // // } else if (current.items && current.items.type === DynamicValueType.Object) {
+        // // //   if (current.items.values && seg in current.items.values) {
+        // // //     current = current.items.values.find((x) => x.name == seg)!;
+        // // //     console.log('✅ Navigated to array item property:', seg);
+        // // //   } else {
+        // // //     console.log('❌ Array item property not found:', seg);
+        // // //     return [];
+        // // //   }
+        // // // } else {
+        // // //   console.log('❌ Cannot navigate array with segment:', seg);
+        // // //   return [];
+        // // // }
       } else {
         console.log('❌ Cannot navigate value node');
         return [];
@@ -305,8 +305,8 @@ export class DynamicAutocompleteDirective implements OnDestroy {
 
     let suggestions: string[] = [];
 
-    if (current.type === 'object') {
-      const keys = Object.keys(current.properties || {});
+    if (current.type === DynamicValueType.Object) {
+      const keys = Object.keys(current.values || {});
 
       if (!currentToken) {
         // Show all keys
@@ -315,15 +315,15 @@ export class DynamicAutocompleteDirective implements OnDestroy {
         // Filter by prefix
         suggestions = keys.filter((k) => k.toLowerCase().startsWith(currentToken.toLowerCase()));
       }
-    } else if (current.type === 'array') {
+    } else if (current.type === DynamicValueType.Array) {
       // Suggest [index]
       if (!currentToken || '[index]'.toLowerCase().startsWith(currentToken.toLowerCase())) {
         suggestions.push('[index]');
       }
 
       // Suggest item properties
-      if (current.items && current.items.type === 'object') {
-        const itemKeys = Object.keys(current.items.properties || {});
+      if (current.values) {
+        const itemKeys = Object.keys(current.values || {});
         if (!currentToken) {
           suggestions.push(...itemKeys);
         } else {

@@ -13,7 +13,7 @@ export class Page {
       }
     }
   }
-  static fromJSON(data: any): Page {
+  static fromJSON(data: Page): Page {
     const p = new Page(data);
     p.headerItems = (data.headerItems || []).map(PageItem.fromJSON);
     p.bodyItems = (data.bodyItems || []).map(PageItem.fromJSON);

@@ -1,0 +1,55 @@
+graph TB
+    Start([شروع: ساخت Element]) --> Init[DynamicElementService.createBlockElement]
+    
+    Init --> IsComponent{Component یا<br/>HTML Element?}
+    
+    IsComponent -->|Component| CreateComp[ساخت Component<br/>با createComponent]
+    IsComponent -->|HTML| CreateHTML[ساخت HTML Element<br/>با createElement]
+    
+    CreateComp --> AttachView[Attach View به App]
+    CreateHTML --> BindOptions[Bind کردن Options]
+    
+    AttachView --> BindOptions
+    BindOptions --> HasDirective{آیا Directive<br/>دارد؟}
+    
+    HasDirective -->|بله| AttachDir[attachDirective:<br/>- ساخت Instance<br/>- صدا زدن ngOnInit<br/>- صدا زدن ngAfterViewInit]
+    HasDirective -->|خیر| Register
+    
+    AttachDir --> Register[ثبت در LifecycleManager:<br/>- Element<br/>- Directive Instances<br/>- Component Ref<br/>- Parent Reference]
+    
+    Register --> AddToDOM[اضافه شدن به DOM]
+    AddToDOM --> Observer[MutationObserver<br/>شروع به نظارت]
+    
+    Observer --> Wait[منتظر تغییرات...]
+    
+    Wait --> Remove{Element حذف شد؟}
+    
+    Remove -->|بله| Detect[MutationObserver<br/>تشخیص می‌دهد]
+    Remove -->|خیر| Wait
+    
+    Detect --> TreeCleanup[cleanupElementTree:<br/>پاکسازی Recursive]
+    
+    TreeCleanup --> CheckChildren{آیا Child<br/>دارد؟}
+    
+    CheckChildren -->|بله| CleanChildren[Cleanup همه Child‌ها<br/>به صورت Recursive]
+    CheckChildren -->|خیر| DestroyDir
+    
+    CleanChildren --> DestroyDir[صدا زدن ngOnDestroy<br/>همه Directive‌ها]
+    
+    DestroyDir --> DestroyComp{آیا Component<br/>است؟}
+    
+    DestroyComp -->|بله| CompDestroy[destroy کردن<br/>ComponentRef]
+    DestroyComp -->|خیر| Cleanup
+    
+    CompDestroy --> Cleanup[پاک کردن از Registry<br/>و حذف Reference‌ها]
+    
+    Cleanup --> End([پایان: Cleanup کامل ✅])
+    
+    style Start fill:#007d2c
+    style End fill:#FFB6C1
+    style Observer fill:#87CEEB
+    style Detect fill:#FFD700
+    style TreeCleanup fill:#FFA500
+    style DestroyDir fill:#FF6B6B
+    style CompDestroy fill:#FF6B6B
+    style Cleanup fill:#DDA0DD

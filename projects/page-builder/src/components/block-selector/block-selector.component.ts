@@ -24,13 +24,13 @@ export class BlockSelectorComponent extends BaseComponent implements OnDestroy {
   y = 0;
   width = 0;
   height = 0;
-  item?: PageItem;
+  item?: PageItem | null;
   showInBottom = false;
   headerOffset = 30;
 
   private resizeObserver?: ResizeObserver;
   private mutationObserver?: MutationObserver;
-  private currentElement?: HTMLElement | null;
+  private currentElement?: HTMLElement | undefined;
 
   constructor(injector: Injector) {
     super(injector);
@@ -40,6 +40,11 @@ export class BlockSelectorComponent extends BaseComponent implements OnDestroy {
       const newItem = this.pageBuilderService.activeEl();
       this.item = newItem;
       // console.log('Active element changed:', newItem);
+      this.observeActiveElement();
+    });
+
+    this.pageBuilderService.changed$.subscribe((data) => {
+      this.item = data.item;
       this.observeActiveElement();
     });
   }
@@ -57,22 +62,17 @@ export class BlockSelectorComponent extends BaseComponent implements OnDestroy {
     this.disconnectObservers();
 
     if (this.item) {
-      const el = this.doc.querySelector<HTMLElement>(`[data-id="${this.item.id}"]`);
-      if (!el) return;
+      if (!this.item.el) return;
 
-      this.currentElement = el;
+      this.currentElement = this.item.el;
 
       // Watch for resize
-      this.resizeObserver = new ResizeObserver(() => {
-        this.updatePosition();
-      });
-      this.resizeObserver.observe(el);
+      this.resizeObserver = new ResizeObserver((c) => this.updatePosition());
+      this.resizeObserver.observe(this.currentElement);
 
       // Watch for style/class changes (margin/padding/etc.)
-      this.mutationObserver = new MutationObserver(() => {
-        this.updatePosition();
-      });
-      this.mutationObserver.observe(el, {
+      this.mutationObserver = new MutationObserver((c) => this.updatePosition());
+      this.mutationObserver.observe(this.currentElement, {
         attributes: true,
         attributeFilter: ['style', 'class'],
       });
@@ -92,33 +92,33 @@ export class BlockSelectorComponent extends BaseComponent implements OnDestroy {
     this.mutationObserver?.disconnect();
     this.resizeObserver = undefined;
     this.mutationObserver = undefined;
-    this.currentElement = null;
+    this.currentElement = undefined;
   }
 
   updatePosition() {
-    // console.log('Updating position for:', `[data-id="${this.item?.id}"]`);
     if (!this.item) {
       this.x = this.y = this.width = this.height = 0;
       this.chdRef.detectChanges();
       return;
     }
 
-    const el = this.doc.querySelector<HTMLElement>(`[data-id="${this.item.id}"]`);
-    if (!el) return;
+    if (!this.currentElement) return;
 
-    const rect = el.getBoundingClientRect();
+    const rect = this.currentElement.getBoundingClientRect();
+    if (rect.x == 0 && rect.y == 0 && rect.width == 0 && rect.height == 0) {
+      return;
+    }
     this.x = window.scrollX + rect.x;
     this.y = window.scrollY + rect.y;
     this.width = rect.width;
     this.height = rect.height;
 
     this.showInBottom = rect.y < 0 || rect.y - 24 < this.headerOffset;
-
     this.chdRef.detectChanges();
   }
 
   deleteBlock() {
-    if (this.item) {
+    if (this.item && !this.item.disableDelete) {
       this.pageBuilderService.removeBlock(this.item);
     }
   }

@@ -1,17 +1,14 @@
-import {
-  DestroyableInjector,
-  InjectionToken,
-  Provider,
-  reflectComponentType,
-  Type,
-} from '@angular/core';
+import { Type } from '@angular/core';
 import { randomStrnig } from '../utiles/generateUUID';
 import { ISourceOptions } from './SourceItem';
 import { LibConsts } from '../consts/defauls';
 import { CustomComponent } from './CustomComponent';
+import { DataSourceSetting } from './DataSourceSetting';
 
 export interface IPageItem {
   id?: string;
+  dataSource?: DataSourceSetting;
+  parent?: PageItem;
   el?: HTMLElement;
   children?: PageItem[];
   tag?: string;
@@ -22,10 +19,18 @@ export interface IPageItem {
   componentKey?: string;
   options?: ISourceOptions;
   style?: string;
+  template?: PageItem;
+  disableMovement?: boolean;
+  lockMoveInnerChild?: boolean;
+  disableDelete?: boolean;
+  isTemplateContainer?: boolean;
 }
 
 export class PageItem implements IPageItem {
   id: string = '';
+  dataSource?: DataSourceSetting;
+
+  parent?: PageItem;
   el?: HTMLElement;
   children: PageItem[] = [];
   tag!: string;
@@ -40,26 +45,42 @@ export class PageItem implements IPageItem {
    * @example pagebreak cannot move to child items
    */
   disableMovement?: boolean = false;
+  /**
+   * disable move inner child item to outside of self list
+   * @example prevent dragging child item of Item-Collection to another list
+   */
+  lockMoveInnerChild?: boolean = false;
+  disableDelete?: boolean = false;
+  isTemplateContainer?: boolean | undefined;
   //------------------------CUSTOM COMPONENT---------------------------
   /** custom component */
   customComponent?: CustomComponent;
 
   //---------------------------------------------------
 
-  constructor(data?: IPageItem) {
+  /**
+   * item template collection
+   */
+  template?: PageItem;
+
+  constructor(data?: IPageItem, parent?: PageItem) {
     if (data) {
       for (var property in data) {
+        if (property == 'children' || property == 'template') continue;
         if (this.hasOwnProperty(property)) (<any>this)[property] = (<any>data)[property];
+      }
+      if (data.children) {
+        this.children = data.children.map((child) => new PageItem(child, this));
+      }
+      if (data.template) {
+        this.template = new PageItem(data.template, this);
       }
     }
     if (!this.id) this.id = randomStrnig(5);
+    if (parent) this.parent = parent;
   }
-  static fromJSON(data: any): PageItem {
+  static fromJSON(data: IPageItem): PageItem {
     const item = new PageItem(data);
-    Object.assign(item, data);
-    if (item.children) {
-      item.children = item.children.map((child) => new PageItem(child));
-    }
     return item;
   }
 
@@ -77,6 +98,9 @@ export class PageItem implements IPageItem {
    */
   public get isImageTag(): boolean {
     return this.el?.tagName === 'IMG';
+  }
+  public static isImage(item: PageItem): boolean {
+    return item.tag.toLowerCase() === 'img';
   }
 
   /**

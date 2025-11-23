@@ -1,21 +1,3 @@
-{{ item?.isImageTag }}
-@if (item?.isImageTag) {
-  <!-- Properties Table -->
-  <table class="properties-table">
-    <tbody>
-      <tr>
-        <th colspan="2" align="start">Image Properties</th>
-      </tr>
-      <tr>
-        <td><label for="image-url">Image URL:</label></td>
-        <td>
-          <button type="button" (click)="onChangeSrcImage()">Change Image</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-}
-
 <div class="background-control">
   <!-- Mode Selector -->
   <div class="mode-selector">

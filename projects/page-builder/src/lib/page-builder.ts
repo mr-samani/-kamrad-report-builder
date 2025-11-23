@@ -20,11 +20,12 @@ import { PageBuilderBaseComponent } from './page-builder-base-component';
 import { IStorageService } from '../services/storage/IStorageService';
 import { STORAGE_SERVICE } from '../services/storage/token.storage';
 import { PageBuilderConfiguration } from '../models/PageBuilderConfiguration';
-import { PageBuilderDto } from '../public-api';
 import { DynamicDataStructure } from '../models/DynamicData';
 import { fromEvent, Subscription } from 'rxjs';
 import { SideConfigComponent } from '../components/side-config/side-config.component';
 import { PAGE_BUILDER_CONFIGURATION } from '../models/tokens';
+import { PageItemChange } from '../services/page-builder.service';
+import { PageBuilderDto } from '../models/PageBuilderDto';
 
 @Component({
   selector: 'ngx-page-builder',
@@ -42,8 +43,8 @@ import { PAGE_BUILDER_CONFIGURATION } from '../models/tokens';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, OnDestroy {
-  @Input('dynamicData') set setDynamicData(val: DynamicDataStructure) {
-    this.dynamicDataService.dynamicData = val;
+  @Input('dynamicData') set setDynamicData(val: DynamicDataStructure[]) {
+    this.dynamicDataService.dynamicData = val ?? [];
   }
   private _pageBody = viewChild<ElementRef<HTMLElement>>('PageBody');
   private _pageHeader = viewChild<ElementRef<HTMLElement>>('PageHeader');
@@ -62,8 +63,10 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
     this.pageBuilderService.pageBody = this._pageBody;
     this.pageBuilderService.pageHeader = this._pageHeader;
     this.pageBuilderService.pageFooter = this._pageFooter;
-    this.pageBuilderService.changed$.subscribe(() => {
-      this.chdRef.detectChanges();
+    this.pageBuilderService.changed$.subscribe((data: PageItemChange) => {
+      if (data.type == 'ChangePageConfig') {
+        this.chdRef.detectChanges();
+      }
     });
   }
 
@@ -85,13 +88,14 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
       this.pageBuilderService.pageInfo = PageBuilderDto.fromJSON(data);
       console.log('load data:', data, 'converted class:', this.pageBuilderService.pageInfo);
       if (this.pageBuilderService.pageInfo.pages.length == 0) {
-        this.pageBuilderService.addPage();
+        await this.pageBuilderService.addPage();
         return;
       } else {
-        this.pageBuilderService.changePage(1);
+        await this.pageBuilderService.changePage(1);
+        console.log('after load:', this.pageBuilderService.pageInfo);
       }
     } catch (error) {
-      this.pageBuilderService.addPage();
+      await this.pageBuilderService.addPage();
       console.error('Error loading page data:', error);
       alert('Error loading page data: ' + error);
     }

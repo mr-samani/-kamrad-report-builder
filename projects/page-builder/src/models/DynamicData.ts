@@ -1,26 +1,20 @@
-// dynamic-structure.model.ts (همون ساختار پیشنهادی)
 export interface DynamicDataStructure {
-  [key: string]: DynamicNode;
-}
-
-export type DynamicNode = DynamicObjectNode | DynamicArrayNode | DynamicValueNode;
-
-export interface DynamicObjectNode {
-  type: 'object';
-  properties: Record<string, DynamicNode>;
-  displayName?: string;
-}
-
-export interface DynamicArrayNode {
-  type: 'array';
-  items: DynamicNode;
-  displayName?: string;
-}
-
-export interface DynamicValueNode {
-  type: 'value';
-  valueType: 'string' | 'number' | 'boolean' | 'date' | 'any';
-  displayName?: string;
-
+  id?: string;
+  name: string;
+  displayName: string;
+  values?: DynamicDataStructure[];
+  list?: DynamicDataStructure[][];
+  type: DynamicValueType;
   value?: string | number | boolean | Date | null;
+}
+
+export enum DynamicValueType {
+  String,
+  Int,
+  Boolean,
+  Date,
+  Time,
+  DateTime,
+  Array,
+  Object,
 }
