@@ -44,7 +44,8 @@
       cursor: pointer;
       transform: scale(1.1);
     }
-    svg {
+    svg,
+    img {
       fill: var(--tools-fg);
     }
   }

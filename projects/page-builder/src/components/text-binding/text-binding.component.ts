@@ -21,13 +21,14 @@ import { DataSourceSelectorComponent } from './data-source-selector/data-source-
 import { DEFAULT_IMAGE_URL } from '../../consts/defauls';
 import { IPageBuilderFilePicker } from '../../services/file-picker/IFilePicker';
 import { NGX_PAGE_BUILDER_FILE_PICKER } from '../../services/file-picker/token.filepicker';
+import { SvgIconDirective } from '../../directives/svg-icon.directive';
 
 @Component({
   selector: 'text-binding',
   templateUrl: './text-binding.component.html',
   styleUrls: ['./text-binding.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, SafeHtmlPipe, DataSourceSelectorComponent],
+  imports: [CommonModule, FormsModule, SafeHtmlPipe, DataSourceSelectorComponent, SvgIconDirective],
 })
 export class TextBindingComponent extends BaseComponent implements OnInit {
   @Input() item!: PageItem;

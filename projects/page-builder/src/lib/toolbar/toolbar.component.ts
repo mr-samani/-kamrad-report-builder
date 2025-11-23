@@ -17,13 +17,14 @@ import { SortPageListComponent } from '../sort-page-list/sort-page-list.componen
 import { PageBuilderDto } from '../../models/PageBuilderDto';
 import { RouterModule } from '@angular/router';
 import { Notify } from '../../extensions/notify';
+import { SvgIconDirective } from '../../directives/svg-icon.directive';
 
 @Component({
   selector: 'toolbar',
   templateUrl: './toolbar.component.html',
   styleUrls: ['./toolbar.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, SvgIconDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit {

@@ -10,12 +10,13 @@ import { NgxDragDropKitModule, NgxDropListDirective } from 'ngx-drag-drop-kit';
 import { PageItem } from '../../models/PageItem';
 import { DynamicElementService } from '../../services/dynamic-element.service';
 import { PageBuilderService } from '../../services/page-builder.service';
+import { SvgIconDirective } from '../../directives/svg-icon.directive';
 
 @Component({
   selector: 'page-column',
   templateUrl: './column.component.html',
   styleUrls: ['./column.component.scss'],
-  imports: [NgxDragDropKitModule],
+  imports: [NgxDragDropKitModule, SvgIconDirective],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

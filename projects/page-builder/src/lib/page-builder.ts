@@ -27,6 +27,7 @@ import { PAGE_BUILDER_CONFIGURATION } from '../models/tokens';
 import { PageItemChange } from '../services/page-builder.service';
 import { PageBuilderDto } from '../models/PageBuilderDto';
 import { NgxPgNotifyModule, Notify } from '../extensions/notify';
+import { SvgIconDirective } from '../directives/svg-icon.directive';
 
 @Component({
   selector: 'ngx-page-builder',
@@ -40,6 +41,7 @@ import { NgxPgNotifyModule, Notify } from '../extensions/notify';
     BlockSelectorComponent,
     SideConfigComponent,
     NgxPgNotifyModule,
+    SvgIconDirective,
   ],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
