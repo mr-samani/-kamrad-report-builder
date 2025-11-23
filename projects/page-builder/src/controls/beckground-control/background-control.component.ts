@@ -5,9 +5,9 @@ import {
   EventEmitter,
   forwardRef,
   Inject,
+  Injector,
   OnInit,
   Output,
-  Renderer2,
 } from '@angular/core';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -16,6 +16,8 @@ import { parseBackground } from '../../utiles/parseBackground';
 import { IPageBuilderFilePicker } from '../../services/file-picker/IFilePicker';
 import { NGX_PAGE_BUILDER_FILE_PICKER } from '../../services/file-picker/token.filepicker';
 import { PageItem } from '../../models/PageItem';
+import { BaseControl } from '../base-control';
+import { mergeCssStyles } from '../../utiles/merge-css-styles';
 
 export type BackgroundMode = 'color' | 'gradient' | 'image' | 'color+gradient' | 'color+image';
 
@@ -34,11 +36,11 @@ export type BackgroundMode = 'color' | 'gradient' | 'image' | 'color+gradient' |
   imports: [CommonModule, FormsModule, NgxInputColorModule, NgxInputGradientModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class BackgroundControlComponent implements OnInit, ControlValueAccessor {
-  @Output() change = new EventEmitter<Partial<CSSStyleDeclaration>>();
-
-  el?: HTMLElement;
-  isDisabled = false;
+export class BackgroundControlComponent
+  extends BaseControl
+  implements OnInit, ControlValueAccessor
+{
+  @Output() change = new EventEmitter<PageItem>();
 
   backgroundColor = '';
   backgroundGradient = '';
@@ -59,16 +61,14 @@ export class BackgroundControlComponent implements OnInit, ControlValueAccessor 
     { value: 'color+gradient', label: 'Color + Gradient', icon: 'mix' },
     { value: 'color+image', label: 'Color + Image', icon: 'mix' },
   ];
-  style?: Partial<CSSStyleDeclaration>;
-  item?: PageItem;
-  onChange = (_: PageItem | undefined) => {};
-  onTouched = () => {};
 
   constructor(
-    private renderer: Renderer2,
+    injector: Injector,
     @Inject(NGX_PAGE_BUILDER_FILE_PICKER) private filePicker: IPageBuilderFilePicker | null,
     private cdr: ChangeDetectorRef,
-  ) {}
+  ) {
+    super(injector);
+  }
 
   ngOnInit() {}
 
@@ -95,18 +95,6 @@ export class BackgroundControlComponent implements OnInit, ControlValueAccessor 
     this.cdr.detectChanges();
   }
 
-  registerOnChange(fn: any): void {
-    this.onChange = fn;
-  }
-
-  registerOnTouched(fn: any): void {
-    this.onTouched = fn;
-  }
-
-  setDisabledState(isDisabled: boolean): void {
-    this.isDisabled = isDisabled;
-  }
-
   private detectMode() {
     const hasColor = !!this.backgroundColor && this.backgroundColor !== 'rgba(0, 0, 0, 0)';
     const hasGradient = !!this.backgroundGradient;
@@ -123,7 +111,7 @@ export class BackgroundControlComponent implements OnInit, ControlValueAccessor 
     this.update(); // هنگام تغییر mode، استایل را بروز کن
   }
   update() {
-    if (!this.el) return;
+    if (!this.el || !this.item) return;
     // Apply only relevant styles
     if (this.mode.includes('color')) {
       this.renderer.setStyle(this.el, 'background-color', this.backgroundColor);
@@ -159,8 +147,9 @@ export class BackgroundControlComponent implements OnInit, ControlValueAccessor 
     };
 
     this.cdr.detectChanges();
+    this.item.style = mergeCssStyles(this.item.style, this.el.style.cssText);
     this.onChange(this.item);
-    this.change.emit(this.style);
+    this.change.emit(this.item);
   }
 
   openImagePicker() {

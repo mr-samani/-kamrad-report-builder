@@ -3,14 +3,15 @@ import {
   Component,
   EventEmitter,
   forwardRef,
+  Injector,
   OnInit,
   Output,
-  Renderer2,
 } from '@angular/core';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { PageItem } from '../../models/PageItem';
 import { CommonModule } from '@angular/common';
 import { mergeCssStyles } from '../../utiles/merge-css-styles';
+import { BaseControl } from '../base-control';
 
 export interface ISizeModel {
   width: string;
@@ -42,11 +43,8 @@ export type SizeProperty = 'width' | 'minWidth' | 'maxWidth' | 'height' | 'minHe
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule],
 })
-export class SizeControlComponent implements OnInit, ControlValueAccessor {
-  el: HTMLElement | null = null;
-  isDisabled: boolean = false;
-
-  @Output() change = new EventEmitter<PageItem | undefined>();
+export class SizeControlComponent extends BaseControl implements OnInit, ControlValueAccessor {
+  @Output() change = new EventEmitter<PageItem>();
 
   widthProperties: SizeProperty[] = ['width', 'minWidth', 'maxWidth'];
   heightProperties: SizeProperty[] = ['height', 'minHeight', 'maxHeight'];
@@ -67,13 +65,9 @@ export class SizeControlComponent implements OnInit, ControlValueAccessor {
     maxHeight: { value: 'none', unit: 'auto' },
   };
 
-  style?: Partial<CSSStyleDeclaration>;
-  item?: PageItem;
-
-  onChange = (_: PageItem | undefined) => {};
-  onTouched = () => {};
-
-  constructor(private renderer: Renderer2) {}
+  constructor(injector: Injector) {
+    super(injector);
+  }
 
   ngOnInit() {}
 
@@ -100,18 +94,6 @@ export class SizeControlComponent implements OnInit, ControlValueAccessor {
     this.sizes.height = this.parseSizeValue(this.style.height);
     this.sizes.minHeight = this.parseSizeValue(this.style.minHeight);
     this.sizes.maxHeight = this.parseSizeValue(this.style.maxHeight);
-  }
-
-  registerOnChange(fn: any): void {
-    this.onChange = fn;
-  }
-
-  registerOnTouched(fn: any): void {
-    this.onTouched = fn;
-  }
-
-  setDisabledState(isDisabled: boolean): void {
-    this.isDisabled = isDisabled;
   }
 
   parseSizeValue(value: string | undefined): ISizeValue {

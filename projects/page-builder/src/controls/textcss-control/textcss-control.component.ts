@@ -8,15 +8,17 @@ import {
   Inject,
   OnInit,
   Output,
-  Renderer2,
   ViewChild,
   AfterViewInit,
+  Injector,
 } from '@angular/core';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { IPageBuilderFilePicker } from '../../services/file-picker/IFilePicker';
 import { NGX_PAGE_BUILDER_FILE_PICKER } from '../../services/file-picker/token.filepicker';
 import { PageItem } from '../../models/PageItem';
+import { BaseControl } from '../base-control';
+import { mergeCssStyles } from '../../utiles/merge-css-styles';
 
 @Component({
   selector: 'textcss-control',
@@ -33,23 +35,22 @@ import { PageItem } from '../../models/PageItem';
   imports: [CommonModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TextCssControlComponent implements OnInit, AfterViewInit, ControlValueAccessor {
-  @Output() change = new EventEmitter<string>();
+export class TextCssControlComponent
+  extends BaseControl
+  implements OnInit, AfterViewInit, ControlValueAccessor
+{
+  @Output() change = new EventEmitter<PageItem>();
   @ViewChild('editorDiv', { static: false }) editorRef?: ElementRef<HTMLDivElement>;
 
-  el?: HTMLElement;
-  isDisabled = false;
   textCss = '';
-  item?: PageItem;
-
-  onChange = (_: PageItem | undefined) => {};
-  onTouched = () => {};
 
   constructor(
-    private renderer: Renderer2,
+    injector: Injector,
     @Inject(NGX_PAGE_BUILDER_FILE_PICKER) private filePicker: IPageBuilderFilePicker | null,
     private cdr: ChangeDetectorRef,
-  ) {}
+  ) {
+    super(injector);
+  }
 
   ngOnInit() {}
 
@@ -71,15 +72,7 @@ export class TextCssControlComponent implements OnInit, AfterViewInit, ControlVa
     this.cdr.detectChanges();
   }
 
-  registerOnChange(fn: any): void {
-    this.onChange = fn;
-  }
-
-  registerOnTouched(fn: any): void {
-    this.onTouched = fn;
-  }
-
-  setDisabledState(isDisabled: boolean): void {
+  override setDisabledState(isDisabled: boolean): void {
     this.isDisabled = isDisabled;
     if (this.editorRef) {
       this.editorRef.nativeElement.contentEditable = isDisabled ? 'false' : 'true';
@@ -255,13 +248,14 @@ export class TextCssControlComponent implements OnInit, AfterViewInit, ControlVa
   }
 
   update() {
-    if (!this.el) return;
+    if (!this.el || !this.item) return;
 
     try {
       this.renderer.setAttribute(this.el, 'style', this.textCss);
       this.updateEditorContent();
+      this.item.style = mergeCssStyles(this.item.style, this.el.style.cssText);
       this.onChange(this.item);
-      this.change.emit(this.textCss);
+      this.change.emit(this.item);
     } catch (error) {
       console.error('Invalid CSS:', error);
     }

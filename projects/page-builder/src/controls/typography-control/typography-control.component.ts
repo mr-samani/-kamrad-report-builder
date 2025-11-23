@@ -3,14 +3,16 @@ import {
   Component,
   EventEmitter,
   forwardRef,
+  Injector,
   OnInit,
   Output,
-  Renderer2,
 } from '@angular/core';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { PageItem } from '../../models/PageItem';
 
 import { CommonModule } from '@angular/common';
+import { BaseControl } from '../base-control';
+import { mergeCssStyles } from '../../utiles/merge-css-styles';
 
 @Component({
   selector: 'typography-control',
@@ -26,11 +28,11 @@ import { CommonModule } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule],
 })
-export class TypographyControlComponent implements OnInit, ControlValueAccessor {
-  el: HTMLElement | null = null;
-
-  isDisabled: boolean = false;
-  @Output() change = new EventEmitter<Partial<CSSStyleDeclaration> | undefined>();
+export class TypographyControlComponent
+  extends BaseControl
+  implements OnInit, ControlValueAccessor
+{
+  @Output() change = new EventEmitter<PageItem>();
 
   fontSize?: number;
   fontFamily: string = '';
@@ -38,11 +40,9 @@ export class TypographyControlComponent implements OnInit, ControlValueAccessor 
   textDecoration: string = 'none';
   textTransform: string = 'none';
   textAlign: string = '';
-  style?: Partial<CSSStyleDeclaration>;
-  item?: PageItem;
-  onChange = (_: PageItem | undefined) => {};
-  onTouched = () => {};
-  constructor(private renderer: Renderer2) {}
+  constructor(injector: Injector) {
+    super(injector);
+  }
 
   ngOnInit() {}
   writeValue(item: PageItem): void {
@@ -67,15 +67,8 @@ export class TypographyControlComponent implements OnInit, ControlValueAccessor 
     };
   }
 
-  registerOnChange(fn: any): void {
-    this.onChange = fn;
-  }
-
-  registerOnTouched(fn: any): void {
-    this.onTouched = fn;
-  }
-
   update() {
+    if (!this.el || !this.item) return;
     // Update style object with formatted CSS values
     this.renderer.setStyle(this.el, 'fontSize', this.fontSize + 'px');
     this.renderer.setStyle(this.el, 'fontFamily', this.fontFamily);
@@ -92,6 +85,7 @@ export class TypographyControlComponent implements OnInit, ControlValueAccessor 
       textAlign: this.textAlign,
     };
     this.onChange(this.item);
-    this.change.emit(this.style);
+    this.item.style = mergeCssStyles(this.item.style, this.el.style.cssText);
+    this.change.emit(this.item);
   }
 }

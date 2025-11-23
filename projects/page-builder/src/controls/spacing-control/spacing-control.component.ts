@@ -3,9 +3,9 @@ import {
   Component,
   EventEmitter,
   forwardRef,
+  Injector,
   OnInit,
   Output,
-  Renderer2,
 } from '@angular/core';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { PageItem } from '../../models/PageItem';
@@ -14,6 +14,8 @@ import { SpacingFormatter } from './SpacingFormatter';
 import { parseSpacingValues, validateSpacing } from './validateSpacing';
 import { CommonModule } from '@angular/common';
 import { IPosValue } from './IPosValue';
+import { BaseControl } from '../base-control';
+import { mergeCssStyles } from '../../utiles/merge-css-styles';
 
 @Component({
   selector: 'spacing-control',
@@ -29,21 +31,16 @@ import { IPosValue } from './IPosValue';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule],
 })
-export class SpacingControlComponent implements OnInit, ControlValueAccessor {
-  el: HTMLElement | null = null;
-
-  isDisabled: boolean = false;
-  @Output() change = new EventEmitter<Partial<CSSStyleDeclaration> | undefined>();
+export class SpacingControlComponent extends BaseControl implements OnInit, ControlValueAccessor {
+  @Output() change = new EventEmitter<PageItem>();
   spacing: ISpacingModel = {
     margin: { top: 0, right: 0, bottom: 0, left: 0 },
     padding: { top: 0, right: 0, bottom: 0, left: 0 },
   };
 
-  style?: Partial<CSSStyleDeclaration>;
-  item?: PageItem;
-  onChange = (_: PageItem | undefined) => {};
-  onTouched = () => {};
-  constructor(private renderer: Renderer2) {}
+  constructor(injector: Injector) {
+    super(injector);
+  }
 
   ngOnInit() {}
   writeValue(item: PageItem): void {
@@ -64,14 +61,6 @@ export class SpacingControlComponent implements OnInit, ControlValueAccessor {
     };
   }
 
-  registerOnChange(fn: any): void {
-    this.onChange = fn;
-  }
-
-  registerOnTouched(fn: any): void {
-    this.onTouched = fn;
-  }
-
   onChangeUnit(spacing: IPosValue, direction: 'top' | 'right' | 'bottom' | 'left') {
     if (spacing.unit == 'auto') {
       spacing[direction] = 'auto';
@@ -79,7 +68,7 @@ export class SpacingControlComponent implements OnInit, ControlValueAccessor {
     this.update();
   }
   update() {
-    if (!this.spacing || !this.style) return;
+    if (!this.spacing || !this.style || !this.item || !this.el) return;
 
     // Validate and format spacing values
     const validatedMargin = validateSpacing(this.spacing.margin, true);
@@ -91,6 +80,7 @@ export class SpacingControlComponent implements OnInit, ControlValueAccessor {
     this.renderer.setStyle(this.el, 'padding', this.style.padding);
     this.renderer.setStyle(this.el, 'margin', this.style.margin);
     this.onChange(this.item);
-    this.change.emit(this.style);
+    this.item.style = mergeCssStyles(this.item.style, this.el.style.cssText);
+    this.change.emit(this.item);
   }
 }
