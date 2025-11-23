@@ -6,6 +6,7 @@ import { preparePageDataForSave } from './storage/prepare-page-builder-data';
 import { PREVIEW_CONSTS } from '../lib/page-preview/PREVIEW_CONSTS';
 import { Router } from '@angular/router';
 import { DynamicDataService } from './dynamic-data.service';
+import { Notify } from '../extensions/notify';
 
 @Injectable({ providedIn: 'root' })
 export class PreviewService {
@@ -34,7 +35,7 @@ export class PreviewService {
       print ? '' : 'width=900,height=700,resizable=yes,scrollbars=yes',
     );
     if (!this.previewWindow) {
-      alert('Popup blocked! Please allow popups for this site.');
+      Notify.error('Popup blocked! Please allow popups for this site.');
       return;
     }
 
