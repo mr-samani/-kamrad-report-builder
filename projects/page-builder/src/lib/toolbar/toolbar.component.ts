@@ -16,13 +16,15 @@ import { ConfigDialogComponent } from '../config-dialog/config-dialog.component'
 import { SortPageListComponent } from '../sort-page-list/sort-page-list.component';
 import { PageBuilderDto } from '../../models/PageBuilderDto';
 import { RouterModule } from '@angular/router';
+import { Notify } from '../../extensions/notify';
+import { SvgIconDirective } from '../../directives/svg-icon.directive';
 
 @Component({
   selector: 'toolbar',
   templateUrl: './toolbar.component.html',
   styleUrls: ['./toolbar.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, SvgIconDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit {
@@ -90,7 +92,7 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
       .saveData()
       .then((result) => {
         console.log('Data saved successfully:', result);
-        alert('Data saved successfully');
+        Notify.success('Data saved successfully');
       })
       .finally(() => (this.isSaving = false));
   }
@@ -109,7 +111,7 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
       this.chdRef.detectChanges();
     } catch (error) {
       console.error('Error loading page data:', error);
-      alert('Error loading page data: ' + error);
+      Notify.error('Error loading page data: ' + error);
     }
   }
 

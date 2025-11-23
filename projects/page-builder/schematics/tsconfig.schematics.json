@@ -1,0 +1,12 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../../dist/ngx-page-builder/schematics",
+    "rootDir": "./",
+    "module": "commonjs",
+    "target": "es2019",
+    "declaration": false,
+    "sourceMap": false
+  },
+  "include": ["ng-add/**/*"]
+}

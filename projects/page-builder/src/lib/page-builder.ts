@@ -26,6 +26,8 @@ import { SideConfigComponent } from '../components/side-config/side-config.compo
 import { PAGE_BUILDER_CONFIGURATION } from '../models/tokens';
 import { PageItemChange } from '../services/page-builder.service';
 import { PageBuilderDto } from '../models/PageBuilderDto';
+import { NgxPgNotifyModule, Notify } from '../extensions/notify';
+import { SvgIconDirective } from '../directives/svg-icon.directive';
 
 @Component({
   selector: 'ngx-page-builder',
@@ -38,6 +40,8 @@ import { PageBuilderDto } from '../models/PageBuilderDto';
     ToolbarComponent,
     BlockSelectorComponent,
     SideConfigComponent,
+    NgxPgNotifyModule,
+    SvgIconDirective,
   ],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -97,7 +101,7 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
     } catch (error) {
       await this.pageBuilderService.addPage();
       console.error('Error loading page data:', error);
-      alert('Error loading page data: ' + error);
+      Notify.error('Error loading page data: ' + error);
     }
   }
 

@@ -11,7 +11,7 @@ export interface IPageItem {
   parent?: PageItem;
   el?: HTMLElement;
   children?: PageItem[];
-  tag?: string;
+  tag: string;
   canHaveChild?: boolean;
   /** content in html editor */
   content?: string;

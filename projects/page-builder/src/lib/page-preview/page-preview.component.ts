@@ -19,6 +19,7 @@ import { DynamicDataService } from '../../services/dynamic-data.service';
 import { ActivatedRoute } from '@angular/router';
 import { PREVIEW_CONSTS } from './PREVIEW_CONSTS';
 import { waitForFontsToLoad, waitForRenderComplete } from '../../utiles/rendering';
+import { Notify } from '../../extensions/notify';
 
 @Component({
   selector: 'ngx-page-preview',
@@ -155,7 +156,7 @@ export class NgxPagePreviewComponent implements OnInit, AfterViewInit {
       this.dynamicDataService.replaceValues(this.data.pages);
     } catch (error) {
       console.error('Error loading page data:', error);
-      alert('Error loading page data: ' + error);
+      Notify.error('Error loading page data: ' + error);
     }
   }
   private async genElms(list: PageItem[], container: HTMLElement, index = -1) {

@@ -10,13 +10,14 @@ import {
 } from '@angular/core';
 import { BaseComponent } from '../BaseComponent';
 import { PageItem } from '../../models/PageItem';
+import { SvgIconDirective } from '../../directives/svg-icon.directive';
 
 @Component({
   selector: 'block-selector',
   templateUrl: './block-selector.component.html',
   styleUrls: ['./block-selector.component.scss'],
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SvgIconDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BlockSelectorComponent extends BaseComponent implements OnDestroy {

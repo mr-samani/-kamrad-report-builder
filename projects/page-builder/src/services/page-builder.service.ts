@@ -17,6 +17,7 @@ import { BehaviorSubject, Subject } from 'rxjs';
 import { DefaultBlockClassName, getDefaultBlockDirective, LibConsts } from '../consts/defauls';
 import { IDropEvent, moveItemInArray, transferArrayItem } from 'ngx-drag-drop-kit';
 import { SourceItem } from '../models/SourceItem';
+import { Notify } from '../extensions/notify';
 
 export interface PageItemChange {
   item: PageItem | null;
@@ -105,6 +106,7 @@ export class PageBuilderService implements OnDestroy {
     } else {
       // بررسی اجازه جابجایی در ایتم های کالکشن (لیست تکرار شونده)
       if (this.canMove(dragItem, event.container) == false) {
+        Notify.warning('You cannot move this item here.');
         return;
       }
 
