@@ -1,0 +1,9 @@
+{
+  "$schema": "http://json.schemastore.org/schematics",
+  "schematics": {
+    "ng-add": {
+      "description": "Install dependencies for NgxPageBuilder",
+      "factory": "./schematics/ng-add/index#ngAdd"
+    }
+  }
+}
