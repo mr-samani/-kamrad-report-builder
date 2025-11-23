@@ -83,12 +83,13 @@ export class PageBuilderService implements OnDestroy {
     this.pageInfo.pages[this.currentPageIndex()] = page;
   }
 
-  async onDrop(event: IDropEvent, parent?: PageItem) {
+  async onDrop(event: IDropEvent<PageItem>, parent?: PageItem) {
     console.log('Dropped:', event);
     if (event.container == event.previousContainer && event.currentIndex == event.previousIndex) {
       return;
     }
-    if (!event.previousContainer.data[event.previousIndex]) {
+    const dragItem = event.previousContainer.data[event.previousIndex];
+    if (!dragItem) {
       return;
     }
 
@@ -102,7 +103,12 @@ export class PageBuilderService implements OnDestroy {
       this.onSelectBlock(source);
       this.updateChangeDetection({ item: source, type: 'AddBlock' });
     } else {
-      const nativeEl = event.previousContainer.data[event.previousIndex].el;
+      // بررسی اجازه جابجایی در ایتم های کالکشن (لیست تکرار شونده)
+      if (this.canMove(dragItem, event.container) == false) {
+        return;
+      }
+
+      const nativeEl = dragItem.el;
       if (event.container == event.previousContainer) {
         moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
       } else {
@@ -139,6 +145,26 @@ export class PageBuilderService implements OnDestroy {
     // this.pageBuilderService.items = items;
     // this.chdRef.detectChanges();
     this.onPageChange$.next(this.currentPage);
+  }
+
+  /**
+   * in collection item list only can move element in inner self template
+   * @param source current drag item
+   * @param destination destination drop list
+   * @returns boolean
+   */
+  private canMove(source: PageItem, destination: any): boolean {
+    let p = this.getParentTemplate(source);
+    if (!p || !p.lockMoveInnerChild) return true;
+    return destination.el.closest('.template-container') == p.el;
+  }
+
+  getParentTemplate(item: PageItem): PageItem | undefined {
+    if (!item || !item.parent) return undefined;
+    if (item.parent.isTemplateContainer) {
+      return item.parent;
+    }
+    return this.getParentTemplate(item.parent);
   }
 
   addPage(): Promise<number> {
