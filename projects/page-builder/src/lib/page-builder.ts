@@ -13,7 +13,6 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { NgxDragDropKitModule } from 'ngx-drag-drop-kit';
-import { SafeHtmlPipe } from '../pipes/safe-html.pipe';
 import { BlockSelectorComponent } from '../components/block-selector/block-selector.component';
 import { ToolbarComponent } from './toolbar/toolbar.component';
 import { PageBuilderBaseComponent } from './page-builder-base-component';
@@ -36,7 +35,6 @@ import { SvgIconDirective } from '../directives/svg-icon.directive';
   imports: [
     CommonModule,
     NgxDragDropKitModule,
-    SafeHtmlPipe,
     ToolbarComponent,
     BlockSelectorComponent,
     SideConfigComponent,

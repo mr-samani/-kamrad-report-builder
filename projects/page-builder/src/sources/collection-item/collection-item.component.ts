@@ -6,9 +6,7 @@ import {
   ElementRef,
   Inject,
   OnInit,
-  QueryList,
   ViewChild,
-  ViewChildren,
 } from '@angular/core';
 import { ComponentDataContext } from '../../models/ComponentDataContext';
 import { COMPONENT_DATA } from '../../models/tokens';
@@ -19,10 +17,9 @@ import { PageBuilderService, PageItemChange } from '../../services/page-builder.
 import { DynamicElementService } from '../../services/dynamic-element.service';
 import { DynamicDataStructure } from '../../models/DynamicData';
 import { DynamicDataService } from '../../services/dynamic-data.service';
-import { cloneDeep } from '../../utiles/clone-deep';
 
 @Component({
-  selector: 'app-collection-item',
+  selector: 'collection-item',
   templateUrl: './collection-item.component.html',
   styleUrls: ['./collection-item.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

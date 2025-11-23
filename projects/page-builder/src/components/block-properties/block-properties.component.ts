@@ -3,10 +3,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   effect,
-  Inject,
   Injector,
   OnInit,
-  Renderer2,
   ViewEncapsulation,
 } from '@angular/core';
 import { BaseComponent } from '../BaseComponent';
@@ -21,9 +19,6 @@ import { SizeControlComponent } from '../../controls/size-control/size-control.c
 import { DynamicDataStructure } from '../../models/DynamicData';
 import { TextBindingComponent } from '../text-binding/text-binding.component';
 import { DynamicDataService } from '../../services/dynamic-data.service';
-import { IPageBuilderFilePicker } from '../../services/file-picker/IFilePicker';
-import { NGX_PAGE_BUILDER_FILE_PICKER } from '../../services/file-picker/token.filepicker';
-import { DEFAULT_IMAGE_URL } from '../../consts/defauls';
 
 @Component({
   selector: 'block-properties',

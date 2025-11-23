@@ -1,0 +1,24 @@
+{
+  "header": {
+    "rows": [
+      {
+        "rowSpan": 0,
+        "cells": [
+          {
+            "colSpan": 2,
+            "rowSpan": 1,
+            "children": "PAGE_ITEM[]"
+          }
+        ]
+      }
+    ]
+  },
+  "body": {
+    "rows": [
+      {
+        "cells": []
+      }
+    ]
+  },
+  "footer": {}
+}

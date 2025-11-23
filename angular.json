@@ -53,7 +53,7 @@
               },
               {
                 "glob": "**/*",
-                "input": "./projects/ngx-page-builder/src/assets/",
+                "input": "./projects/page-builder/src/assets/",
                 "output": "/assets/"
               }
             ],

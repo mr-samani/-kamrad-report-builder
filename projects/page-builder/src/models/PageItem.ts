@@ -8,9 +8,9 @@ import { DataSourceSetting } from './DataSourceSetting';
 export interface IPageItem {
   id?: string;
   dataSource?: DataSourceSetting;
-  parent?: PageItem;
+  parent?: IPageItem;
   el?: HTMLElement;
-  children?: PageItem[];
+  children?: IPageItem[];
   tag: string;
   canHaveChild?: boolean;
   /** content in html editor */
@@ -19,7 +19,7 @@ export interface IPageItem {
   componentKey?: string;
   options?: ISourceOptions;
   style?: string;
-  template?: PageItem;
+  template?: IPageItem;
   disableMovement?: boolean;
   lockMoveInnerChild?: boolean;
   disableDelete?: boolean;
