@@ -14,11 +14,12 @@ import { ComponentDataContext } from '../../models/ComponentDataContext';
 import { COMPONENT_DATA } from '../../models/tokens';
 import { DataSourceSetting } from '../../models/DataSourceSetting';
 import { IPageItem, PageItem } from '../../models/PageItem';
-import { Subscription } from 'rxjs';
+import { debounceTime, Subscription } from 'rxjs';
 import { PageBuilderService, PageItemChange } from '../../services/page-builder.service';
 import { DynamicElementService } from '../../services/dynamic-element.service';
 import { DynamicDataStructure } from '../../models/DynamicData';
 import { DynamicDataService } from '../../services/dynamic-data.service';
+import { cloneDeep } from '../../utiles/clone-deep';
 
 @Component({
   selector: 'app-collection-item',
@@ -76,7 +77,7 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
      * - move block -> not rebuild all: only move same contents
      * - addd block only add new block
      */
-    this.pageBuilderService.changed$.subscribe((data) => {
+    this.pageBuilderService.changed$.pipe(debounceTime(300)).subscribe((data) => {
       if (
         data.type == 'AddBlock' ||
         data.type == 'RemoveBlock' ||
@@ -84,7 +85,7 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
         data.type == 'ChangeBlockContent' ||
         data.type == 'ChangeBlockProperties'
       ) {
-        console.log('Block changed:', data.item?.id, data.type);
+        console.log('Block changed:', data.item?.id, data.type, data.item?.style);
         if (this.itemInThisTemplate(data.item)) {
           this.pageItem.template = this.findCellContainer(data.item!);
           this.update(data);
@@ -201,7 +202,7 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
               item.content = (col?.value ?? '').toString();
             }
           }
-          console.log(index + '=>', item.content);
+          // console.log(index + '=>', item.content);
         }
         if (item.children && item.children.length > 0) {
           cleanTree(item.children);
@@ -209,6 +210,7 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
       }
     };
     cleanTree([this.pageItem.template!]);
+    // cleanTree([cloneDeep(this.pageItem.template!)]);
     return PageItem.fromJSON(this.pageItem.template!);
   }
 }

@@ -132,4 +132,11 @@ export const DynamicData: DynamicDataStructure[] = [
       ],
     ],
   },
+  {
+    id: 'products',
+    name: 'products',
+    displayName: 'Products',
+    type: DynamicValueType.Array,
+    list: [[]],
+  },
 ];

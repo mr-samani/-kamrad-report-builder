@@ -5,6 +5,11 @@
     [list]="collectionDsList"
     (selectedKey)="onChangeCollectionKey($event)"
   ></data-source-selector>
+  @if (item.dataSource) {
+    <button type="button" (click)="item.dataSource.binding = ''; onChangeCollectionKey([])">
+      X
+    </button>
+  }
 }
 
 <div>
