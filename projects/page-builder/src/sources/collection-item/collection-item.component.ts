@@ -29,7 +29,6 @@ import { cloneDeep } from '../../utiles/clone-deep';
   imports: [],
 })
 export class CollectionItemComponent implements OnInit, AfterViewInit {
-  templateList: PageItem[] = [];
   pageItem!: PageItem;
   subscription: Subscription;
 
@@ -122,7 +121,7 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
     }
 
     this.clearContainer();
-    this.templateList = [];
+    this.pageItem.children = [];
     for (let i = 0; i < count; i++) {
       let cloned = this.cloneTemplate(i);
 
@@ -130,18 +129,18 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
         cloned,
         this.collectionContainer.nativeElement,
       );
-      this.templateList.push(cloned);
+      this.pageItem.children.push(cloned);
     }
     this.chdRef.detectChanges();
   }
 
   itemInThisTemplate(item?: PageItem | null): boolean {
-    if (!item || !this.pageItem || !this.templateList.length) {
+    if (!item || !this.pageItem || !this.pageItem.children || !this.pageItem.children.length) {
       return false;
     }
     let p = this.findCellContainer(item);
     if (!p) return false;
-    for (let t of this.templateList) {
+    for (let t of this.pageItem.children) {
       if (t.id == p.id) {
         return true;
       }
@@ -163,7 +162,7 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
     if (!this.pageItem || !this.pageItem.template || !change.item) return;
 
     this.clearContainer();
-    this.templateList = [];
+    this.pageItem.children = [];
 
     const count = this.pageItem.dataSource?.maxResultCount || 10;
 
@@ -173,13 +172,13 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
         cloned,
         this.collectionContainer.nativeElement,
       );
-      this.templateList.push(cloned);
+      this.pageItem.children.push(cloned);
     }
     this.chdRef.detectChanges();
   }
 
   private clearContainer() {
-    this.dynamicElementService.destroyBatch(this.templateList);
+    this.dynamicElementService.destroyBatch(this.pageItem.children);
   }
 
   private cloneTemplate(index: number) {

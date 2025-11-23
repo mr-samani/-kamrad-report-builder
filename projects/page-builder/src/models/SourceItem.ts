@@ -46,7 +46,7 @@ export class SourceItem {
    * Html tags
    * @example 'div'
    * */
-  tag?: string; // 'div' | 'span' | 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'img' | 'input' = 'div';
+  tag!: string; // 'div' | 'span' | 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'img' | 'input' = 'div';
   /**
    * can have child elements
    * like div, section,...

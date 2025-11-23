@@ -21,6 +21,9 @@ export function preparePageDataForSave(pageInfo: PageBuilderDto): PageBuilderDto
         delete item.customComponent.providers;
         delete item.customComponent.compInjector;
       }
+      if (item.template) {
+        item.children = [];
+      }
 
       cleanAttributes(item.options);
       delete item.options?.events;
