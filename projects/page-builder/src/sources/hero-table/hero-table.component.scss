@@ -1,3 +1,6 @@
+.hero-table-wrapper {
+  position: relative;
+}
 table.ngx-hero-table {
   width: 100%;
   border-collapse: separate;
@@ -11,5 +14,27 @@ table.ngx-hero-table {
     min-width: 32px;
     min-height: 32px;
     padding: 8px 5px;
+  }
+}
+
+.table-toolbar {
+  position: absolute;
+  background: var(--side-config-bg);
+  color: var(--side-config-fg);
+  padding: 5px 15px;
+  border-radius: 5px;
+  &.hide {
+    display: none;
+  }
+  button {
+    background: none;
+    color: inherit;
+    border: none;
+    &:hover {
+      background: color-mix(in srgb, var(--side-config-bg), #000 60%);
+    }
+  }
+  svg {
+    fill: var(--side-config-fg);
   }
 }

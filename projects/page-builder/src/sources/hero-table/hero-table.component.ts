@@ -7,6 +7,7 @@ import {
   ElementRef,
   Inject,
   OnInit,
+  Renderer2,
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
@@ -23,6 +24,7 @@ import { CommonModule } from '@angular/common';
 import { BlockHelper } from '../../helper/BlockHelper';
 import { cloneDeep } from '../../utiles/clone-deep';
 import { BlockSelectorComponent } from '../../components/block-selector/block-selector.component';
+import { SvgIconDirective } from '../../directives/svg-icon.directive';
 
 declare type TableSection = 'thead' | 'tbody' | 'tfoot';
 
@@ -31,15 +33,18 @@ declare type TableSection = 'thead' | 'tbody' | 'tfoot';
   templateUrl: './hero-table.component.html',
   styleUrls: ['./hero-table.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgxDragDropKitModule, CommonModule],
+  imports: [NgxDragDropKitModule, CommonModule, SvgIconDirective],
   encapsulation: ViewEncapsulation.None,
 })
 export class HeroTableComponent implements OnInit, AfterViewInit {
   pageItem!: PageItem;
   subscription: Subscription;
   @ViewChild('tableContainer') tableContainer!: ElementRef<HTMLTableElement>;
+  @ViewChild('wrapper') wrapper!: ElementRef<HTMLDivElement>;
+  @ViewChild('toolbar') toolbar!: ElementRef<HTMLDivElement>;
 
   selectedCell?: {
+    block: PageItem;
     section: TableSection;
     rowIndex: number;
     colIndex: number;
@@ -97,10 +102,18 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
     children: [
       {
         tag: 'thead',
+        disableDelete: true,
+        canHaveChild: false,
+        lockMoveInnerChild: true,
+        disableMovement: true,
         children: [cloneDeep(this._headRow)],
       },
       {
         tag: 'tbody',
+        disableDelete: true,
+        canHaveChild: false,
+        lockMoveInnerChild: true,
+        disableMovement: true,
         children: [
           cloneDeep(this._bodyRow),
           cloneDeep(this._bodyRow),
@@ -110,16 +123,22 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
       },
       {
         tag: 'tfoot',
+        disableDelete: true,
+        canHaveChild: false,
+        lockMoveInnerChild: true,
+        disableMovement: true,
         children: [],
       },
     ],
   };
+
   constructor(
     @Inject(COMPONENT_DATA) private context: ComponentDataContext<any>,
     private chdRef: ChangeDetectorRef,
     private pageBuilderService: PageBuilderService,
     private dynamicElementService: DynamicElementService,
     private dynamicDataService: DynamicDataService,
+    private renderer: Renderer2,
   ) {
     this.subscription = this.context.onChange.subscribe((data) => {
       this.chdRef.detectChanges();
@@ -160,25 +179,34 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
   }
 
   onSelectCell(selectedBlock: PageItem | undefined) {
-    this.selectedCell = undefined;
-    if (!selectedBlock) {
-      return;
+    try {
+      if (!selectedBlock) {
+        throw new Error('No selected block');
+      }
+
+      const cell = BlockHelper.findParentByTag(
+        selectedBlock,
+        ['td', 'th'],
+        ['tbody', 'thead', 'tfoot'],
+      );
+      if (!cell) {
+        throw new Error('No cell found');
+      }
+      const row = BlockHelper.findParentByTag(cell, ['tr'], ['tbody', 'thead', 'tfoot']);
+      if (!row) {
+        throw new Error('No row found');
+      }
+      const section = row.parent?.tag as TableSection;
+      const rowIndex = row.parent?.children.indexOf(row) ?? -1;
+      const colIndex = row.children.indexOf(cell) ?? -1;
+
+      this.selectedCell = { section, rowIndex, colIndex, block: selectedBlock };
+      this.updateToolbarPosition();
+      this.chdRef.detectChanges();
+    } catch (error) {
+      this.selectedCell = undefined;
+      this.chdRef.detectChanges();
     }
-
-    const cell = BlockHelper.findParentByTag(
-      selectedBlock,
-      ['td', 'th'],
-      ['tbody', 'thead', 'tfoot'],
-    );
-    if (!cell) return;
-    const row = BlockHelper.findParentByTag(cell, ['tr'], ['tbody', 'thead', 'tfoot']);
-    if (!row) return;
-    const section = row.parent?.tag as TableSection;
-    const rowIndex = row.parent?.children.indexOf(row) ?? -1;
-    const colIndex = row.children.indexOf(cell) ?? -1;
-
-    this.selectedCell = { section, rowIndex, colIndex };
-    this.chdRef.detectChanges();
   }
 
   getRowColIndex(): { rowIndex: number; colIndex: number } {
@@ -192,7 +220,7 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
     return { rowIndex, colIndex };
   }
 
-  async addRow(ev: Event) {
+  async addRow(ev: Event, after = false) {
     ev.stopPropagation();
     const { rowIndex, colIndex } = this.getRowColIndex();
     const section = this.selectedCell?.section ?? 'tbody';
@@ -204,12 +232,32 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
     for (let cell of row.children) {
       cell.children = [];
     }
-    theadOrTbody.children?.splice(rowIndex, 0, row);
+    theadOrTbody.children?.splice(after ? rowIndex + 1 : rowIndex, 0, row);
 
-    await this.pageBuilderService.createBlockElement(row, theadOrTbody.el!, rowIndex);
+    await this.pageBuilderService.createBlockElement(
+      row,
+      theadOrTbody.el!,
+      after ? rowIndex + 1 : rowIndex,
+    );
     this.update();
   }
-  async addColumn(ev: Event) {
+  async deleteRow(ev: Event) {
+    ev.stopPropagation();
+    const { rowIndex, colIndex } = this.getRowColIndex();
+    const section = this.selectedCell?.section ?? 'tbody';
+    const table = this.pageItem.children[0];
+    const theadOrTbody = table.children?.find((x) => x.tag === section);
+    if (!theadOrTbody) return;
+    const row = theadOrTbody.children[rowIndex];
+    this.dynamicElementService.destroy(row);
+    theadOrTbody.children.splice(rowIndex, 1);
+    this.pageBuilderService.deSelectBlock();
+    this.update();
+  }
+
+  //_________________________________________________________
+
+  async addColumn(ev: Event, after = false) {
     ev.stopPropagation();
     const { rowIndex, colIndex } = this.getRowColIndex();
     const table = this.pageItem.children[0];
@@ -219,10 +267,24 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
         let td = inner.tag == 'thead' ? this._th : this._td;
         td = PageItem.fromJSON(td);
         td.parent = row;
-        row.children.splice(colIndex, 0, td as PageItem);
+        row.children.splice(after ? colIndex + 1 : colIndex, 0, td as PageItem);
       }
     }
 
+    this.generate();
+    this.update();
+  }
+  async deleteColumn(ev: Event) {
+    ev.stopPropagation();
+    const { rowIndex, colIndex } = this.getRowColIndex();
+    const table = this.pageItem.children[0];
+    if (!table) return;
+    for (let inner of table.children) {
+      for (let row of inner.children) {
+        row.children.splice(colIndex, 1);
+      }
+    }
+    this.pageBuilderService.deSelectBlock();
     this.generate();
     this.update();
   }
@@ -231,7 +293,23 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
     this.pageItem.options ??= {};
     console.log('update called', this.pageItem);
     setTimeout(() => {
+      // update new rowIndex and colIndex
+      this.onSelectCell(this.selectedCell?.block);
       this.pageBuilderService.blockSelector?.updatePosition();
-    }, 0);
+      this.updateToolbarPosition();
+    });
+  }
+
+  updateToolbarPosition() {
+    if (this.selectedCell?.block.el) {
+      console.log(this.selectedCell.block.el);
+      const rect = this.selectedCell.block.el.getBoundingClientRect();
+      const wrapperRect = this.wrapper.nativeElement.getBoundingClientRect();
+      const toolbarWidth = this.toolbar.nativeElement.offsetWidth;
+      const optX = rect.x - wrapperRect.x + (rect.width - toolbarWidth) / 2;
+      const optY = rect.y - wrapperRect.y + rect.height;
+      this.renderer.setStyle(this.toolbar.nativeElement, 'left', `${optX}px`);
+      this.renderer.setStyle(this.toolbar.nativeElement, 'top', `${optY}px`);
+    }
   }
 }
