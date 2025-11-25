@@ -22,6 +22,7 @@ import { NgxDragDropKitModule } from 'ngx-drag-drop-kit';
 import { CommonModule } from '@angular/common';
 import { BlockHelper } from '../../helper/BlockHelper';
 import { cloneDeep } from '../../utiles/clone-deep';
+import { BlockSelectorComponent } from '../../components/block-selector/block-selector.component';
 
 declare type TableSection = 'thead' | 'tbody' | 'tfoot';
 
@@ -96,11 +97,16 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
     children: [
       {
         tag: 'thead',
-        children: [this._headRow],
+        children: [cloneDeep(this._headRow)],
       },
       {
         tag: 'tbody',
-        children: [this._bodyRow, this._bodyRow, this._bodyRow, this._bodyRow],
+        children: [
+          cloneDeep(this._bodyRow),
+          cloneDeep(this._bodyRow),
+          cloneDeep(this._bodyRow),
+          cloneDeep(this._bodyRow),
+        ],
       },
       {
         tag: 'tfoot',
@@ -186,29 +192,34 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
     return { rowIndex, colIndex };
   }
 
-  async addRow() {
+  async addRow(ev: Event) {
+    ev.stopPropagation();
     const { rowIndex, colIndex } = this.getRowColIndex();
     const section = this.selectedCell?.section ?? 'tbody';
     const table = this.pageItem.children[0];
-    const rows = table.children?.find((x) => x.tag === section);
-    if (!rows) return;
-    const row = cloneDeep(rows.children[rowIndex]);
+    const theadOrTbody = table.children?.find((x) => x.tag === section);
+    if (!theadOrTbody) return;
+    const row = theadOrTbody.children[rowIndex].clone(theadOrTbody);
+
     for (let cell of row.children) {
       cell.children = [];
     }
-    rows.children?.splice(rowIndex, 0, row);
-    await this.pageBuilderService.createBlockElement(row, rows.el!);
+    theadOrTbody.children?.splice(rowIndex, 0, row);
+
+    await this.pageBuilderService.createBlockElement(row, theadOrTbody.el!, rowIndex);
     this.update();
   }
-  async addColumn() {
+  async addColumn(ev: Event) {
+    ev.stopPropagation();
     const { rowIndex, colIndex } = this.getRowColIndex();
     const table = this.pageItem.children[0];
     if (!table) return;
     for (let inner of table.children) {
-      const td = inner.tag == 'thead' ? cloneDeep(this._th) : cloneDeep(this._td);
-
       for (let row of inner.children) {
-        row.children.splice(colIndex, 0, PageItem.fromJSON(td));
+        let td = inner.tag == 'thead' ? this._th : this._td;
+        td = PageItem.fromJSON(td);
+        td.parent = row;
+        row.children.splice(colIndex, 0, td as PageItem);
       }
     }
 
@@ -218,5 +229,9 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
 
   update() {
     this.pageItem.options ??= {};
+    console.log('update called', this.pageItem);
+    setTimeout(() => {
+      this.pageBuilderService.blockSelector?.updatePosition();
+    }, 0);
   }
 }

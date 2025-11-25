@@ -18,6 +18,7 @@ import { DefaultBlockClassName, getDefaultBlockDirective, LibConsts } from '../c
 import { IDropEvent, moveItemInArray, transferArrayItem } from 'ngx-drag-drop-kit';
 import { SourceItem } from '../models/SourceItem';
 import { Notify } from '../extensions/notify';
+import { BlockSelectorComponent } from '../components/block-selector/block-selector.component';
 
 export interface PageItemChange {
   item: PageItem | null;
@@ -59,6 +60,9 @@ export class PageBuilderService implements OnDestroy {
   onPageChange$ = new BehaviorSubject<Page | undefined>(undefined);
 
   private renderer!: Renderer2;
+
+  blockSelector?: BlockSelectorComponent;
+
   constructor(
     rendererFactory: RendererFactory2,
     private dynamicElementService: DynamicElementService,
@@ -258,11 +262,18 @@ export class PageBuilderService implements OnDestroy {
     if (this.mode == 'Edit') {
       item.options ??= {};
       item.options.directives ??= [];
-      let directives = getDefaultBlockDirective(item, this.onDrop.bind(this));
+      if (item.options.directives.length > 0) {
+        console.log('Directives already present', item.tag, item.options.directives);
+      }
+      let directives = await getDefaultBlockDirective(item, this.onDrop.bind(this));
+
       for (let d of directives) {
-        if (item.options.directives.findIndex((x) => x == d) === -1) {
+        if (item.options.directives.findIndex((x) => x.directive == d.directive) === -1) {
           item.options.directives.push(d);
         }
+      }
+      if (item.options.directives.length >= 3) {
+        throw new Error('Too many directives');
       }
       item.options.attributes ??= {};
       item.options.attributes['class'] ??= DefaultBlockClassName;

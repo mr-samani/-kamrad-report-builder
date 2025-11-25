@@ -48,6 +48,8 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
   @Input('dynamicData') set setDynamicData(val: DynamicDataStructure[]) {
     this.dynamicDataService.dynamicData = val ?? [];
   }
+  blockSelector = viewChild<BlockSelectorComponent>('blockSelector');
+
   private _pageBody = viewChild<ElementRef<HTMLElement>>('PageBody');
   private _pageHeader = viewChild<ElementRef<HTMLElement>>('PageHeader');
   private _pageFooter = viewChild<ElementRef<HTMLElement>>('PageFooter');
@@ -73,6 +75,8 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
   }
 
   ngOnInit(): void {
+    this.pageBuilderService.blockSelector = this.blockSelector();
+
     this.loadPageData();
     this.subscriptions = [
       fromEvent<KeyboardEvent>(this.doc, 'keydown').subscribe((ev) => this.deleteCurrentBlock(ev)),

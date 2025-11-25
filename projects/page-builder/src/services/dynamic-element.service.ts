@@ -361,6 +361,9 @@ export class DynamicElementService {
         }
       }
       delete (item.el as any).__ngDirectives__;
+      if (item.options && item.options.directives && item.options.directives.length > 0) {
+        item.options.directives = [];
+      }
     }
 
     // حذف از DOM

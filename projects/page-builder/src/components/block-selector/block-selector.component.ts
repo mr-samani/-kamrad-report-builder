@@ -31,7 +31,6 @@ export class BlockSelectorComponent extends BaseComponent implements OnDestroy {
 
   private resizeObserver?: ResizeObserver;
   private mutationObserver?: MutationObserver;
-  private currentElement?: HTMLElement | undefined;
 
   constructor(injector: Injector) {
     super(injector);
@@ -65,15 +64,13 @@ export class BlockSelectorComponent extends BaseComponent implements OnDestroy {
     if (this.item) {
       if (!this.item.el) return;
 
-      this.currentElement = this.item.el;
-
       // Watch for resize
       this.resizeObserver = new ResizeObserver((c) => this.updatePosition());
-      this.resizeObserver.observe(this.currentElement);
+      this.resizeObserver.observe(this.item.el);
 
       // Watch for style/class changes (margin/padding/etc.)
       this.mutationObserver = new MutationObserver((c) => this.updatePosition());
-      this.mutationObserver.observe(this.currentElement, {
+      this.mutationObserver.observe(this.item.el, {
         attributes: true,
         attributeFilter: ['style', 'class'],
       });
@@ -84,28 +81,29 @@ export class BlockSelectorComponent extends BaseComponent implements OnDestroy {
   }
 
   private disconnectObservers() {
-    if (this.resizeObserver && this.currentElement) {
+    if (!this.item || !this.item.el) return;
+
+    if (this.resizeObserver && this.item.el) {
       try {
-        this.resizeObserver.unobserve(this.currentElement);
+        this.resizeObserver.unobserve(this.item.el);
       } catch {}
     }
     this.resizeObserver?.disconnect();
     this.mutationObserver?.disconnect();
     this.resizeObserver = undefined;
     this.mutationObserver = undefined;
-    this.currentElement = undefined;
   }
 
   updatePosition() {
-    if (!this.item) {
-      this.x = this.y = this.width = this.height = 0;
-      this.chdRef.detectChanges();
-      return;
-    }
+    // if (!this.item) {
+    //   this.x = this.y = this.width = this.height = 0;
+    //   this.chdRef.detectChanges();
+    //   return;
+    // }
 
-    if (!this.currentElement) return;
+    if (!this.item || !this.item.el) return;
 
-    const rect = this.currentElement.getBoundingClientRect();
+    const rect = this.item.el.getBoundingClientRect();
     if (rect.x == 0 && rect.y == 0 && rect.width == 0 && rect.height == 0) {
       return;
     }

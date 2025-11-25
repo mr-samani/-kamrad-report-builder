@@ -17,6 +17,7 @@ import { PageBuilderService, PageItemChange } from '../../services/page-builder.
 import { DynamicElementService } from '../../services/dynamic-element.service';
 import { DynamicDataStructure } from '../../models/DynamicData';
 import { DynamicDataService } from '../../services/dynamic-data.service';
+import { cloneDeep } from '../../utiles/clone-deep';
 
 @Component({
   selector: 'collection-item',
@@ -179,34 +180,33 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
   }
 
   private cloneTemplate(index: number) {
-    const cleanTree = (list: PageItem[]) => {
-      for (let item of list) {
-        delete item.options?.events;
-        delete item.options?.directives;
-        delete item.options?.inputs;
-        delete item.options?.outputs;
-        if (item.dataSource && item.dataSource.binding) {
-          const row = this.dataList[index];
-          if (row) {
-            const col = row.find((x) => x.name == item.dataSource!.binding);
-            const isImage = PageItem.isImage(item);
-            if (isImage) {
-              item.options ??= {};
-              item.options.attributes ??= {};
-              item.options.attributes['src'] = (col?.value ?? '').toString();
-            } else {
-              item.content = (col?.value ?? '').toString();
-            }
+    const cleanTree = (item: PageItem) => {
+      delete item.options?.events;
+      delete item.options?.directives;
+      delete item.options?.inputs;
+      delete item.options?.outputs;
+      if (item.dataSource && item.dataSource.binding) {
+        const row = this.dataList[index];
+        if (row) {
+          const col = row.find((x) => x.name == item.dataSource!.binding);
+          const isImage = PageItem.isImage(item);
+          if (isImage) {
+            item.options ??= {};
+            item.options.attributes ??= {};
+            item.options.attributes['src'] = (col?.value ?? '').toString();
+          } else {
+            item.content = (col?.value ?? '').toString();
           }
-          // console.log(index + '=>', item.content);
         }
-        if (item.children && item.children.length > 0) {
-          cleanTree(item.children);
-        }
+        // console.log(index + '=>', item.content);
       }
+      if (item.children && item.children.length > 0) {
+        item.children.map((child) => cleanTree(child));
+      }
+      return item;
     };
-    cleanTree([this.pageItem.template!]);
+    const t = cleanTree(cloneDeep(this.pageItem.template!));
     // cleanTree([cloneDeep(this.pageItem.template!)]);
-    return PageItem.fromJSON(this.pageItem.template!);
+    return PageItem.fromJSON(t);
   }
 }

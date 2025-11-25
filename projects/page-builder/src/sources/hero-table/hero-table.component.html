@@ -1,10 +1,10 @@
 <div class="hero-table-wrapper">
   <div class="table-container" #tableContainer></div>
   <div class="table-toolbar">
-    <button class="btn-icon" (click)="addRow()" title="Add Row">
+    <button class="btn-icon" (click)="addRow($event)" title="Add Row">
       <span>➕ Row</span>
     </button>
-    <button class="btn-icon" (click)="addColumn()" title="Add Column">
+    <button class="btn-icon" (click)="addColumn($event)" title="Add Column">
       <span>➕ Column</span>
     </button>
   </div>

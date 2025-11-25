@@ -4,6 +4,7 @@ import { ISourceOptions } from './SourceItem';
 import { LibConsts } from '../consts/defauls';
 import { CustomComponent } from './CustomComponent';
 import { DataSourceSetting } from './DataSourceSetting';
+import { cloneDeep } from '../utiles/clone-deep';
 
 export interface IPageItem {
   id?: string;
@@ -133,5 +134,20 @@ export class PageItem implements IPageItem {
       }
     }
     return undefined;
+  }
+
+  public clone(parent?: PageItem): PageItem {
+    let item = PageItem.fromJSON(cloneDeep(this));
+    item.id = randomStrnig(5);
+    delete item.options?.events;
+    delete item.options?.directives;
+    delete item.options?.inputs;
+    delete item.options?.outputs;
+    item.parent = parent;
+
+    if (item.children && item.children.length > 0) {
+      item.children = item.children.map((m) => m.clone(item));
+    }
+    return item;
   }
 }
