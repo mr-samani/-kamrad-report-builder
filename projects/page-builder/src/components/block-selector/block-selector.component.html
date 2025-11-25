@@ -7,13 +7,21 @@
     [style.height.px]="height"
   >
     <div class="actions" [class.bottom]="showInBottom">
+      @if (item.parent) {
+        <button type="button" (click)="selectParent($event)">
+          <svg Icon="assets/icons/arrow-turn-up.svg"></svg>
+        </button>
+      }
+
       @if (!item.disableDelete) {
         <button type="button" (click)="deleteBlock()">
           <svg Icon="assets/icons/trash.svg"></svg>
         </button>
       }
 
-      <span class="tag">{{ item.tag ? item.tag : item.customComponent?.componentKey }}</span>
+      <span class="tag">{{
+        item.tag ? (item.tag | uppercase) : item.customComponent?.componentKey
+      }}</span>
       <span class="id">{{ item.id }}</span>
     </div>
   </div>

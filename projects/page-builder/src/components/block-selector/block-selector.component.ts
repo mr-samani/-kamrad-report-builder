@@ -121,4 +121,10 @@ export class BlockSelectorComponent extends BaseComponent implements OnDestroy {
       this.pageBuilderService.removeBlock(this.item);
     }
   }
+
+  selectParent(ev: Event) {
+    if (this.item && this.item.parent) {
+      this.pageBuilderService.onSelectBlock(this.item.parent, ev);
+    }
+  }
 }
