@@ -3,8 +3,9 @@
 }
 table.ngx-hero-table {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 2px;
+  border-collapse: collapse;
+  // border-collapse: separate;
+  // border-spacing: 2px;
   border: 1px #2196f3 solid;
   thead {
     background-color: beige;
@@ -48,4 +49,11 @@ table.ngx-hero-table {
   position: absolute;
   outline: 2px solid #ff8900;
   pointer-events: none;
+}
+
+ngx-page-preview {
+  td,
+  th {
+    border: #000 solid 1px;
+  }
 }
