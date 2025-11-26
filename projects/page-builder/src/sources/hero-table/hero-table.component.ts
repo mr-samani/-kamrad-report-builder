@@ -4,7 +4,6 @@ import {
   ChangeDetectorRef,
   Component,
   DOCUMENT,
-  effect,
   ElementRef,
   Inject,
   OnInit,
@@ -18,16 +17,18 @@ import { IPageItem, PageItem } from '../../models/PageItem';
 import { Subscription } from 'rxjs';
 import { PageBuilderService } from '../../services/page-builder.service';
 import { DynamicElementService } from '../../services/dynamic-element.service';
-import { DynamicDataStructure } from '../../models/DynamicData';
 import { DynamicDataService } from '../../services/dynamic-data.service';
 import { NgxDragDropKitModule } from 'ngx-drag-drop-kit';
 import { CommonModule } from '@angular/common';
 import { BlockHelper } from '../../helper/BlockHelper';
 import { cloneDeep } from '../../utiles/clone-deep';
-import { BlockSelectorComponent } from '../../components/block-selector/block-selector.component';
 import { SvgIconDirective } from '../../directives/svg-icon.directive';
-import { getNormalizedRange, isValidMergeRange } from './table-helper';
-
+import {
+  buildLogicalGrid,
+  findCellLogicalIndex,
+  getNormalizedRange,
+  isValidMergeRange,
+} from './table-helper';
 declare type TableSection = 'thead' | 'tbody' | 'tfoot';
 
 @Component({
@@ -50,8 +51,8 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
 
   firstSelectedCell?: {
     section: TableSection;
-    rowIndex: number;
-    colIndex: number;
+    rowIndex: number; // child index of row in section.children[]
+    colIndex: number; // child index of cell in row.children[]
     block: PageItem;
   };
   rangeSelection?: {
@@ -197,9 +198,11 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
     this.dynamicElementService.destroyBatch(this.pageItem.children);
   }
 
+  /**
+   * Selection handler (supports Shift selection for range)
+   */
   onSelectCell(selectedBlock: PageItem | undefined, ev?: PointerEvent) {
     try {
-      // اگر shift نگرفته باشه، رنج قبلی پاک میشه و سلول اولیه آپدیت میشه
       const isShift = !!ev?.shiftKey;
       if (!selectedBlock) {
         throw new Error('No selected block');
@@ -219,75 +222,100 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
       }
       const section = row.parent?.tag as TableSection;
       const bodyChilds = row.parent?.children ?? [];
-      const rowIndex = bodyChilds.indexOf(row) ?? -1;
-      const colIndex = row.children.indexOf(cell) ?? -1;
+      // 🔥 پیدا کردن ایندکسِ درست با محاسبه مرج شده‌ها
+      const { rowIndex, colIndex } = findCellLogicalIndex(bodyChilds, cell);
 
-      // اگر shift باشد و یک سلول آغازین داریم → تلاش برای ساختن رِنج
+      if (rowIndex < 0) {
+        throw new Error('Row not found in parent children');
+      }
+      if (colIndex < 0) {
+        throw new Error('Cell not found in row children');
+      }
+
+      // Shift selection: build range between firstSelectedCell and this
       if (isShift && this.firstSelectedCell && this.firstSelectedCell.section === section) {
         const start = {
-          block: this.firstSelectedCell.block,
           row: this.firstSelectedCell.rowIndex,
           col: this.firstSelectedCell.colIndex,
+          block: this.firstSelectedCell.block,
         };
         const end = { row: rowIndex, col: colIndex, block: selectedBlock };
-        const normalized = getNormalizedRange(start, end);
 
-        const candidate = {
-          section,
-          row1: normalized.row1,
-          row2: normalized.row2,
-          col1: normalized.col1,
-          col2: normalized.col2,
-          start,
-          end,
-        };
-        // اعتبارسنجی رنج
-        const valid = isValidMergeRange(bodyChilds, candidate);
+        // compute normalized range (use only row/col)
+        const normalized = getNormalizedRange(
+          { row: start.row, col: start.col },
+          { row: end.row, col: end.col },
+        );
+
+        // validate using helper (pass the section rows array)
+        const valid = isValidMergeRange(bodyChilds, normalized);
         if (valid) {
-          this.rangeSelection = candidate;
+          this.rangeSelection = {
+            section,
+            row1: normalized.row1,
+            row2: normalized.row2,
+            col1: normalized.col1,
+            col2: normalized.col2,
+            start: { ...start },
+            end: { ...end },
+          };
         } else {
           this.rangeSelection = undefined;
         }
-        // حفظ selectedBlock هم برای مرجع UI
-        // this.selectedCell = { section, rowIndex, colIndex, block: selectedBlock };
+
         this.chdRef.detectChanges();
         this.updateRangeSelectionPosition();
         this.updateToolbarPosition();
         return;
       }
 
-      // در حالت عادی (یا shift ولی بدون firstSelectedCell) → انتخاب به عنوان firstSelectedCell
+      // normal selection: set as firstSelectedCell
       this.firstSelectedCell = { section, rowIndex, colIndex, block: selectedBlock };
-      // اگر shift نگرفته باشیم رنج قبلی پاک میشه (در صورت shift=false)
+
       if (!isShift) {
         this.rangeSelection = undefined;
         this.updateRangeSelectionPosition();
       }
 
-      // this.selectedCell = { section, rowIndex, colIndex, block: selectedBlock };
       this.updateToolbarPosition();
       this.chdRef.detectChanges();
     } catch (error) {
+      // reset selection state on error
       this.firstSelectedCell = undefined;
       this.rangeSelection = undefined;
-      // this.selectedCell = undefined;
       this.updateRangeSelectionPosition();
       this.chdRef.detectChanges();
     }
   }
 
   getRowColIndex(): { rowIndex: number; colIndex: number } {
+    // اگر یک سلول از قبل انتخاب شده باشد، همان را برگردان
     if (this.firstSelectedCell) {
       return {
         rowIndex: this.firstSelectedCell.rowIndex,
         colIndex: this.firstSelectedCell.colIndex,
       };
     }
-    // return last cell info
-    const body = this.pageItem.children.find((x) => x.tag == 'tbody');
-    const rowIndex = body?.children?.length ?? 0;
-    const colIndex = body?.children?.[rowIndex]?.children?.length ?? 0;
-    return { rowIndex, colIndex };
+
+    // fallback ایمن: آخرین سلول tbody
+    const body = this.pageItem?.children?.find((x) => x.tag === 'tbody');
+    if (!body || !Array.isArray(body.children) || body.children.length === 0) {
+      // هیچ tbody یا هیچ ردیفی وجود ندارد -> صفر برگردان
+      return { rowIndex: 0, colIndex: 0 };
+    }
+
+    // آخرین ردیف موجود
+    const lastRowIndex = Math.max(0, body.children.length - 1);
+    const lastRow = body.children[lastRowIndex];
+
+    if (!lastRow || !Array.isArray(lastRow.children) || lastRow.children.length === 0) {
+      // ردیف وجود دارد ولی سلولی داخلش نیست -> colIndex = 0
+      return { rowIndex: lastRowIndex, colIndex: 0 };
+    }
+
+    // آخرین سلول (اندیس child)
+    const lastColIndex = Math.max(0, lastRow.children.length - 1);
+    return { rowIndex: lastRowIndex, colIndex: lastColIndex };
   }
 
   async addRow(ev: Event, after = false) {
@@ -297,17 +325,22 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
     const table = this.pageItem.children[0];
     const theadOrTbody = table.children?.find((x) => x.tag === section);
     if (!theadOrTbody) return;
-    const row = theadOrTbody.children[rowIndex].clone(theadOrTbody);
+    // ensure rowIndex valid
+    const safeRowIndex = Math.min(
+      Math.max(0, rowIndex),
+      Math.max(0, theadOrTbody.children.length - 1),
+    );
+    const row = theadOrTbody.children[safeRowIndex].clone(theadOrTbody);
 
     for (let cell of row.children) {
       cell.children = [];
     }
-    theadOrTbody.children?.splice(after ? rowIndex + 1 : rowIndex, 0, row);
+    theadOrTbody.children?.splice(after ? safeRowIndex + 1 : safeRowIndex, 0, row);
 
     await this.pageBuilderService.createBlockElement(
       row,
       theadOrTbody.el!,
-      after ? rowIndex + 1 : rowIndex,
+      after ? safeRowIndex + 1 : safeRowIndex,
     );
     this.update();
   }
@@ -318,6 +351,7 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
     const table = this.pageItem.children[0];
     const theadOrTbody = table.children?.find((x) => x.tag === section);
     if (!theadOrTbody) return;
+    if (rowIndex < 0 || rowIndex >= theadOrTbody.children.length) return;
     const row = theadOrTbody.children[rowIndex];
     this.dynamicElementService.destroy(row);
     theadOrTbody.children.splice(rowIndex, 1);
@@ -337,23 +371,120 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
         let td = inner.tag == 'thead' ? this._th : this._td;
         td = PageItem.fromJSON(td);
         td.parent = row;
-        row.children.splice(after ? colIndex + 1 : colIndex, 0, td as PageItem);
+        // safe insert index
+        const insertIdx = Math.min(Math.max(0, colIndex), Math.max(0, row.children.length));
+        row.children.splice(after ? insertIdx + 1 : insertIdx, 0, td as PageItem);
       }
     }
 
     this.generate();
     this.update();
   }
+
+  // helper: محاسبه logical column index برای یک child index در یک row
+  private getLogicalColIndexForChild(
+    sectionBlock: PageItem,
+    rowIndex: number,
+    childIndex: number,
+  ): number {
+    const row = sectionBlock.children?.[rowIndex];
+    if (!row) return 0;
+    let curr = 0;
+    for (let i = 0; i < row.children.length; i++) {
+      if (i === childIndex) return curr;
+      const span = Number(row.children[i].options?.attributes?.['colspan'] ?? 1);
+      curr += span;
+    }
+    // اگر childIndex خارج از محدوده بود، بازگردان curr (معمولاً آخرین)
+    return curr;
+  }
+
+  // helper: تعداد ستون‌های منطقی فعلی در section (بر پایه اولین ردیف)
+  private getLogicalColumnCount(sectionBlock: PageItem): number {
+    if (!sectionBlock || !sectionBlock.children || sectionBlock.children.length === 0) return 0;
+    // محاسبه از روی ردیف اول (فرض کردن جدول مستطیلی)
+    const firstRow = sectionBlock.children[0];
+    let total = 0;
+    for (const cell of firstRow.children) {
+      total += Number(cell.options?.attributes?.['colspan'] ?? 1);
+    }
+    return total;
+  }
+
   async deleteColumn(ev: Event) {
     ev.stopPropagation();
-    const { rowIndex, colIndex } = this.getRowColIndex();
-    const table = this.pageItem.children[0];
+    // NOTE: deleteColumn already پیاده‌سازی شده قبل؛ پیچیدگی rowspan/colspan کامل وجود دارد.
+    // این متد منطقی‌ترین ستون (logicalColIndex) را از firstSelectedCell می‌گیرد و سپس برای هر section
+    // در هر ردیف سلول مناسب را حذف یا colspan را کم می‌کند.
+    const { rowIndex: childRowIdx, colIndex: childColIdx } = this.getRowColIndex();
+    const table = this.pageItem.children?.[0];
     if (!table) return;
-    for (let inner of table.children) {
-      for (let row of inner.children) {
-        row.children.splice(colIndex, 1);
+
+    const sectionName = this.firstSelectedCell?.section ?? 'tbody';
+    const sectionBlock = table.children?.find((x) => x.tag === sectionName) as PageItem;
+    if (!sectionBlock) return;
+
+    let logicalColIndex = 0;
+    if (this.firstSelectedCell) {
+      logicalColIndex = this.getLogicalColIndexForChild(
+        sectionBlock,
+        this.firstSelectedCell.rowIndex,
+        this.firstSelectedCell.colIndex,
+      );
+    } else {
+      logicalColIndex = this.getLogicalColIndexForChild(
+        sectionBlock,
+        Math.max(0, childRowIdx - 1),
+        Math.max(0, childColIdx),
+      );
+    }
+
+    for (const inner of table.children) {
+      for (let r = 0; r < (inner.children?.length ?? 0); r++) {
+        const row = inner.children[r];
+        if (!row) continue;
+
+        let curr = 0;
+        const newChildren: PageItem[] = [];
+
+        for (let i = 0; i < (row.children?.length ?? 0); i++) {
+          const cell = row.children[i] as PageItem;
+          const colspan = Number(cell.options?.attributes?.['colspan'] ?? 1);
+          const c1 = curr;
+          const c2 = curr + colspan - 1;
+
+          if (logicalColIndex < c1 || logicalColIndex > c2) {
+            newChildren.push(cell);
+          } else {
+            if (colspan > 1) {
+              const newSpan = colspan - 1;
+              cell.options ??= {};
+              cell.options.attributes ??= {};
+              if (newSpan === 1) {
+                delete cell.options.attributes['colspan'];
+                if (Object.keys(cell.options.attributes).length === 0) {
+                  delete cell.options.attributes;
+                }
+              } else {
+                cell.options.attributes['colspan'] = String(newSpan);
+              }
+              newChildren.push(cell);
+            } else {
+              // colspan === 1 : حذف سلول
+              // اگر rowspan>1 باشد، رفتار پیچیده است — اینجا فعلاً سلول حذف می‌شود و ممکن است در ردیف‌های پایین placeholder لازم باشد.
+              // برای نگهداری ساختار جدول کامل‌تر، می‌توانیم در آینده placeholder اضافه کنیم.
+              // const rowspan = Number(cell.options?.attributes?.['rowspan'] ?? 1);
+              // if (rowspan > 1) { ... }
+            }
+          }
+
+          curr = c2 + 1;
+        }
+
+        row.children = newChildren;
       }
     }
+
     this.pageBuilderService.deSelectBlock();
     this.generate();
     this.update();
@@ -371,7 +502,7 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
   }
 
   updateToolbarPosition() {
-    if (this.firstSelectedCell?.block.el) {
+    if (this.firstSelectedCell?.block?.el) {
       const rect = this.rangeSelection
         ? this.selectionRangeEl.nativeElement.getBoundingClientRect()
         : this.firstSelectedCell.block.el.getBoundingClientRect();
@@ -387,8 +518,8 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
   updateRangeSelectionPosition() {
     this.showMergeButton = false;
     if (this.rangeSelection) {
-      const startRect = this.rangeSelection.start.block.el?.getBoundingClientRect();
-      const endRect = this.rangeSelection.end.block.el?.getBoundingClientRect();
+      const startRect = this.rangeSelection.start.block?.el?.getBoundingClientRect();
+      const endRect = this.rangeSelection.end.block?.el?.getBoundingClientRect();
       if (startRect && endRect) {
         this.showMergeButton = true;
         const wrapperRect = this.wrapper.nativeElement.getBoundingClientRect();
@@ -401,12 +532,17 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
         this.renderer.setStyle(this.selectionRangeEl.nativeElement, 'width', `${right - left}px`);
         this.renderer.setStyle(this.selectionRangeEl.nativeElement, 'height', `${bottom - top}px`);
         this.renderer.setStyle(this.selectionRangeEl.nativeElement, 'display', 'block');
-        this.renderer.setStyle(this.doc.querySelector('block-selector'), 'display', 'none');
+        const bs = this.doc.querySelector('block-selector');
+        if (bs) {
+          this.renderer.setStyle(bs, 'display', 'none');
+        }
       }
     } else {
       this.renderer.setStyle(this.selectionRangeEl.nativeElement, 'display', 'none');
-      //todo:if blockSelector hide by self
-      this.renderer.removeStyle(this.doc.querySelector('block-selector'), 'display');
+      const bs = this.doc.querySelector('block-selector');
+      if (bs) {
+        this.renderer.removeStyle(bs, 'display');
+      }
     }
     this.chdRef.detectChanges();
   }
@@ -420,151 +556,279 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
     const sectionBlock = table.children?.find((x) => x.tag === section) as PageItem;
     if (!sectionBlock) return;
 
+    // ساخت grid منطقی از ردیف‌های این section
+    const rows = sectionBlock.children ?? [];
+    const grid = buildLogicalGrid(rows);
+    if (!grid || grid.length === 0) return;
+
+    // bounds safety
+    if (
+      row1 < 0 ||
+      row2 >= grid.length ||
+      col1 < 0 ||
+      col2 >= (grid[0]?.length ?? 0) ||
+      row1 > row2 ||
+      col1 > col2
+    ) {
+      return;
+    }
+
     const height = row2 - row1 + 1;
     const width = col2 - col1 + 1;
 
-    // مرجع سلول بالا-چپ (master)
-    const masterRow = sectionBlock.children[row1];
-    const masterCell = masterRow.children[col1] as PageItem;
+    // masterGridCell: گرید نقطه بالا-چپ
+    const masterInfo = grid[row1][col1];
+    if (!masterInfo) return;
 
-    // تنظیم rowspan & colspan در داده (PageItem.options.attributes)
-    masterCell.options ??= {};
-    masterCell.options.attributes ??= {};
-    if (height > 1) masterCell.options.attributes['rowspan'] = String(height);
-    if (width > 1) masterCell.options.attributes['colspan'] = String(width);
-
-    // حذف سلول‌های دیگر از مدل و DOM
-    // برای هر ردیف در بازه، سلول‌های col1..col2 حذف می‌شوند به جز master (r==row1 && c==col1)
-    for (let r = row1; r <= row2; r++) {
-      const row = sectionBlock.children[r];
-      // حذف از آخر به اول تا اندیس‌ها به هم نریزند
-      for (let c = col2; c >= col1; c--) {
-        if (r === row1 && c === col1) continue; // skip master
-        const cellToRemove = row.children[c] as PageItem;
-        if (!cellToRemove) continue;
-        // Destroy از dynamicElementService (اگر ساخته شده)
-        try {
-          this.dynamicElementService.destroy(cellToRemove);
-        } catch (err) {
-          // ignore
+    // اگر اون نقطه covered باشه (یعنی کاربر روی جایی کلیک کرده که top-left نیست)
+    // بهتره master واقعی (top-left) برای آن سلول را بیابیم
+    let masterCell = masterInfo.cell;
+    if (!masterInfo.isReal) {
+      // پیدا کردن top-left آن cell در grid
+      outerFind: for (let r = 0; r < grid.length; r++) {
+        for (let c = 0; c < grid[r].length; c++) {
+          const g = grid[r][c];
+          if (g && g.isReal && g.cell === masterCell) {
+            // بازنویس row1/col1 به top-left واقعی
+            // اما توجه: در حالت نرمال rangeSelection باید با logical index ساخته شده باشه، پس این فقط safety است
+            // همچنین ممکن است نیاز باشد range را براساس top-left مجدداً بازنرمالایز کنیم — اما ما اینجا تنها master را اصلاح می‌کنیم
+            // (فرض می‌کنیم کاربر رنج را طوری انتخاب کرده که master در گوشه بالا-چپ منطقی است)
+            // اگر بخوایم می‌توانیم row1= r; col1 = c; ولی چون rangeSelection از قبل تولید شده بهتر است همان رنج را نگه داریم
+            masterCell = g.cell;
+            break outerFind;
+          }
         }
-        row.children.splice(c, 1);
       }
     }
 
-    // بعد از تغییر مدل، جدول را بازسازی کن
+    // تنظیم rowspan/colspan روی master cell (در مدل)
+    masterCell.options ??= {};
+    masterCell.options.attributes ??= {};
+    if (height > 1) masterCell.options.attributes['rowspan'] = String(height);
+    else delete masterCell.options.attributes?.['rowspan'];
+    if (width > 1) masterCell.options.attributes['colspan'] = String(width);
+    else delete masterCell.options.attributes?.['colspan'];
+
+    // جمع‌آوری سلول‌های واقعی (top-left) در محدوده به جز master که باید حذف شوند
+    const toRemoveByParent = new Map<PageItem, number[]>(); // parentRow -> [childIndex,...]
+    const seen = new Set<PageItem>();
+
+    for (let r = row1; r <= row2; r++) {
+      for (let c = col1; c <= col2; c++) {
+        const g = grid[r][c];
+        if (!g) continue;
+        // فقط سلول‌های واقعی (top-left) را حذف/در نظر می‌گیریم
+        if (!g.isReal) continue;
+
+        const cell = g.cell;
+        if (cell === masterCell) continue; // skip master
+
+        if (seen.has(cell)) continue; // یک سلول top-left ممکن است فقط در یک خانه isReal باشد ولی احتیاط
+        seen.add(cell);
+
+        const parentRow = cell.parent as PageItem;
+        if (!parentRow) continue;
+        const childIdx = parentRow.children.indexOf(cell);
+        if (childIdx < 0) continue;
+
+        if (!toRemoveByParent.has(parentRow)) toRemoveByParent.set(parentRow, []);
+        toRemoveByParent.get(parentRow)!.push(childIdx);
+      }
+    }
+
+    // حذف در هر ردیف: حذف از بزرگ به کوچک تا اندیس‌ها تغییر نکند
+    toRemoveByParent.forEach((indices, parentRow) => {
+      indices.sort((a, b) => b - a);
+      for (const idx of indices) {
+        // destroy element if exists
+        const cell = parentRow.children[idx] as PageItem | undefined;
+        if (cell) {
+          try {
+            this.dynamicElementService.destroy(cell);
+          } catch (err) {
+            // ignore
+          }
+        }
+        parentRow.children.splice(idx, 1);
+      }
+    });
+
+    // بازسازی DOM
     await this.generate();
 
-    // انتخاب را به master منتقل کن و toolbar را آپدیت کن
-    // پیدا کردن block جدید master در DOM به کمک BlockHelper یا جستجوی مدل
-    // اینجا ساده‌ترین کار این است که دوباره selectedCell را ست کنیم و update را فراخوانی کنیم
+    // selection: سعی کن master جدید را انتخاب کنی
     this.pageBuilderService.deSelectBlock();
-    // تلاش برای ست کردن selectedBlock روی master (اگر master.el موجود شد)
     setTimeout(() => {
-      // پس از generate ممکنه block های جدید ساخته شده باشند، سعی کن master block جدید را بیابی
+      // بعد از generate دوباره grid و master را پیدا می‌کنیم تا selection بزنیم
       const tableAfter = this.pageItem.children?.[0];
+      if (!tableAfter) return;
       const sectionAfter = tableAfter.children?.find((x) => x.tag === section) as PageItem;
-      const newMasterRow = sectionAfter?.children?.[row1];
-      const newMasterCell = newMasterRow?.children?.[col1];
-      if (newMasterCell) {
-        this.pageBuilderService.onSelectBlock(newMasterCell);
-        // this.selectedCell = { section, rowIndex: row1, colIndex: col1, block: newMasterCell };
+      if (!sectionAfter) return;
+      // بازسازی grid بعدی
+      const rowsAfter = sectionAfter.children ?? [];
+      const gridAfter = buildLogicalGrid(rowsAfter);
+      if (gridAfter?.[row1]?.[col1]) {
+        const newMaster = gridAfter[row1][col1].cell;
+        if (newMaster) {
+          try {
+            this.pageBuilderService.onSelectBlock(newMaster);
+          } catch (err) {
+            // ignore
+          }
+        }
       }
+
       this.rangeSelection = undefined;
       this.firstSelectedCell = undefined;
       this.update();
     }, 50);
   }
+
   async unMergeCells(ev: Event) {
     ev.stopPropagation();
     try {
-      // نیاز به یک سلول انتخاب‌شده داریم
       if (!this.firstSelectedCell) return;
 
       const { section, rowIndex, colIndex } = this.firstSelectedCell;
 
       const table = this.pageItem?.children?.[0];
       if (!table) return;
-
       const sectionBlock = table.children?.find((x) => x.tag === section) as PageItem;
       if (!sectionBlock) return;
 
-      // master row & cell
-      const masterRow = sectionBlock.children?.[rowIndex];
-      if (!masterRow) return;
-      const masterCell = masterRow.children?.[colIndex] as PageItem;
-      if (!masterCell) return;
+      const rows = sectionBlock.children ?? [];
+      // بازسازی grid کنونی (در این حالت master ممکنه rowspan/colspan داشته باشه)
+      const grid = buildLogicalGrid(rows);
 
-      // خواندن rowspan/colspan (اگر رشته باشند، Number می‌گیریم)
+      // اطمینان از bounds
+      if (
+        !grid ||
+        rowIndex < 0 ||
+        rowIndex >= grid.length ||
+        colIndex < 0 ||
+        colIndex >= (grid[0]?.length ?? 0)
+      ) {
+        return;
+      }
+
+      const masterInfo = grid[rowIndex][colIndex];
+      if (!masterInfo || !masterInfo.isReal) {
+        // اگر اینجا top-left نیست سعی کن top-left واقعی را پیدا کنی
+        let found = false;
+        for (let r = 0; r < grid.length && !found; r++) {
+          for (let c = 0; c < (grid[r]?.length ?? 0) && !found; c++) {
+            const g = grid[r][c];
+            if (g && g.isReal && g.cell === masterInfo?.cell) {
+              // بازنویسی اندیس‌ها
+              // توجه: این حالت نادر است ولی safety می‌کنیم
+              // (در صورتی که firstSelectedCell حاوی logical top-left باشد نباید اینجا بیاییم)
+              // برای سادگی: return چون firstSelectedCell باید top-left واقعی باشد
+              found = true;
+            }
+          }
+        }
+        if (!found) return;
+      }
+
+      const masterCell = masterInfo.cell;
       const rowspan = Number(masterCell.options?.attributes?.['rowspan'] ?? 1);
       const colspan = Number(masterCell.options?.attributes?.['colspan'] ?? 1);
 
-      // اگر چیزی برای unmerge نیست، بیرون بزن
       if (rowspan === 1 && colspan === 1) return;
 
-      // ۱) حذف attributeهای rowspan/colspan از سلول master
+      // remove rowspan/colspan attributes from master
       if (masterCell.options?.attributes) {
         delete masterCell.options.attributes['rowspan'];
         delete masterCell.options.attributes['colspan'];
-        // اگر attributes خالی شد، پاکش کن
         if (Object.keys(masterCell.options.attributes).length === 0) {
           delete masterCell.options.attributes;
         }
       }
 
-      // ۲) برای هر سلول جایگزین در مستطیل، یک PageItem جدید بساز و درج کن
-      // دقت: درج به صورت از چپ به راست و از بالا به پایین با استفاده از splice
+      // پس از حذف attributeها، grid فعلی هنوز با master occupying چند خانه خواهد بود
+      // پس برای تعیین اندیس درج در هر ردیف، دوباره grid را بسازیم (یا از grid موجود استفاده کنیم ولی باید map child->firstLogicalCol بسازیم)
+      // از grid موجود استفاده می‌کنیم تا mapping از هر child به firstLogicalCol در آن ردیف استخراج کنیم
+
+      // تابع helper محلی: تولید map از PageItem -> firstLogicalCol برای ردیف r
+      const getFirstLogicalColMapForRow = (r: number) => {
+        const map = new Map<PageItem, number>();
+        if (!grid[r]) return map;
+        for (let c = 0; c < grid[r].length; c++) {
+          const g = grid[r][c];
+          if (!g) continue;
+          if (g.isReal) {
+            if (!map.has(g.cell)) {
+              map.set(g.cell, c);
+            }
+          }
+        }
+        return map;
+      };
+
+      // حالا در هر ردیف هدف سلول‌های جدید را اضافه می‌کنیم (به جز master)
       for (let r = rowIndex; r <= rowIndex + rowspan - 1; r++) {
-        const targetRow = sectionBlock.children?.[r];
-        if (!targetRow) continue;
+        // اگر ردیف وجود ندارد (در موارد نادر) ایجادش نکن — ولی معمولا وجود دارد
+        if (r < 0 || r >= rows.length) continue;
+        const targetRow = rows[r];
+        const firstColMap = getFirstLogicalColMapForRow(r);
 
-        // از راست به چپ درج نکنیم چون می‌خواهیم اندیس‌ها مطابق با ستون واقعی باشند.
-        // برای هر ستون در بازه
         for (let c = colIndex; c <= colIndex + colspan - 1; c++) {
-          // master را نساختن (همان سلول موجود را نگه می‌داریم)
-          if (r === rowIndex && c === colIndex) continue;
+          if (r === rowIndex && c === colIndex) continue; // skip master
 
-          // قالب سلول مناسب (th برای thead، td برای بقیه)
+          // تعیین اندیس درج در targetRow.children براساس logical col c
+          // پیدا کن اولین سلولی که firstLogicalCol >= c و سپس insert قبل از آن
+          let insertBeforeChild: PageItem | undefined = undefined;
+          for (const [child, firstCol] of firstColMap.entries()) {
+            if (firstCol >= c) {
+              // اگر چندتا بود، می‌خواهیم نزدیک‌ترین firstCol را بگیریم (کمترین firstCol >= c)
+              if (!insertBeforeChild) insertBeforeChild = child;
+              else {
+                const prev = firstColMap.get(insertBeforeChild)!;
+                if (firstCol < prev) insertBeforeChild = child;
+              }
+            }
+          }
+
+          const insertIdx =
+            insertBeforeChild != null
+              ? Math.max(0, targetRow.children.indexOf(insertBeforeChild))
+              : targetRow.children.length;
+
+          // ساخت cell جدید و درج
           const template = section === 'thead' ? this._th : this._td;
-
-          // ساخت یک PageItem جدید از قالب (تضمین fresh instance)
           const newCell = PageItem.fromJSON(template) as PageItem;
           newCell.parent = targetRow;
-          // تضمین اینکه سلول جدید خالی باشد (بدون child)
           newCell.children = [];
 
-          // اندیس درج را به صورت امن محاسبه کن (اگر طول ردیف کمتر است، در انتها اضافه کن)
-          const insertIndex = Math.min(c, targetRow.children.length);
-          targetRow.children.splice(insertIndex, 0, newCell);
+          // splice at insertIdx
+          targetRow.children.splice(insertIdx, 0, newCell);
         }
       }
 
-      // ۳) بازسازی DOM/model و آپدیت selection
+      // بازسازی DOM
       await this.generate();
 
-      // بازنشانی selection: انتخاب را به master منتقل کن (سلول بالا-چپ)
+      // دوباره selection و update
       setTimeout(() => {
         const tableAfter = this.pageItem?.children?.[0];
-        const sectionAfter = tableAfter?.children?.find((x) => x.tag === section) as PageItem;
-        const newMasterRow = sectionAfter?.children?.[rowIndex];
-        const newMasterCell = newMasterRow?.children?.[colIndex];
-        if (newMasterCell) {
-          // انتخاب در pageBuilderService (اگر متد selectBlock دارید)
-          try {
-            this.pageBuilderService.onSelectBlock(newMasterCell);
-          } catch (err) {
-            // ignore if not available
+        if (!tableAfter) return;
+        const sectionAfter = tableAfter.children?.find((x) => x.tag === section) as PageItem;
+        if (!sectionAfter) return;
+        // انتخاب master جدید (همان top-left قبلی)
+        try {
+          // پس از insert ها master در همان موقعیت منطقی خواهد بود؛ سعی کن select بکنی:
+          const rowsAfter = sectionAfter.children ?? [];
+          const gridAfter = buildLogicalGrid(rowsAfter);
+          if (gridAfter?.[rowIndex]?.[colIndex]) {
+            const newMaster = gridAfter[rowIndex][colIndex].cell;
+            if (newMaster) this.pageBuilderService.onSelectBlock(newMaster);
           }
-          //this.selectedCell = { section, rowIndex, colIndex, block: newMasterCell };
-        } else {
-          // this.selectedCell = undefined;
+        } catch (err) {
+          // ignore
         }
 
-        // پاکسازی رنج‌ها و firstSelectedCell
         this.rangeSelection = undefined;
         this.firstSelectedCell = undefined;
-
-        // به روزرسانی UI
         this.update();
       }, 20);
     } catch (err) {
