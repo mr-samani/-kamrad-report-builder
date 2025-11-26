@@ -12,8 +12,6 @@ export const LibConsts: {
   SourceItemList: [],
 };
 
-export const DefaultBlockClassName = 'block-item';
-
 export const LOCAL_STORAGE_SAVE_KEY = 'page';
 
 export const DEFAULT_IMAGE_URL = '/assets/default-image.png';
@@ -43,4 +41,12 @@ export function getDefaultBlockDirective(pageItem: PageItem, onDropFn: Function)
     }
     resolve(dir);
   });
+}
+
+export function getDefaultBlockClasses(pageItem: PageItem): string {
+  if (['tr'].indexOf(pageItem.tag) == -1) {
+    return 'block-item';
+  } else {
+    return '';
+  }
 }

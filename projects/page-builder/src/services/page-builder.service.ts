@@ -14,7 +14,7 @@ import { DynamicElementService } from './dynamic-element.service';
 import { Page } from '../models/Page';
 import { PageBuilderDto } from '../models/PageBuilderDto';
 import { BehaviorSubject, Subject } from 'rxjs';
-import { DefaultBlockClassName, getDefaultBlockDirective, LibConsts } from '../consts/defauls';
+import { getDefaultBlockClasses, getDefaultBlockDirective, LibConsts } from '../consts/defauls';
 import { IDropEvent, moveItemInArray, transferArrayItem } from 'ngx-drag-drop-kit';
 import { SourceItem } from '../models/SourceItem';
 import { Notify } from '../extensions/notify';
@@ -58,6 +58,9 @@ export class PageBuilderService implements OnDestroy {
 
   /** جابجایی بین صفحات */
   onPageChange$ = new BehaviorSubject<Page | undefined>(undefined);
+  onSelectBlock$ = new BehaviorSubject<{ ev?: PointerEvent; item: PageItem } | undefined>(
+    undefined,
+  );
 
   private renderer!: Renderer2;
 
@@ -73,6 +76,7 @@ export class PageBuilderService implements OnDestroy {
   ngOnDestroy(): void {
     this._changed$.complete();
     this.onPageChange$.unsubscribe();
+    this.onSelectBlock$.unsubscribe();
   }
   updateChangeDetection(data: PageItemChange) {
     this._changed$.next(data);
@@ -276,12 +280,13 @@ export class PageBuilderService implements OnDestroy {
         throw new Error('Too many directives');
       }
       item.options.attributes ??= {};
-      item.options.attributes['class'] ??= DefaultBlockClassName;
-      if (!item.options.attributes['class'].includes(DefaultBlockClassName)) {
-        item.options.attributes['class'] += ` ${DefaultBlockClassName}`;
+      const classNames = getDefaultBlockClasses(item);
+      item.options.attributes['class'] ??= classNames;
+      if (!item.options.attributes['class'].includes(classNames)) {
+        item.options.attributes['class'] += ` ${classNames}`;
       }
       item.options.events ??= {};
-      item.options.events['click'] = (ev: Event) => this.onSelectBlock(item, ev);
+      item.options.events['click'] = (ev: PointerEvent) => this.onSelectBlock(item, ev);
     }
     let el = await this.dynamicElementService.createBlockElement(container, index, item);
     if (item.children && item.children.length > 0 && el) {
@@ -309,11 +314,12 @@ export class PageBuilderService implements OnDestroy {
     this.pageFooter()!.nativeElement.innerHTML = '';
   }
 
-  onSelectBlock(c: PageItem, ev?: Event) {
+  onSelectBlock(c: PageItem, ev?: PointerEvent) {
     // console.log('click on block', c.el);
     ev?.stopPropagation();
     ev?.preventDefault();
     this.activeEl.set(c);
+    this.onSelectBlock$.next({ ev: ev, item: c });
   }
   deSelectBlock() {
     this.activeEl.set(undefined);
