@@ -28,6 +28,7 @@ export class HeroTableSettingsComponent implements OnInit {
   ngOnInit() {}
 
   update() {
+    debugger;
     this.context.onChange.next(this.settings);
   }
 }

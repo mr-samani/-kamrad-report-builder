@@ -64,6 +64,7 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
     private dynamicDataService: DynamicDataService,
   ) {
     this.subscription = this.context.onChange.subscribe((data) => {
+      debugger;
       this.pageItem.dataSource = data;
       this.getData();
       this.chdRef.detectChanges();
@@ -84,7 +85,9 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
       ) {
         console.log('Block changed:', data.item?.id, data.type, data.item?.style);
         if (this.itemInThisTemplate(data.item)) {
-          this.pageItem.template = this.findCellContainer(data.item!);
+          console.time('updateTemplate');
+          this.pageItem.template = cloneDeep(this.findCellContainer(data.item!));
+          console.timeEnd('updateTemplate');
           this.update(data);
         }
       }
@@ -118,9 +121,12 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
       );
     }
 
+    // const childCount = Math.min(count, this.dataList.length);
+    const childCount = count;
+
     this.clearContainer();
     this.pageItem.children = [];
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < childCount; i++) {
       let cloned = this.cloneTemplate(i);
 
       await this.pageBuilderService.createBlockElement(
@@ -205,7 +211,10 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
       }
       return item;
     };
-    const t = cleanTree(cloneDeep(this.pageItem.template!));
+    console.time('cleanTree');
+    //const t = cleanTree(cloneDeep(this.pageItem.template!));
+    const t = cleanTree(this.pageItem.template!);
+    console.timeEnd('cleanTree');
     // cleanTree([cloneDeep(this.pageItem.template!)]);
     return PageItem.fromJSON(t);
   }

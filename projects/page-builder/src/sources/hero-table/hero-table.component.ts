@@ -168,6 +168,7 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.settingChangeSubscription = this.context.onChange.subscribe((data) => {
+      debugger;
       this.chdRef.detectChanges();
     });
     this.selectBlockSubscription = this.pageBuilderService.onSelectBlock$.subscribe((result) => {

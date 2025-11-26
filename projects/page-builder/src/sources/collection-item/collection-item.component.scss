@@ -4,6 +4,7 @@
 ::ng-deep {
   .collection-container {
     display: flex;
+    flex-wrap: wrap;
     padding: 12px 0;
     position: relative;
     gap: 10px;
@@ -13,7 +14,7 @@
       display: block;
     }
     .template-container {
-      width: 100%;
+      // width: 100%;
     }
   }
 }

@@ -324,19 +324,25 @@ export class PageBuilderService implements OnDestroy {
   deSelectBlock() {
     this.activeEl.set(undefined);
   }
+
+  findRootParentItem(item: PageItem) {
+    const page = this.pageInfo.pages[this.currentPageIndex()];
+    for (let p of page.headerItems) if (p == item) return page.headerItems;
+    for (let p of page.bodyItems) if (p == item) return page.bodyItems;
+    for (let p of page.footerItems) if (p == item) return page.footerItems;
+    return undefined;
+  }
   removeBlock(item: PageItem) {
-    let parent = item.parent;
-    if (!parent) {
-      const page = this.pageInfo.pages[this.currentPageIndex()];
-      const lists = [...page.headerItems, ...page.bodyItems, ...page.footerItems];
-      parent = lists.find((x) => x.children && x.children.includes(item));
+    let parentChildren = item.parent?.children;
+    if (!parentChildren) {
+      parentChildren = this.findRootParentItem(item);
     }
-    if (!item || !parent) {
+    if (!item || !parentChildren) {
       throw new Error('Remove block failed: invalid parent item in list');
     }
-    const index = parent.children.findIndex((i) => i.id === item.id);
+    const index = parentChildren.findIndex((i) => i.id === item.id);
     if (index !== -1 && item.el) {
-      parent.children.splice(index, 1);
+      parentChildren.splice(index, 1);
       this.dynamicElementService.destroy(item);
     }
     this.activeEl.set(undefined);
