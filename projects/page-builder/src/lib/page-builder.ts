@@ -13,7 +13,6 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { NgxDragDropKitModule } from 'ngx-drag-drop-kit';
-import { SafeHtmlPipe } from '../pipes/safe-html.pipe';
 import { BlockSelectorComponent } from '../components/block-selector/block-selector.component';
 import { ToolbarComponent } from './toolbar/toolbar.component';
 import { PageBuilderBaseComponent } from './page-builder-base-component';
@@ -36,7 +35,6 @@ import { SvgIconDirective } from '../directives/svg-icon.directive';
   imports: [
     CommonModule,
     NgxDragDropKitModule,
-    SafeHtmlPipe,
     ToolbarComponent,
     BlockSelectorComponent,
     SideConfigComponent,
@@ -50,6 +48,8 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
   @Input('dynamicData') set setDynamicData(val: DynamicDataStructure[]) {
     this.dynamicDataService.dynamicData = val ?? [];
   }
+  blockSelector = viewChild<BlockSelectorComponent>('blockSelector');
+
   private _pageBody = viewChild<ElementRef<HTMLElement>>('PageBody');
   private _pageHeader = viewChild<ElementRef<HTMLElement>>('PageHeader');
   private _pageFooter = viewChild<ElementRef<HTMLElement>>('PageFooter');
@@ -75,6 +75,8 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
   }
 
   ngOnInit(): void {
+    this.pageBuilderService.blockSelector = this.blockSelector();
+
     this.loadPageData();
     this.subscriptions = [
       fromEvent<KeyboardEvent>(this.doc, 'keydown').subscribe((ev) => this.deleteCurrentBlock(ev)),

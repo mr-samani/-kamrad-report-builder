@@ -12,30 +12,41 @@ export const LibConsts: {
   SourceItemList: [],
 };
 
-export const DefaultBlockClassName = 'block-item';
-
 export const LOCAL_STORAGE_SAVE_KEY = 'page';
 
 export const DEFAULT_IMAGE_URL = '/assets/default-image.png';
 
 export function getDefaultBlockDirective(pageItem: PageItem, onDropFn: Function) {
-  const dir: Directive[] = [];
-  if (!pageItem.disableMovement) {
-    dir.push({ directive: NgxDraggableDirective });
-  }
+  return new Promise<Directive[]>((resolve, reject) => {
+    let dir: Directive[] = [];
+    if (!pageItem.disableMovement) {
+      dir = [{ directive: NgxDraggableDirective }];
+    }
 
-  if (pageItem.canHaveChild) {
-    dir.push({
-      directive: NgxDropListDirective,
-      inputs: {
-        data: pageItem.children,
-        // must be check in ondrop event
-        /// connectedTo: pageItem.lockMoveInnerChild ? `[data-id="${pageItem.id}"]` : undefined,
-      },
-      outputs: {
-        drop: (ev: IDropEvent<PageItem>) => onDropFn(ev, pageItem),
-      },
-    });
+    if (pageItem.canHaveChild) {
+      dir = [
+        ...dir,
+        {
+          directive: NgxDropListDirective,
+          inputs: {
+            data: pageItem.children,
+            // must be check in ondrop event
+            /// connectedTo: pageItem.lockMoveInnerChild ? `[data-id="${pageItem.id}"]` : undefined,
+          },
+          outputs: {
+            drop: (ev: IDropEvent<PageItem>) => onDropFn(ev, pageItem),
+          },
+        },
+      ];
+    }
+    resolve(dir);
+  });
+}
+
+export function getDefaultBlockClasses(pageItem: PageItem): string {
+  if (['tr'].indexOf(pageItem.tag) == -1) {
+    return 'block-item';
+  } else {
+    return '';
   }
-  return dir;
 }

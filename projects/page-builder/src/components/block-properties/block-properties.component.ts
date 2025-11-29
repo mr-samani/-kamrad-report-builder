@@ -3,10 +3,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   effect,
-  Inject,
   Injector,
   OnInit,
-  Renderer2,
   ViewEncapsulation,
 } from '@angular/core';
 import { BaseComponent } from '../BaseComponent';
@@ -21,9 +19,6 @@ import { SizeControlComponent } from '../../controls/size-control/size-control.c
 import { DynamicDataStructure } from '../../models/DynamicData';
 import { TextBindingComponent } from '../text-binding/text-binding.component';
 import { DynamicDataService } from '../../services/dynamic-data.service';
-import { IPageBuilderFilePicker } from '../../services/file-picker/IFilePicker';
-import { NGX_PAGE_BUILDER_FILE_PICKER } from '../../services/file-picker/token.filepicker';
-import { DEFAULT_IMAGE_URL } from '../../consts/defauls';
 
 @Component({
   selector: 'block-properties',
@@ -73,14 +68,16 @@ export class BlockPropertiesComponent extends BaseComponent implements OnInit {
   checkParentIsCollection() {
     this.parentCollection = this.parentCollectionItem(this.item);
     if (this.parentCollection) {
-      let dsList = this.dynamicDataService.getCollectionData(this.parentCollection.dataSource?.id);
+      const { id, skipCount, maxResultCount } = this.parentCollection.dataSource!;
+      let dsList = this.dynamicDataService.getCollectionData(id, skipCount, maxResultCount);
       this.collectionDsList = dsList.length > 0 ? dsList[0] : [];
     }
   }
 
   parentCollectionItem(item?: PageItem): PageItem | undefined {
     if (!item) return undefined;
-    if (item.template) {
+    if (item.dataSource?.id) {
+      // if (item.template || item.customComponent?.componentKey == 'NgxPgHeroTable') {
       return item;
     }
     if (item.parent) {

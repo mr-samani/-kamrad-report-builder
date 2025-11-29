@@ -22,13 +22,21 @@ import { DEFAULT_IMAGE_URL } from '../../consts/defauls';
 import { IPageBuilderFilePicker } from '../../services/file-picker/IFilePicker';
 import { NGX_PAGE_BUILDER_FILE_PICKER } from '../../services/file-picker/token.filepicker';
 import { SvgIconDirective } from '../../directives/svg-icon.directive';
+import { SwitchComponent } from '../../controls/switch/switch.component';
 
 @Component({
   selector: 'text-binding',
   templateUrl: './text-binding.component.html',
   styleUrls: ['./text-binding.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, SafeHtmlPipe, DataSourceSelectorComponent, SvgIconDirective],
+  imports: [
+    CommonModule,
+    FormsModule,
+    SafeHtmlPipe,
+    DataSourceSelectorComponent,
+    SvgIconDirective,
+    SwitchComponent,
+  ],
 })
 export class TextBindingComponent extends BaseComponent implements OnInit {
   @Input() item!: PageItem;
@@ -101,8 +109,9 @@ export class TextBindingComponent extends BaseComponent implements OnInit {
       this.useDynamicData = false;
       this.selectedNamespace = '';
     }
-    this.item.dataSource!.binding = `${event.join('.')}`;
-    this.change.emit(this.item.dataSource!.binding);
+    this.item.dataSource ??= {};
+    this.item.dataSource.binding = `${event.join('.')}`;
+    this.change.emit(this.item.dataSource.binding);
   }
   onChangeUseDs() {
     if (this.useDynamicData) {

@@ -4,13 +4,14 @@ import { ISourceOptions } from './SourceItem';
 import { LibConsts } from '../consts/defauls';
 import { CustomComponent } from './CustomComponent';
 import { DataSourceSetting } from './DataSourceSetting';
+import { cloneDeep } from '../utiles/clone-deep';
 
 export interface IPageItem {
   id?: string;
   dataSource?: DataSourceSetting;
-  parent?: PageItem;
+  parent?: IPageItem;
   el?: HTMLElement;
-  children?: PageItem[];
+  children?: IPageItem[];
   tag: string;
   canHaveChild?: boolean;
   /** content in html editor */
@@ -19,7 +20,7 @@ export interface IPageItem {
   componentKey?: string;
   options?: ISourceOptions;
   style?: string;
-  template?: PageItem;
+  template?: IPageItem;
   disableMovement?: boolean;
   lockMoveInnerChild?: boolean;
   disableDelete?: boolean;
@@ -60,6 +61,7 @@ export class PageItem implements IPageItem {
 
   /**
    * item template collection
+   * - NOTE: when pageItem has template, its children will be ignored on save.
    */
   template?: PageItem;
 
@@ -133,5 +135,20 @@ export class PageItem implements IPageItem {
       }
     }
     return undefined;
+  }
+
+  public clone(parent?: PageItem): PageItem {
+    let item = PageItem.fromJSON(cloneDeep(this));
+    item.id = randomStrnig(5);
+    delete item.options?.events;
+    delete item.options?.directives;
+    delete item.options?.inputs;
+    delete item.options?.outputs;
+    item.parent = parent;
+
+    if (item.children && item.children.length > 0) {
+      item.children = item.children.map((m) => m.clone(item));
+    }
+    return item;
   }
 }

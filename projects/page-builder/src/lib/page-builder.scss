@@ -57,7 +57,7 @@
 .show-outlines {
   .block-item {
     outline: 1px dashed #8d8d8d;
-    outline-offset: 1px;
+    outline-offset: 0px;
     min-width: 50px;
     min-height: 20px;
     &:hover {
@@ -136,4 +136,8 @@
     background: #0000ff57;
     border: 2px #7878ff solid;
   }
+}
+.ngx-page-text-info {
+  color: #0073ff;
+  padding: 10px;
 }

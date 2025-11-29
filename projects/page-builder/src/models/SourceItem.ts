@@ -7,7 +7,7 @@ export class Directive {
   outputs?: Record<string, Function> | undefined;
 }
 
-export interface ISourceOptions {
+export interface ISourceOptions<CUSTOM_DATA = any> {
   events?: Record<string, (event: any) => boolean | void>;
   directives?: Directive[];
 
@@ -39,6 +39,8 @@ export interface ISourceOptions {
    * }
    */
   outputs?: Record<string, Function> | undefined;
+
+  customData?: CUSTOM_DATA;
 }
 
 export class SourceItem {

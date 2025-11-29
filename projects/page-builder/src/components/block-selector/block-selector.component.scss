@@ -16,9 +16,9 @@
     display: inline-flex;
     overflow: hidden;
     max-width: 50%;
-    border-radius: 5px 5px 0 0;
+    border-radius: 5px 5px 5px 0;
     align-items: center;
-    min-width: 100px;
+    min-width: 200px;
     gap: 4px;
     &.bottom {
       top: auto;
@@ -29,6 +29,7 @@
       background: none;
       border: none;
       min-width: 26px;
+      width: 26px;
     }
     svg {
       fill: #fff;

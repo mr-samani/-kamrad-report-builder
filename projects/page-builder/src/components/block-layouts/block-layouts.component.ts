@@ -36,7 +36,7 @@ export class BlockLayoutsComponent extends BaseComponent implements OnInit {
     });
   }
 
-  onSelectBlock(ev: Event, item: PageItem) {
+  onSelectBlock(ev: PointerEvent, item: PageItem) {
     this.pageBuilderService.onSelectBlock(item, ev);
   }
 }

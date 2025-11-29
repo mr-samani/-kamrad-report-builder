@@ -94,7 +94,7 @@
       max-height: 100%;
     }
 
-    table.ngx-page-table th {
+    table.ngx-page-table th.repeatable-header {
       text-align: start;
       max-height: 270px; /* maximum browser page header */
       overflow: hidden;

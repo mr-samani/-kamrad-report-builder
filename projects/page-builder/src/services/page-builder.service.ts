@@ -14,10 +14,11 @@ import { DynamicElementService } from './dynamic-element.service';
 import { Page } from '../models/Page';
 import { PageBuilderDto } from '../models/PageBuilderDto';
 import { BehaviorSubject, Subject } from 'rxjs';
-import { DefaultBlockClassName, getDefaultBlockDirective, LibConsts } from '../consts/defauls';
+import { getDefaultBlockClasses, getDefaultBlockDirective, LibConsts } from '../consts/defauls';
 import { IDropEvent, moveItemInArray, transferArrayItem } from 'ngx-drag-drop-kit';
 import { SourceItem } from '../models/SourceItem';
 import { Notify } from '../extensions/notify';
+import { BlockSelectorComponent } from '../components/block-selector/block-selector.component';
 
 export interface PageItemChange {
   item: PageItem | null;
@@ -57,8 +58,14 @@ export class PageBuilderService implements OnDestroy {
 
   /** جابجایی بین صفحات */
   onPageChange$ = new BehaviorSubject<Page | undefined>(undefined);
+  onSelectBlock$ = new BehaviorSubject<{ ev?: PointerEvent; item: PageItem } | undefined>(
+    undefined,
+  );
 
   private renderer!: Renderer2;
+
+  blockSelector?: BlockSelectorComponent;
+
   constructor(
     rendererFactory: RendererFactory2,
     private dynamicElementService: DynamicElementService,
@@ -69,6 +76,7 @@ export class PageBuilderService implements OnDestroy {
   ngOnDestroy(): void {
     this._changed$.complete();
     this.onPageChange$.unsubscribe();
+    this.onSelectBlock$.unsubscribe();
   }
   updateChangeDetection(data: PageItemChange) {
     this._changed$.next(data);
@@ -258,19 +266,27 @@ export class PageBuilderService implements OnDestroy {
     if (this.mode == 'Edit') {
       item.options ??= {};
       item.options.directives ??= [];
-      let directives = getDefaultBlockDirective(item, this.onDrop.bind(this));
+      if (item.options.directives.length > 0) {
+        console.log('Directives already present', item.tag, item.options.directives);
+      }
+      let directives = await getDefaultBlockDirective(item, this.onDrop.bind(this));
+
       for (let d of directives) {
-        if (item.options.directives.findIndex((x) => x == d) === -1) {
+        if (item.options.directives.findIndex((x) => x.directive == d.directive) === -1) {
           item.options.directives.push(d);
         }
       }
+      if (item.options.directives.length >= 3) {
+        throw new Error('Too many directives');
+      }
       item.options.attributes ??= {};
-      item.options.attributes['class'] ??= DefaultBlockClassName;
-      if (!item.options.attributes['class'].includes(DefaultBlockClassName)) {
-        item.options.attributes['class'] += ` ${DefaultBlockClassName}`;
+      const classNames = getDefaultBlockClasses(item);
+      item.options.attributes['class'] ??= classNames;
+      if (!item.options.attributes['class'].includes(classNames)) {
+        item.options.attributes['class'] += ` ${classNames}`;
       }
       item.options.events ??= {};
-      item.options.events['click'] = (ev: Event) => this.onSelectBlock(item, ev);
+      item.options.events['click'] = (ev: PointerEvent) => this.onSelectBlock(item, ev);
     }
     let el = await this.dynamicElementService.createBlockElement(container, index, item);
     if (item.children && item.children.length > 0 && el) {
@@ -298,28 +314,37 @@ export class PageBuilderService implements OnDestroy {
     this.pageFooter()!.nativeElement.innerHTML = '';
   }
 
-  onSelectBlock(c: PageItem, ev?: Event) {
+  onSelectBlock(c: PageItem, ev?: PointerEvent) {
     // console.log('click on block', c.el);
     ev?.stopPropagation();
     ev?.preventDefault();
     this.activeEl.set(c);
+    this.onSelectBlock$.next({ ev: ev, item: c });
   }
   deSelectBlock() {
     this.activeEl.set(undefined);
+    this.onSelectBlock$.next(undefined);
+  }
+
+  findRootParentItem(item: PageItem) {
+    const page = this.pageInfo.pages[this.currentPageIndex()];
+    for (let p of page.headerItems) if (p == item) return page.headerItems;
+    for (let p of page.bodyItems) if (p == item) return page.bodyItems;
+    for (let p of page.footerItems) if (p == item) return page.footerItems;
+    return undefined;
   }
   removeBlock(item: PageItem) {
-    let parent = item.parent;
-    if (!parent) {
-      const page = this.pageInfo.pages[this.currentPageIndex()];
-      const lists = [...page.headerItems, ...page.bodyItems, ...page.footerItems];
-      parent = lists.find((x) => x.children && x.children.includes(item));
+    let parentChildren = item.parent?.children;
+    if (!parentChildren) {
+      parentChildren = this.findRootParentItem(item);
     }
-    if (!item || !parent) {
+    if (!item || !parentChildren) {
       throw new Error('Remove block failed: invalid parent item in list');
     }
-    const index = parent.children.findIndex((i) => i.id === item.id);
+
+    const index = parentChildren.findIndex((i) => i.id === item.id);
     if (index !== -1 && item.el) {
-      parent.children.splice(index, 1);
+      parentChildren.splice(index, 1);
       this.dynamicElementService.destroy(item);
     }
     this.activeEl.set(undefined);
@@ -346,6 +371,10 @@ export class PageBuilderService implements OnDestroy {
     this.updateChangeDetection({ item: data, type: 'ChangeBlockContent' });
   }
   changedProperties(item: PageItem) {
+    if (item.el) {
+      item.style = item.el.style.cssText;
+      // item.style = encodeURIComponent(item.el.style.cssText);
+    }
     this.updateChangeDetection({ item: item, type: 'ChangeBlockProperties' });
   }
 }

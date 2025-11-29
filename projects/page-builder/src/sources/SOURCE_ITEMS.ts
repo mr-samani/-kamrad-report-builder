@@ -123,4 +123,18 @@ export const SOURCE_ITEMS: SourceItem[] = [
         ),
     },
   }),
+  new SourceItem({
+    tag: 'hero-table',
+    icon: 'assets/icons/table.svg',
+    title: 'Hero Table',
+    customComponent: {
+      componentKey: 'NgxPgHeroTable',
+      component: () =>
+        import('./hero-table/hero-table.component').then((c) => c.HeroTableComponent),
+      componentSettings: () =>
+        import('./hero-table/table-settings/table-settings.component').then(
+          (c) => c.HeroTableSettingsComponent,
+        ),
+    },
+  }),
 ];

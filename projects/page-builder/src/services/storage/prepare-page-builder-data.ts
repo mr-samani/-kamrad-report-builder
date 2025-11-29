@@ -1,20 +1,17 @@
 import { PageBuilderDto } from '../../models/PageBuilderDto';
 import { PageItem } from '../../models/PageItem';
 import { ISourceOptions } from '../../public-api';
+import { cloneDeep } from '../../utiles/clone-deep';
 import { sanitizeForStorage } from './sanitizeForStorage';
 
 export function preparePageDataForSave(pageInfo: PageBuilderDto): PageBuilderDto {
   if (!pageInfo) {
     return new PageBuilderDto();
   }
-  const clonedData: PageBuilderDto = PageBuilderDto.fromJSON(pageInfo);
+  const clonedData: PageBuilderDto = cloneDeep(pageInfo);
 
   let tree = (list: PageItem[]) => {
     for (let item of list) {
-      if (item.el) {
-        item.style = item.el.style.cssText;
-        // item.style = encodeURIComponent(item.el.style.cssText);
-      }
       if (item.customComponent) {
         delete (item.customComponent as any).component;
         delete item.customComponent.componentSettings;

@@ -117,6 +117,7 @@ export class NgxPagePreviewComponent implements OnInit, AfterViewInit {
     const tr = this.doc.createElement('tr');
     thead.appendChild(tr);
     const Hth = this.doc.createElement('th');
+    Hth.className = 'repeatable-header';
     tr.appendChild(Hth);
     const tbody = this.doc.createElement('tbody');
     const Ctr = this.doc.createElement('tr');
