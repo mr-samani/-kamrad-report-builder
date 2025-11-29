@@ -121,9 +121,13 @@ export class DynamicDataService {
    */
   getCollectionData(id: string | undefined, skip = 0, take?: number): DynamicDataStructure[][] {
     if (!id) return [];
-    return (this.dynamicData.find((x) => x.id === id)?.list ?? []).slice(
+    let list = (this.dynamicData.find((x) => x.id === id)?.list ?? []).slice(
       skip,
       take ? skip + take : undefined,
     );
+    if (list.length === 0) {
+      console.warn(`No collection data found for datasource id: ${id}`);
+    }
+    return list;
   }
 }

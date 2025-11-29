@@ -5,6 +5,7 @@ import {
   Component,
   ElementRef,
   Inject,
+  OnDestroy,
   OnInit,
   ViewChild,
 } from '@angular/core';
@@ -18,6 +19,11 @@ import { DynamicElementService } from '../../services/dynamic-element.service';
 import { DynamicDataStructure } from '../../models/DynamicData';
 import { DynamicDataService } from '../../services/dynamic-data.service';
 import { cloneDeep } from '../../utiles/clone-deep';
+import {
+  cloneTemplate,
+  findCellContainer,
+  itemInThisTemplate,
+} from '../../utiles/collection-helper';
 
 @Component({
   selector: 'collection-item',
@@ -26,9 +32,10 @@ import { cloneDeep } from '../../utiles/clone-deep';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [],
 })
-export class CollectionItemComponent implements OnInit, AfterViewInit {
+export class CollectionItemComponent implements OnInit, OnDestroy, AfterViewInit {
   pageItem!: PageItem;
-  subscription: Subscription;
+  settingChangeSubscription?: Subscription;
+  pagebuiderChangeSubscription?: Subscription;
 
   _template: IPageItem = {
     tag: 'article',
@@ -63,8 +70,7 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
     private dynamicElementService: DynamicElementService,
     private dynamicDataService: DynamicDataService,
   ) {
-    this.subscription = this.context.onChange.subscribe((data) => {
-      debugger;
+    this.settingChangeSubscription = this.context.onChange.subscribe((data) => {
       this.pageItem.dataSource = data;
       this.getData();
       this.chdRef.detectChanges();
@@ -75,23 +81,26 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
      * - move block -> not rebuild all: only move same contents
      * - addd block only add new block
      */
-    this.pageBuilderService.changed$.pipe(debounceTime(300)).subscribe((data) => {
-      if (
-        data.type == 'AddBlock' ||
-        data.type == 'RemoveBlock' ||
-        data.type == 'MoveBlock' ||
-        data.type == 'ChangeBlockContent' ||
-        data.type == 'ChangeBlockProperties'
-      ) {
-        console.log('Block changed:', data.item?.id, data.type, data.item?.style);
-        if (this.itemInThisTemplate(data.item)) {
-          console.time('updateTemplate');
-          this.pageItem.template = cloneDeep(this.findCellContainer(data.item!));
-          console.timeEnd('updateTemplate');
-          this.update(data);
+    this.pagebuiderChangeSubscription = this.pageBuilderService.changed$
+      .pipe(debounceTime(300))
+      .subscribe((data) => {
+        if (
+          data.type == 'AddBlock' ||
+          data.type == 'RemoveBlock' ||
+          data.type == 'MoveBlock' ||
+          data.type == 'ChangeBlockContent' ||
+          data.type == 'ChangeBlockProperties'
+        ) {
+          console.log('Block changed:', data.item?.id, data.type, data.item?.style);
+          const found = itemInThisTemplate(data.item, this.pageItem.children);
+          if (found.result) {
+            console.time('updateTemplate');
+            this.pageItem.template = cloneDeep(found.root!);
+            console.timeEnd('updateTemplate');
+            this.update(data);
+          }
         }
-      }
-    });
+      });
   }
 
   ngOnInit() {
@@ -105,7 +114,14 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     this.getData();
   }
-
+  ngOnDestroy(): void {
+    if (this.settingChangeSubscription) {
+      this.settingChangeSubscription.unsubscribe();
+    }
+    if (this.pagebuiderChangeSubscription) {
+      this.pagebuiderChangeSubscription.unsubscribe();
+    }
+  }
   async getData() {
     this.dataList = [];
     if (!this.pageItem.dataSource || !this.pageItem.template) {
@@ -127,7 +143,7 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
     this.clearContainer();
     this.pageItem.children = [];
     for (let i = 0; i < childCount; i++) {
-      let cloned = this.cloneTemplate(i);
+      let cloned = cloneTemplate(this.dataList, this.pageItem.template!, i);
 
       await this.pageBuilderService.createBlockElement(
         cloned,
@@ -138,30 +154,6 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
     this.chdRef.detectChanges();
   }
 
-  itemInThisTemplate(item?: PageItem | null): boolean {
-    if (!item || !this.pageItem || !this.pageItem.children || !this.pageItem.children.length) {
-      return false;
-    }
-    let p = this.findCellContainer(item);
-    if (!p) return false;
-    for (let t of this.pageItem.children) {
-      if (t.id == p.id) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private findCellContainer(item: PageItem): PageItem | undefined {
-    if (item.isTemplateContainer) {
-      return item;
-    }
-    if (item.parent) {
-      return this.findCellContainer(item.parent);
-    }
-    return undefined;
-  }
-
   async update(change: PageItemChange) {
     if (!this.pageItem || !this.pageItem.template || !change.item) return;
 
@@ -169,9 +161,10 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
     this.pageItem.children = [];
 
     const count = this.pageItem.dataSource?.maxResultCount || 10;
-
-    for (let i = 0; i < count; i++) {
-      let cloned = this.cloneTemplate(i);
+    //const childCount = Math.min(count, this.dataList.length);
+    const childCount = count;
+    for (let i = 0; i < childCount; i++) {
+      let cloned = cloneTemplate(this.dataList, this.pageItem.template!, i);
       await this.pageBuilderService.createBlockElement(
         cloned,
         this.collectionContainer.nativeElement,
@@ -183,39 +176,5 @@ export class CollectionItemComponent implements OnInit, AfterViewInit {
 
   private clearContainer() {
     this.dynamicElementService.destroyBatch(this.pageItem.children);
-  }
-
-  private cloneTemplate(index: number) {
-    const cleanTree = (item: PageItem) => {
-      delete item.options?.events;
-      delete item.options?.directives;
-      delete item.options?.inputs;
-      delete item.options?.outputs;
-      if (item.dataSource && item.dataSource.binding) {
-        const row = this.dataList[index];
-        if (row) {
-          const col = row.find((x) => x.name == item.dataSource!.binding);
-          const isImage = PageItem.isImage(item);
-          if (isImage) {
-            item.options ??= {};
-            item.options.attributes ??= {};
-            item.options.attributes['src'] = (col?.value ?? '').toString();
-          } else {
-            item.content = (col?.value ?? '').toString();
-          }
-        }
-        // console.log(index + '=>', item.content);
-      }
-      if (item.children && item.children.length > 0) {
-        item.children.map((child) => cleanTree(child));
-      }
-      return item;
-    };
-    console.time('cleanTree');
-    //const t = cleanTree(cloneDeep(this.pageItem.template!));
-    const t = cleanTree(this.pageItem.template!);
-    console.timeEnd('cleanTree');
-    // cleanTree([cloneDeep(this.pageItem.template!)]);
-    return PageItem.fromJSON(t);
   }
 }

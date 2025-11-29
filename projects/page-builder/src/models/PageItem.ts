@@ -61,6 +61,7 @@ export class PageItem implements IPageItem {
 
   /**
    * item template collection
+   * - NOTE: when pageItem has template, its children will be ignored on save.
    */
   template?: PageItem;
 

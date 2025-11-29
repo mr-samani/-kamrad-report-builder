@@ -68,14 +68,16 @@ export class BlockPropertiesComponent extends BaseComponent implements OnInit {
   checkParentIsCollection() {
     this.parentCollection = this.parentCollectionItem(this.item);
     if (this.parentCollection) {
-      let dsList = this.dynamicDataService.getCollectionData(this.parentCollection.dataSource?.id);
+      const { id, skipCount, maxResultCount } = this.parentCollection.dataSource!;
+      let dsList = this.dynamicDataService.getCollectionData(id, skipCount, maxResultCount);
       this.collectionDsList = dsList.length > 0 ? dsList[0] : [];
     }
   }
 
   parentCollectionItem(item?: PageItem): PageItem | undefined {
     if (!item) return undefined;
-    if (item.template) {
+    if (item.dataSource?.id) {
+      // if (item.template || item.customComponent?.componentKey == 'NgxPgHeroTable') {
       return item;
     }
     if (item.parent) {

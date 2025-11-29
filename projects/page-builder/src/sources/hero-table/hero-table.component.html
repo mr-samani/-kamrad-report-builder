@@ -7,16 +7,17 @@
         <svg Icon="assets/icons/table-merge-cell.svg"></svg>
       </button>
     } @else {
-      <button class="btn-icon" (click)="addRow($event, true)" title="Insert row after">
-        <svg Icon="assets/icons/table-insert-row-after.svg"></svg>
-      </button>
-      <button class="btn-icon" (click)="addRow($event)" title="Insert row above">
-        <svg Icon="assets/icons/table-insert-row-above.svg"></svg>
-      </button>
-      <button class="btn-icon" (click)="deleteRow($event)" title="Delete row">
-        <svg Icon="assets/icons/table-delete-row.svg"></svg>
-      </button>
-
+      @if (canChangeRows) {
+        <button class="btn-icon" (click)="addRow($event, true)" title="Insert row after">
+          <svg Icon="assets/icons/table-insert-row-after.svg"></svg>
+        </button>
+        <button class="btn-icon" (click)="addRow($event)" title="Insert row above">
+          <svg Icon="assets/icons/table-insert-row-above.svg"></svg>
+        </button>
+        <button class="btn-icon" (click)="deleteRow($event)" title="Delete row">
+          <svg Icon="assets/icons/table-delete-row.svg"></svg>
+        </button>
+      }
       <button class="btn-icon" (click)="addColumn($event, true)" title="Insert column after">
         <svg Icon="assets/icons/table-insert-column-after.svg"></svg>
       </button>
@@ -37,7 +38,7 @@
 </div>
 
 <div class="ngx-page-alert info">
-  Merge cell: First select the cell, then hold down the Shift key and click on the second cell.
+  🛈 Merge cell: First select the cell, then hold down the Shift key and click on the second cell.
 </div>
 <pre>
   col: {{ firstSelectedCell?.colIndex }}

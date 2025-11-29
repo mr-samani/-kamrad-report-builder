@@ -14,7 +14,7 @@ import {
 import { ComponentDataContext } from '../../models/ComponentDataContext';
 import { COMPONENT_DATA } from '../../models/tokens';
 import { IPageItem, PageItem } from '../../models/PageItem';
-import { Subscription } from 'rxjs';
+import { debounceTime, Subscription } from 'rxjs';
 import { PageBuilderService } from '../../services/page-builder.service';
 import { DynamicElementService } from '../../services/dynamic-element.service';
 import { DynamicDataService } from '../../services/dynamic-data.service';
@@ -29,6 +29,13 @@ import {
   getNormalizedRange,
   isValidMergeRange,
 } from './table-helper';
+import {
+  cloneTemplate,
+  findCellContainer,
+  itemInThisTemplate,
+} from '../../utiles/collection-helper';
+import { DynamicDataStructure } from '../../models/DynamicData';
+import { TableSetting } from './table-setting';
 declare type TableSection = 'thead' | 'tbody' | 'tfoot';
 
 @Component({
@@ -43,11 +50,17 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
   pageItem!: PageItem;
   settingChangeSubscription?: Subscription;
   selectBlockSubscription?: Subscription;
+  pagebuiderChangeSubscription?: Subscription;
 
   @ViewChild('tableContainer') tableContainer!: ElementRef<HTMLTableElement>;
   @ViewChild('wrapper') wrapper!: ElementRef<HTMLDivElement>;
   @ViewChild('toolbar') toolbar!: ElementRef<HTMLDivElement>;
   @ViewChild('selectionRange') selectionRangeEl!: ElementRef<HTMLDivElement>;
+
+  /**
+   * if is dynamic rows and selected cell in body , can not change rows
+   */
+  canChangeRows: boolean = true;
 
   firstSelectedCell?: {
     section: TableSection;
@@ -112,6 +125,11 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
 
   _template: IPageItem = {
     tag: 'table',
+    isTemplateContainer: true,
+    canHaveChild: true,
+    disableMovement: true,
+    lockMoveInnerChild: true,
+    disableDelete: true,
     options: {
       attributes: {
         class: 'ngx-hero-table',
@@ -132,12 +150,7 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
         canHaveChild: false,
         lockMoveInnerChild: true,
         disableMovement: true,
-        children: [
-          cloneDeep(this._bodyRow),
-          cloneDeep(this._bodyRow),
-          cloneDeep(this._bodyRow),
-          cloneDeep(this._bodyRow),
-        ],
+        children: [cloneDeep(this._bodyRow)],
       },
       {
         tag: 'tfoot',
@@ -150,31 +163,75 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
     ],
   };
 
+  dataList: DynamicDataStructure[][] = [];
+
+  settings: TableSetting = new TableSetting();
   constructor(
-    @Inject(COMPONENT_DATA) private context: ComponentDataContext<any>,
+    @Inject(COMPONENT_DATA) private context: ComponentDataContext<TableSetting>,
     private chdRef: ChangeDetectorRef,
     private pageBuilderService: PageBuilderService,
     private dynamicElementService: DynamicElementService,
     private dynamicDataService: DynamicDataService,
     private renderer: Renderer2,
     @Inject(DOCUMENT) private doc: Document,
-  ) {}
+  ) {
+    this.handlePageBuilderChange();
+  }
 
   ngOnInit() {
-    if (!this.pageItem.children || this.pageItem.children.length === 0) {
-      this.pageItem.children = [new PageItem(this._template, this.pageItem)];
+    if (this.pageItem.customComponent?.componentData) {
+      this.settings = this.pageItem.customComponent?.componentData as TableSetting;
+    }
+    if (!this.pageItem.template) {
+      this.pageItem.template = new PageItem(this._template, this.pageItem);
+    } else {
+      this.pageItem.template.isTemplateContainer = true;
     }
   }
 
   ngAfterViewInit(): void {
     this.settingChangeSubscription = this.context.onChange.subscribe((data) => {
-      debugger;
+      this.pageItem.dataSource = data;
+      this.pageItem.customComponent!.componentData = data;
+      this.settings = data;
+
+      this.generate();
       this.chdRef.detectChanges();
     });
     this.selectBlockSubscription = this.pageBuilderService.onSelectBlock$.subscribe((result) => {
       this.onSelectCell(result?.item, result?.ev);
+      this.checkCanChangeRows();
     });
     this.generate();
+  }
+
+  handlePageBuilderChange() {
+    /**
+     * TODO: need enhancement for improve performance and avoid unnecessary updates
+     * - change block content -> not rebuild all: only update same contents
+     * - move block -> not rebuild all: only move same contents
+     * - addd block only add new block
+     */
+    this.pagebuiderChangeSubscription = this.pageBuilderService.changed$
+      .pipe(debounceTime(300))
+      .subscribe((data) => {
+        if (
+          data.type == 'AddBlock' ||
+          data.type == 'RemoveBlock' ||
+          data.type == 'MoveBlock' ||
+          data.type == 'ChangeBlockContent' ||
+          data.type == 'ChangeBlockProperties'
+        ) {
+          console.log('Block changed:', data.item?.id, data.type, data.item?.style);
+          const found = itemInThisTemplate(data.item, this.pageItem.children);
+          if (found.result) {
+            console.time('updateTemplate');
+            this.pageItem.template = cloneDeep(found.root!);
+            console.timeEnd('updateTemplate');
+            this.generate();
+          }
+        }
+      });
   }
 
   ngOnDestroy() {
@@ -184,16 +241,53 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
     if (this.selectBlockSubscription) {
       this.selectBlockSubscription.unsubscribe();
     }
+    if (this.pagebuiderChangeSubscription) {
+      this.pagebuiderChangeSubscription.unsubscribe();
+    }
   }
 
   async generate() {
-    if (!this.pageItem || !this.pageItem.children || this.pageItem.children.length === 0) return;
+    if (!this.pageItem.template) {
+      this.pageItem.template = new PageItem(this._template, this.pageItem);
+    } else {
+      this.pageItem.template.isTemplateContainer = true;
+    }
+
     this.clearContainer();
+    // dynamic rows
+    if (this.settings.useDynamicData && this.pageItem.dataSource && this.pageItem.dataSource.id) {
+      const skip = this.pageItem.dataSource?.skipCount || 0;
+      const count = this.pageItem.dataSource?.maxResultCount || 10;
+      const body = this.pageItem.template.children.find((x) => x.tag === 'tbody')!;
+      const bodyTemplate = body.children[0];
+      this.dataList = [];
+      if (this.pageItem.dataSource.id) {
+        this.dataList = this.dynamicDataService.getCollectionData(
+          this.pageItem.dataSource.id,
+          skip,
+          count,
+        );
+      }
+
+      const childCount = Math.min(count, this.dataList.length);
+      body.children = [];
+      for (let i = 0; i < childCount; i++) {
+        let cloned = cloneTemplate(this.dataList, bodyTemplate!, i);
+        body.children.push(cloned);
+      }
+      this.pageItem.children = [new PageItem(this.pageItem.template, this.pageItem)];
+    }
+    // static rows
+
+    if (!this.pageItem.children || this.pageItem.children.length === 0) {
+      this.pageItem.children = [new PageItem(this._template, this.pageItem)];
+    }
 
     await this.pageBuilderService.createBlockElement(
       this.pageItem.children[0],
       this.tableContainer.nativeElement,
     );
+    this.chdRef.detectChanges();
   }
   private clearContainer() {
     this.dynamicElementService.destroyBatch(this.pageItem.children);
@@ -286,6 +380,16 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
       this.rangeSelection = undefined;
       this.updateRangeSelectionPosition();
       this.chdRef.detectChanges();
+    }
+  }
+
+  checkCanChangeRows() {
+    this.canChangeRows = false;
+    if (
+      !this.settings.useDynamicData ||
+      (this.firstSelectedCell && this.firstSelectedCell.section != 'tbody')
+    ) {
+      this.canChangeRows = true;
     }
   }
 
@@ -497,6 +601,8 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
     setTimeout(() => {
       // update new rowIndex and colIndex
       this.onSelectCell(this.firstSelectedCell?.block);
+      this.checkCanChangeRows();
+
       this.pageBuilderService.blockSelector?.updatePosition();
       this.updateToolbarPosition();
     });

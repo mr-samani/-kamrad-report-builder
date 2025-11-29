@@ -323,6 +323,7 @@ export class PageBuilderService implements OnDestroy {
   }
   deSelectBlock() {
     this.activeEl.set(undefined);
+    this.onSelectBlock$.next(undefined);
   }
 
   findRootParentItem(item: PageItem) {

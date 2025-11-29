@@ -137,6 +137,33 @@ export const DynamicData: DynamicDataStructure[] = [
     name: 'products',
     displayName: 'Products',
     type: DynamicValueType.Array,
-    list: [[]],
+    list: [
+      [
+        {
+          name: 'name',
+          displayName: 'عنوان کالا',
+          type: DynamicValueType.String,
+          value: 'Sample Product',
+        },
+        {
+          name: 'price',
+          displayName: 'قیمت کالا',
+          type: DynamicValueType.Int,
+          value: 100,
+        },
+        {
+          name: 'description',
+          displayName: 'توضیحات کالا',
+          type: DynamicValueType.String,
+          value: 'Sample product description',
+        },
+        {
+          name: 'image',
+          displayName: 'تصویر کالا',
+          type: DynamicValueType.String,
+          value: 'image-url.jpg',
+        },
+      ],
+    ],
   },
 ];

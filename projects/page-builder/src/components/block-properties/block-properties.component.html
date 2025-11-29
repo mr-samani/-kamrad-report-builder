@@ -2,6 +2,7 @@
   @if (item) {
     <p>{{ item.tag }}</p>
     <p>{{ item.id }}</p>
+    can be set content: {{ item.CanBeSetContent }}
     @if (item.CanBeSetContent || item.isImageTag) {
       <text-binding
         [item]="item"

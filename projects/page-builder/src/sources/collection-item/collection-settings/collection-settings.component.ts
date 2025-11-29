@@ -28,7 +28,6 @@ export class DataSourceSettingsComponent implements OnInit {
   ngOnInit() {}
 
   update() {
-    debugger;
     this.context.onChange.next(this.settings);
   }
 }

@@ -13,14 +13,9 @@
 }
 
 <div>
-  <input
-    type="checkbox"
-    name="useDynamicData"
-    id="useDynamicData"
-    [(ngModel)]="useDynamicData"
-    (change)="onChangeUseDs()"
-  />
-  <label for="useDynamicData">Binding to dynamic data</label>
+  <switch [(ngModel)]="useDynamicData" name="useDynamicData" (change)="onChangeUseDs()">
+    Binding to dynamic data
+  </switch>
 </div>
 
 @if (useDynamicData) {

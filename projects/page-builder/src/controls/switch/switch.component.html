@@ -1,0 +1,13 @@
+<div class="toggle-switch-container" [class.mini]="mini">
+  <label class="toggle-switch" [class.disabled]="disabled">
+    <input
+      type="checkbox"
+      [(ngModel)]="toggle"
+      name="toggle"
+      (ngModelChange)="change()"
+      [disabled]="disabled"
+    />
+    <span class="toggle-slider"></span>
+  </label>
+  <ng-content></ng-content>
+</div>
