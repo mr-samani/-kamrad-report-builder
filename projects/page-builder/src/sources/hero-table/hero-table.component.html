@@ -37,10 +37,13 @@
   <div class="selection-range" #selectionRange></div>
 </div>
 
-<div class="ngx-page-text-info">
-  🛈 Merge cell: First select the cell, then hold down the Shift key and click on the second cell.
-</div>
-<pre>
+@if (editMode) {
+  <div class="ngx-page-text-info">
+    🛈 Merge cell: First select the cell, then hold down the Shift key and click on the second cell.
+  </div>
+  <pre>
   col: {{ firstSelectedCell?.colIndex }}
   row: {{ firstSelectedCell?.rowIndex }}
-</pre>
+</pre
+  >
+}

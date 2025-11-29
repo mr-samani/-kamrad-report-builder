@@ -68,6 +68,8 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
   dataList: DynamicDataStructure[][] = [];
 
   settings: TableSetting = new TableSetting();
+
+  editMode: boolean;
   constructor(
     @Inject(COMPONENT_DATA) private context: ComponentDataContext<TableSetting>,
     private chdRef: ChangeDetectorRef,
@@ -78,6 +80,7 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
     @Inject(DOCUMENT) private doc: Document,
   ) {
     this.handlePageBuilderChange();
+    this.editMode = this.pageBuilderService.mode == 'Edit';
   }
 
   ngOnInit() {
