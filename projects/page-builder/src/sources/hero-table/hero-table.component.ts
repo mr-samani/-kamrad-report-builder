@@ -183,7 +183,9 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
       this.pageItem.children = [new PageItem(this.pageItem.template, this.pageItem)];
     }
     // static rows
-
+    else {
+      this.pageItem.template = undefined;
+    }
     if (!this.pageItem.children || this.pageItem.children.length === 0) {
       this.pageItem.children = [new PageItem(_template, this.pageItem)];
     }

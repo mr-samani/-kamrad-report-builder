@@ -334,6 +334,8 @@ export class PageBuilderService implements OnDestroy {
     return undefined;
   }
   removeBlock(item: PageItem) {
+    if (!item || item.disableDelete) return;
+
     let parentChildren = item.parent?.children;
     if (!parentChildren) {
       parentChildren = this.findRootParentItem(item);

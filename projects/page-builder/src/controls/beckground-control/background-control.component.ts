@@ -42,6 +42,7 @@ export class BackgroundControlComponent
 {
   @Output() change = new EventEmitter<PageItem>();
 
+  color = '';
   backgroundColor = '';
   backgroundGradient = '';
   /** css bacground-image  */
@@ -80,6 +81,7 @@ export class BackgroundControlComponent
       const backgroundFull = val.background;
       const parsed = parseBackground(backgroundFull);
 
+      this.color = val.color ?? '';
       this.backgroundColor = parsed.color ?? val.backgroundColor;
       this.backgroundGradient = parsed.gradient ?? '';
       this.backgroundImage = parsed.image ?? val.backgroundImage;
@@ -132,7 +134,12 @@ export class BackgroundControlComponent
     this.renderer.setStyle(this.el, 'background-origin', this.backgroundOrigin);
     this.renderer.setStyle(this.el, 'background-clip', this.backgroundClip);
 
+    if (this.color) {
+      this.renderer.setStyle(this.el, 'color', this.color);
+    }
+
     this.style = {
+      color: this.color,
       backgroundColor: this.backgroundColor,
       backgroundImage:
         this.mode.includes('gradient') && this.backgroundGradient
