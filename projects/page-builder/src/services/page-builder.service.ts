@@ -341,6 +341,7 @@ export class PageBuilderService implements OnDestroy {
     if (!item || !parentChildren) {
       throw new Error('Remove block failed: invalid parent item in list');
     }
+
     const index = parentChildren.findIndex((i) => i.id === item.id);
     if (index !== -1 && item.el) {
       parentChildren.splice(index, 1);

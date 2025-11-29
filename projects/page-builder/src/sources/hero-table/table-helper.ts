@@ -49,6 +49,8 @@ export abstract class TableHelper {
   ) {
     const theadOrTbody = table.children?.find((x) => x.tag === section);
     if (!theadOrTbody) return;
+    if (section == 'tbody' && theadOrTbody.children.length <= 1) return; // keep at least one row in tbody
+
     if (rowIndex < 0 || rowIndex >= theadOrTbody.children.length) return;
     const row = theadOrTbody.children[rowIndex];
     dynamicElementService.destroy(row);
