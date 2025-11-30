@@ -1,58 +1,63 @@
 <div class="background-control">
   <!-- Mode Selector -->
   <div class="mode-selector">
-    <button
-      *ngFor="let m of modes"
-      type="button"
-      [class.active]="mode === m.value"
-      (click)="setMode(m.value)"
-      [title]="m.label"
-    >
-      <svg
-        *ngIf="m.icon === 'color'"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        width="20"
-        height="20"
-      >
-        <circle cx="12" cy="12" r="8" fill="currentColor" />
-      </svg>
-      <svg
-        *ngIf="m.icon === 'gradient'"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        width="20"
-        height="20"
-      >
-        <defs>
-          <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#ff0000" />
-            <stop offset="100%" stop-color="#0000ff" />
-          </linearGradient>
-        </defs>
-        <rect x="4" y="4" width="16" height="16" fill="url(#grad)" />
-      </svg>
-      <svg
-        *ngIf="m.icon === 'image'"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        width="20"
-        height="20"
-      >
-        <rect x="3" y="3" width="18" height="18" fill="none" stroke="currentColor" />
-        <circle cx="8" cy="8" r="2" fill="currentColor" />
-        <path d="M3 17l5-5 4 4 5-6 4 7z" fill="currentColor" />
-      </svg>
-      <svg
-        *ngIf="m.icon === 'mix'"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        width="20"
-        height="20"
-      >
-        <rect x="3" y="3" width="18" height="18" fill="url(#grad)" stroke="currentColor" />
-      </svg>
-    </button>
+    @for (m of modes; track m) {
+      <button
+        type="button"
+        [class.active]="mode === m.value"
+        (click)="setMode(m.value)"
+        [title]="m.label"
+        >
+        @if (m.icon === 'color') {
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="20"
+            height="20"
+            >
+            <circle cx="12" cy="12" r="8" fill="currentColor" />
+          </svg>
+        }
+        @if (m.icon === 'gradient') {
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="20"
+            height="20"
+            >
+            <defs>
+              <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#ff0000" />
+                <stop offset="100%" stop-color="#0000ff" />
+              </linearGradient>
+            </defs>
+            <rect x="4" y="4" width="16" height="16" fill="url(#grad)" />
+          </svg>
+        }
+        @if (m.icon === 'image') {
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="20"
+            height="20"
+            >
+            <rect x="3" y="3" width="18" height="18" fill="none" stroke="currentColor" />
+            <circle cx="8" cy="8" r="2" fill="currentColor" />
+            <path d="M3 17l5-5 4 4 5-6 4 7z" fill="currentColor" />
+          </svg>
+        }
+        @if (m.icon === 'mix') {
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="20"
+            height="20"
+            >
+            <rect x="3" y="3" width="18" height="18" fill="url(#grad)" stroke="currentColor" />
+          </svg>
+        }
+      </button>
+    }
   </div>
 
   <!-- Properties Table -->
@@ -63,106 +68,118 @@
       </tr>
 
       <!-- Background Color -->
-      <tr *ngIf="mode.includes('color')">
-        <td><label for="background-color">Background Color:</label></td>
-        <td>
-          <input
-            id="background-color"
-            class="input-color"
-            ngxInputColor
-            [simpleMode]="true"
-            [(ngModel)]="backgroundColor"
-            (ngModelChange)="update()"
-          />
-          <span class="preview" [style.background]="backgroundColor"></span>
-        </td>
-      </tr>
+      @if (mode.includes('color')) {
+        <tr>
+          <td><label for="background-color">Background Color:</label></td>
+          <td>
+            <input
+              id="background-color"
+              class="input-color"
+              ngxInputColor
+              [simpleMode]="true"
+              [(ngModel)]="backgroundColor"
+              (ngModelChange)="update()"
+              />
+              <span class="preview" [style.background]="backgroundColor"></span>
+            </td>
+          </tr>
+        }
 
-      <!-- Gradient -->
-      <tr *ngIf="mode.includes('gradient')">
-        <td><label for="background-gradient">Gradient:</label></td>
-        <td>
-          <input
-            id="background-gradient"
-            class="input-color"
-            ngxInputGradient
-            [(ngModel)]="backgroundGradient"
-            (ngModelChange)="update()"
-          />
-        </td>
-      </tr>
+        <!-- Gradient -->
+        @if (mode.includes('gradient')) {
+          <tr>
+            <td><label for="background-gradient">Gradient:</label></td>
+            <td>
+              <input
+                id="background-gradient"
+                class="input-color"
+                ngxInputGradient
+                [(ngModel)]="backgroundGradient"
+                (ngModelChange)="update()"
+                />
+              </td>
+            </tr>
+          }
 
-      <!-- Image -->
-      <tr *ngIf="mode.includes('image')">
-        <td><label for="background-image">Image URL:</label></td>
-        <td>
-          <button type="button" (click)="openImagePicker()">Choose Image</button>
-          <input
-            id="background-image"
-            type="text"
-            placeholder="e.g. url('/assets/bg.jpg')"
-            [(ngModel)]="backgroundImage"
-            (ngModelChange)="update()"
-          />
-        </td>
-      </tr>
+          <!-- Image -->
+          @if (mode.includes('image')) {
+            <tr>
+              <td><label for="background-image">Image URL:</label></td>
+              <td>
+                <button type="button" (click)="openImagePicker()">Choose Image</button>
+                <input
+                  id="background-image"
+                  type="text"
+                  placeholder="e.g. url('/assets/bg.jpg')"
+                  [(ngModel)]="backgroundImage"
+                  (ngModelChange)="update()"
+                  />
+                </td>
+              </tr>
+            }
 
-      <!-- Size -->
-      <tr *ngIf="mode.includes('image')">
-        <td><label for="background-size">Size:</label></td>
-        <td>
-          <select id="background-size" [(ngModel)]="backgroundSize" (ngModelChange)="update()">
-            <option value="auto">Auto</option>
-            <option value="cover">Cover</option>
-            <option value="contain">Contain</option>
-          </select>
-        </td>
-      </tr>
+            <!-- Size -->
+            @if (mode.includes('image')) {
+              <tr>
+                <td><label for="background-size">Size:</label></td>
+                <td>
+                  <select id="background-size" [(ngModel)]="backgroundSize" (ngModelChange)="update()">
+                    <option value="auto">Auto</option>
+                    <option value="cover">Cover</option>
+                    <option value="contain">Contain</option>
+                  </select>
+                </td>
+              </tr>
+            }
 
-      <!-- Position -->
-      <tr *ngIf="mode.includes('image')">
-        <td><label for="background-position">Position:</label></td>
-        <td>
-          <select
-            id="background-position"
-            [(ngModel)]="backgroundPosition"
-            (ngModelChange)="update()"
-          >
-            <option value="left top">Left Top</option>
-            <option value="center center">Center</option>
-            <option value="right bottom">Right Bottom</option>
-          </select>
-        </td>
-      </tr>
+            <!-- Position -->
+            @if (mode.includes('image')) {
+              <tr>
+                <td><label for="background-position">Position:</label></td>
+                <td>
+                  <select
+                    id="background-position"
+                    [(ngModel)]="backgroundPosition"
+                    (ngModelChange)="update()"
+                    >
+                    <option value="left top">Left Top</option>
+                    <option value="center center">Center</option>
+                    <option value="right bottom">Right Bottom</option>
+                  </select>
+                </td>
+              </tr>
+            }
 
-      <!-- Repeat -->
-      <tr *ngIf="mode.includes('image')">
-        <td><label for="background-repeat">Repeat:</label></td>
-        <td>
-          <select id="background-repeat" [(ngModel)]="backgroundRepeat" (ngModelChange)="update()">
-            <option value="no-repeat">No Repeat</option>
-            <option value="repeat">Repeat</option>
-            <option value="repeat-x">Repeat X</option>
-            <option value="repeat-y">Repeat Y</option>
-          </select>
-        </td>
-      </tr>
+            <!-- Repeat -->
+            @if (mode.includes('image')) {
+              <tr>
+                <td><label for="background-repeat">Repeat:</label></td>
+                <td>
+                  <select id="background-repeat" [(ngModel)]="backgroundRepeat" (ngModelChange)="update()">
+                    <option value="no-repeat">No Repeat</option>
+                    <option value="repeat">Repeat</option>
+                    <option value="repeat-x">Repeat X</option>
+                    <option value="repeat-y">Repeat Y</option>
+                  </select>
+                </td>
+              </tr>
+            }
 
-      <!-- Color -->
-      <tr>
-        <td><label for="color">Color:</label></td>
-        <td>
-          <input
-            id="color"
-            class="input-color"
-            ngxInputColor
-            [simpleMode]="true"
-            [(ngModel)]="color"
-            (ngModelChange)="update()"
-          />
-          <span class="preview" [style.background]="color"></span>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+            <!-- Color -->
+            <tr>
+              <td><label for="color">Color:</label></td>
+              <td>
+                <input
+                  id="color"
+                  class="input-color"
+                  ngxInputColor
+                  [simpleMode]="true"
+                  [(ngModel)]="color"
+                  (ngModelChange)="update()"
+                  />
+                  <span class="preview" [style.background]="color"></span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>

@@ -13,7 +13,7 @@ import {
   Injector,
 } from '@angular/core';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+
 import { IPageBuilderFilePicker } from '../../services/file-picker/IFilePicker';
 import { NGX_PAGE_BUILDER_FILE_PICKER } from '../../services/file-picker/token.filepicker';
 import { PageItem } from '../../models/PageItem';
@@ -32,7 +32,7 @@ import { mergeCssStyles } from '../../utiles/merge-css-styles';
     },
   ],
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TextCssControlComponent

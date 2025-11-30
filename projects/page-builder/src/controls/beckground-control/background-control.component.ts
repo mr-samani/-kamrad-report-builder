@@ -10,7 +10,7 @@ import {
   Output,
 } from '@angular/core';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+
 import { NgxInputColorModule, NgxInputGradientModule } from 'ngx-input-color';
 import { parseBackground } from '../../utiles/parseBackground';
 import { IPageBuilderFilePicker } from '../../services/file-picker/IFilePicker';
@@ -33,7 +33,7 @@ export type BackgroundMode = 'color' | 'gradient' | 'image' | 'color+gradient' |
     },
   ],
   standalone: true,
-  imports: [CommonModule, FormsModule, NgxInputColorModule, NgxInputGradientModule],
+  imports: [FormsModule, NgxInputColorModule, NgxInputGradientModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BackgroundControlComponent

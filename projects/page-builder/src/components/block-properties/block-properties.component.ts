@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import {
   ChangeDetectionStrategy,
   Component,
@@ -26,7 +26,6 @@ import { DynamicDataService } from '../../services/dynamic-data.service';
   styleUrls: ['./block-properties.component.scss'],
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     SpacingControlComponent,
     TypographyControlComponent,
@@ -34,8 +33,8 @@ import { DynamicDataService } from '../../services/dynamic-data.service';
     DisplayControlComponent,
     TextCssControlComponent,
     SizeControlComponent,
-    TextBindingComponent,
-  ],
+    TextBindingComponent
+],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
 })

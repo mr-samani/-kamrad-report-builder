@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { PageBuilderService } from '../../services/page-builder.service';
@@ -11,7 +11,7 @@ import { MatButtonModule } from '@angular/material/button';
   templateUrl: './sort-page-list.component.html',
   styleUrls: ['./sort-page-list.component.scss'],
   standalone: true,
-  imports: [CommonModule, MatDialogModule, NgxDragDropKitModule, MatButtonModule],
+  imports: [MatDialogModule, NgxDragDropKitModule, MatButtonModule],
 })
 export class SortPageListComponent implements OnInit {
   pageList: Page[] = [];

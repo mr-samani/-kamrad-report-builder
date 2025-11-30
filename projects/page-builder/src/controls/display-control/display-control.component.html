@@ -3,369 +3,356 @@
   <div class="control-section">
     <label class="section-label">Display Type</label>
     <div class="display-grid">
-      <button
-        *ngFor="let option of displayOptions"
-        class="display-option"
-        [class.active]="display === option.value"
-        (click)="setDisplay(option.value)"
-        [disabled]="isDisabled"
-        type="button"
-      >
-        <span class="icon">{{ option.icon }}</span>
-        <span class="label">{{ option.label }}</span>
-      </button>
+      @for (option of displayOptions; track option) {
+        <button
+          class="display-option"
+          [class.active]="display === option.value"
+          (click)="setDisplay(option.value)"
+          [disabled]="isDisabled"
+          type="button"
+          >
+          <span class="icon">{{ option.icon }}</span>
+          <span class="label">{{ option.label }}</span>
+        </button>
+      }
     </div>
   </div>
 
   <!-- Flex Controls -->
-  <div class="control-section" *ngIf="isFlex()">
-    <label class="section-label">Flexbox Settings</label>
-
-    <!-- Quick Presets -->
-    <div class="presets">
-      <label>Quick Presets:</label>
-      <div class="preset-buttons">
-        <button type="button" (click)="setFlexPreset('row-start')" [disabled]="isDisabled">
-          Row Start
-        </button>
-        <button type="button" (click)="setFlexPreset('row-center')" [disabled]="isDisabled">
-          Row Center
-        </button>
-        <button type="button" (click)="setFlexPreset('row-between')" [disabled]="isDisabled">
-          Row Between
-        </button>
-        <button type="button" (click)="setFlexPreset('column-start')" [disabled]="isDisabled">
-          Column Start
-        </button>
-        <button type="button" (click)="setFlexPreset('column-center')" [disabled]="isDisabled">
-          Column Center
-        </button>
-      </div>
-    </div>
-
-    <!-- Flex Direction -->
-    <div class="control-group">
-      <label>Flex Direction:</label>
-      <select [(ngModel)]="flexDirection" (ngModelChange)="update()" [disabled]="isDisabled">
-        <option value="row">Row →</option>
-        <option value="row-reverse">Row Reverse ←</option>
-        <option value="column">Column ↓</option>
-        <option value="column-reverse">Column Reverse ↑</option>
-      </select>
-    </div>
-
-    <!-- Flex Wrap -->
-    <div class="control-group">
-      <label>Flex Wrap:</label>
-      <select [(ngModel)]="flexWrap" (ngModelChange)="update()" [disabled]="isDisabled">
-        <option value="nowrap">No Wrap</option>
-        <option value="wrap">Wrap</option>
-        <option value="wrap-reverse">Wrap Reverse</option>
-      </select>
-    </div>
-
-    <!-- Justify Content -->
-    <div class="control-group">
-      <label>Justify Content (Main Axis):</label>
-      <div class="visual-select">
-        <button
-          type="button"
-          [class.active]="justifyContent === 'flex-start'"
-          (click)="justifyContent = 'flex-start'; update()"
-          [disabled]="isDisabled"
-        >
-          <span class="visual">⫷|||</span>
-          <span>Start</span>
-        </button>
-        <button
-          type="button"
-          [class.active]="justifyContent === 'center'"
-          (click)="justifyContent = 'center'; update()"
-          [disabled]="isDisabled"
-        >
-          <span class="visual">|⫷|⫸|</span>
-          <span>Center</span>
-        </button>
-        <button
-          type="button"
-          [class.active]="justifyContent === 'flex-end'"
-          (click)="justifyContent = 'flex-end'; update()"
-          [disabled]="isDisabled"
-        >
-          <span class="visual">|||⫸</span>
-          <span>End</span>
-        </button>
-        <button
-          type="button"
-          [class.active]="justifyContent === 'space-between'"
-          (click)="justifyContent = 'space-between'; update()"
-          [disabled]="isDisabled"
-        >
-          <span class="visual">|⫷⫷|</span>
-          <span>Between</span>
-        </button>
-        <button
-          type="button"
-          [class.active]="justifyContent === 'space-around'"
-          (click)="justifyContent = 'space-around'; update()"
-          [disabled]="isDisabled"
-        >
-          <span class="visual">⫷|⫷|⫷</span>
-          <span>Around</span>
-        </button>
-        <button
-          type="button"
-          [class.active]="justifyContent === 'space-evenly'"
-          (click)="justifyContent = 'space-evenly'; update()"
-          [disabled]="isDisabled"
-        >
-          <span class="visual">⫷|⫷|⫷</span>
-          <span>Evenly</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Align Items -->
-    <div class="control-group">
-      <label>Align Items (Cross Axis):</label>
-      <div class="visual-select">
-        <button
-          type="button"
-          [class.active]="alignItems === 'flex-start'"
-          (click)="alignItems = 'flex-start'; update()"
-          [disabled]="isDisabled"
-        >
-          Start
-        </button>
-        <button
-          type="button"
-          [class.active]="alignItems === 'center'"
-          (click)="alignItems = 'center'; update()"
-          [disabled]="isDisabled"
-        >
-          Center
-        </button>
-        <button
-          type="button"
-          [class.active]="alignItems === 'flex-end'"
-          (click)="alignItems = 'flex-end'; update()"
-          [disabled]="isDisabled"
-        >
-          End
-        </button>
-        <button
-          type="button"
-          [class.active]="alignItems === 'stretch'"
-          (click)="alignItems = 'stretch'; update()"
-          [disabled]="isDisabled"
-        >
-          Stretch
-        </button>
-        <button
-          type="button"
-          [class.active]="alignItems === 'baseline'"
-          (click)="alignItems = 'baseline'; update()"
-          [disabled]="isDisabled"
-        >
-          Baseline
-        </button>
-      </div>
-    </div>
-
-    <!-- Align Content -->
-    <div class="control-group">
-      <label>Align Content (Multi-line):</label>
-      <select [(ngModel)]="alignContent" (ngModelChange)="update()" [disabled]="isDisabled">
-        <option value="flex-start">Flex Start</option>
-        <option value="flex-end">Flex End</option>
-        <option value="center">Center</option>
-        <option value="space-between">Space Between</option>
-        <option value="space-around">Space Around</option>
-        <option value="stretch">Stretch</option>
-      </select>
-    </div>
-
-    <!-- Gap -->
-    <div class="control-group">
-      <label>Gap:</label>
-      <input
-        type="text"
-        [(ngModel)]="gap"
-        (ngModelChange)="update()"
-        placeholder="e.g., 10px"
-        [disabled]="isDisabled"
-      />
-    </div>
-
-    <div class="control-row">
-      <div class="control-group">
-        <label>Row Gap:</label>
-        <input
-          type="text"
-          [(ngModel)]="rowGap"
-          (ngModelChange)="update()"
-          placeholder="e.g., 10px"
-          [disabled]="isDisabled"
-        />
-      </div>
-      <div class="control-group">
-        <label>Column Gap:</label>
-        <input
-          type="text"
-          [(ngModel)]="columnGap"
-          (ngModelChange)="update()"
-          placeholder="e.g., 10px"
-          [disabled]="isDisabled"
-        />
-      </div>
-    </div>
-
-    <!-- Flex Item Properties -->
-    <div class="subsection">
-      <label class="subsection-label">Flex Item Properties</label>
-
-      <div class="control-row">
-        <div class="control-group">
-          <label>Flex Grow:</label>
-          <input
-            type="text"
-            [(ngModel)]="flexGrow"
-            (ngModelChange)="update()"
-            placeholder="e.g., 1"
-            [disabled]="isDisabled"
-          />
-        </div>
-        <div class="control-group">
-          <label>Flex Shrink:</label>
-          <input
-            type="text"
-            [(ngModel)]="flexShrink"
-            (ngModelChange)="update()"
-            placeholder="e.g., 1"
-            [disabled]="isDisabled"
-          />
+  @if (isFlex()) {
+    <div class="control-section">
+      <label class="section-label">Flexbox Settings</label>
+      <!-- Quick Presets -->
+      <div class="presets">
+        <label>Quick Presets:</label>
+        <div class="preset-buttons">
+          <button type="button" (click)="setFlexPreset('row-start')" [disabled]="isDisabled">
+            Row Start
+          </button>
+          <button type="button" (click)="setFlexPreset('row-center')" [disabled]="isDisabled">
+            Row Center
+          </button>
+          <button type="button" (click)="setFlexPreset('row-between')" [disabled]="isDisabled">
+            Row Between
+          </button>
+          <button type="button" (click)="setFlexPreset('column-start')" [disabled]="isDisabled">
+            Column Start
+          </button>
+          <button type="button" (click)="setFlexPreset('column-center')" [disabled]="isDisabled">
+            Column Center
+          </button>
         </div>
       </div>
-
+      <!-- Flex Direction -->
       <div class="control-group">
-        <label>Flex Basis:</label>
-        <input
-          type="text"
-          [(ngModel)]="flexBasis"
-          (ngModelChange)="update()"
-          placeholder="e.g., auto, 200px"
-          [disabled]="isDisabled"
-        />
+        <label>Flex Direction:</label>
+        <select [(ngModel)]="flexDirection" (ngModelChange)="update()" [disabled]="isDisabled">
+          <option value="row">Row →</option>
+          <option value="row-reverse">Row Reverse ←</option>
+          <option value="column">Column ↓</option>
+          <option value="column-reverse">Column Reverse ↑</option>
+        </select>
       </div>
-
+      <!-- Flex Wrap -->
       <div class="control-group">
-        <label>Align Self:</label>
-        <select [(ngModel)]="alignSelf" (ngModelChange)="update()" [disabled]="isDisabled">
-          <option value="auto">Auto</option>
+        <label>Flex Wrap:</label>
+        <select [(ngModel)]="flexWrap" (ngModelChange)="update()" [disabled]="isDisabled">
+          <option value="nowrap">No Wrap</option>
+          <option value="wrap">Wrap</option>
+          <option value="wrap-reverse">Wrap Reverse</option>
+        </select>
+      </div>
+      <!-- Justify Content -->
+      <div class="control-group">
+        <label>Justify Content (Main Axis):</label>
+        <div class="visual-select">
+          <button
+            type="button"
+            [class.active]="justifyContent === 'flex-start'"
+            (click)="justifyContent = 'flex-start'; update()"
+            [disabled]="isDisabled"
+            >
+            <span class="visual">⫷|||</span>
+            <span>Start</span>
+          </button>
+          <button
+            type="button"
+            [class.active]="justifyContent === 'center'"
+            (click)="justifyContent = 'center'; update()"
+            [disabled]="isDisabled"
+            >
+            <span class="visual">|⫷|⫸|</span>
+            <span>Center</span>
+          </button>
+          <button
+            type="button"
+            [class.active]="justifyContent === 'flex-end'"
+            (click)="justifyContent = 'flex-end'; update()"
+            [disabled]="isDisabled"
+            >
+            <span class="visual">|||⫸</span>
+            <span>End</span>
+          </button>
+          <button
+            type="button"
+            [class.active]="justifyContent === 'space-between'"
+            (click)="justifyContent = 'space-between'; update()"
+            [disabled]="isDisabled"
+            >
+            <span class="visual">|⫷⫷|</span>
+            <span>Between</span>
+          </button>
+          <button
+            type="button"
+            [class.active]="justifyContent === 'space-around'"
+            (click)="justifyContent = 'space-around'; update()"
+            [disabled]="isDisabled"
+            >
+            <span class="visual">⫷|⫷|⫷</span>
+            <span>Around</span>
+          </button>
+          <button
+            type="button"
+            [class.active]="justifyContent === 'space-evenly'"
+            (click)="justifyContent = 'space-evenly'; update()"
+            [disabled]="isDisabled"
+            >
+            <span class="visual">⫷|⫷|⫷</span>
+            <span>Evenly</span>
+          </button>
+        </div>
+      </div>
+      <!-- Align Items -->
+      <div class="control-group">
+        <label>Align Items (Cross Axis):</label>
+        <div class="visual-select">
+          <button
+            type="button"
+            [class.active]="alignItems === 'flex-start'"
+            (click)="alignItems = 'flex-start'; update()"
+            [disabled]="isDisabled"
+            >
+            Start
+          </button>
+          <button
+            type="button"
+            [class.active]="alignItems === 'center'"
+            (click)="alignItems = 'center'; update()"
+            [disabled]="isDisabled"
+            >
+            Center
+          </button>
+          <button
+            type="button"
+            [class.active]="alignItems === 'flex-end'"
+            (click)="alignItems = 'flex-end'; update()"
+            [disabled]="isDisabled"
+            >
+            End
+          </button>
+          <button
+            type="button"
+            [class.active]="alignItems === 'stretch'"
+            (click)="alignItems = 'stretch'; update()"
+            [disabled]="isDisabled"
+            >
+            Stretch
+          </button>
+          <button
+            type="button"
+            [class.active]="alignItems === 'baseline'"
+            (click)="alignItems = 'baseline'; update()"
+            [disabled]="isDisabled"
+            >
+            Baseline
+          </button>
+        </div>
+      </div>
+      <!-- Align Content -->
+      <div class="control-group">
+        <label>Align Content (Multi-line):</label>
+        <select [(ngModel)]="alignContent" (ngModelChange)="update()" [disabled]="isDisabled">
           <option value="flex-start">Flex Start</option>
           <option value="flex-end">Flex End</option>
           <option value="center">Center</option>
-          <option value="baseline">Baseline</option>
+          <option value="space-between">Space Between</option>
+          <option value="space-around">Space Around</option>
           <option value="stretch">Stretch</option>
         </select>
       </div>
-
+      <!-- Gap -->
       <div class="control-group">
-        <label>Order:</label>
+        <label>Gap:</label>
         <input
           type="text"
-          [(ngModel)]="order"
+          [(ngModel)]="gap"
           (ngModelChange)="update()"
-          placeholder="e.g., 0, 1, -1"
+          placeholder="e.g., 10px"
           [disabled]="isDisabled"
-        />
+          />
+      </div>
+      <div class="control-row">
+        <div class="control-group">
+          <label>Row Gap:</label>
+          <input
+            type="text"
+            [(ngModel)]="rowGap"
+            (ngModelChange)="update()"
+            placeholder="e.g., 10px"
+            [disabled]="isDisabled"
+            />
+        </div>
+        <div class="control-group">
+          <label>Column Gap:</label>
+          <input
+            type="text"
+            [(ngModel)]="columnGap"
+            (ngModelChange)="update()"
+            placeholder="e.g., 10px"
+            [disabled]="isDisabled"
+            />
+        </div>
+      </div>
+      <!-- Flex Item Properties -->
+      <div class="subsection">
+        <label class="subsection-label">Flex Item Properties</label>
+        <div class="control-row">
+          <div class="control-group">
+            <label>Flex Grow:</label>
+            <input
+              type="text"
+              [(ngModel)]="flexGrow"
+              (ngModelChange)="update()"
+              placeholder="e.g., 1"
+              [disabled]="isDisabled"
+              />
+          </div>
+          <div class="control-group">
+            <label>Flex Shrink:</label>
+            <input
+              type="text"
+              [(ngModel)]="flexShrink"
+              (ngModelChange)="update()"
+              placeholder="e.g., 1"
+              [disabled]="isDisabled"
+              />
+          </div>
+        </div>
+        <div class="control-group">
+          <label>Flex Basis:</label>
+          <input
+            type="text"
+            [(ngModel)]="flexBasis"
+            (ngModelChange)="update()"
+            placeholder="e.g., auto, 200px"
+            [disabled]="isDisabled"
+            />
+        </div>
+        <div class="control-group">
+          <label>Align Self:</label>
+          <select [(ngModel)]="alignSelf" (ngModelChange)="update()" [disabled]="isDisabled">
+            <option value="auto">Auto</option>
+            <option value="flex-start">Flex Start</option>
+            <option value="flex-end">Flex End</option>
+            <option value="center">Center</option>
+            <option value="baseline">Baseline</option>
+            <option value="stretch">Stretch</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>Order:</label>
+          <input
+            type="text"
+            [(ngModel)]="order"
+            (ngModelChange)="update()"
+            placeholder="e.g., 0, 1, -1"
+            [disabled]="isDisabled"
+            />
+        </div>
       </div>
     </div>
-  </div>
+  }
 
   <!-- Grid Controls -->
-  <div class="control-section" *ngIf="isGrid()">
-    <label class="section-label">Grid Settings</label>
-
-    <!-- Quick Presets -->
-    <div class="presets">
-      <label>Quick Presets:</label>
-      <div class="preset-buttons">
-        <button type="button" (click)="setGridPreset('2-col')" [disabled]="isDisabled">
-          2 Columns
-        </button>
-        <button type="button" (click)="setGridPreset('3-col')" [disabled]="isDisabled">
-          3 Columns
-        </button>
-        <button type="button" (click)="setGridPreset('4-col')" [disabled]="isDisabled">
-          4 Columns
-        </button>
-        <button type="button" (click)="setGridPreset('auto-fill')" [disabled]="isDisabled">
-          Auto Fill
-        </button>
-        <button type="button" (click)="setGridPreset('auto-fit')" [disabled]="isDisabled">
-          Auto Fit
-        </button>
+  @if (isGrid()) {
+    <div class="control-section">
+      <label class="section-label">Grid Settings</label>
+      <!-- Quick Presets -->
+      <div class="presets">
+        <label>Quick Presets:</label>
+        <div class="preset-buttons">
+          <button type="button" (click)="setGridPreset('2-col')" [disabled]="isDisabled">
+            2 Columns
+          </button>
+          <button type="button" (click)="setGridPreset('3-col')" [disabled]="isDisabled">
+            3 Columns
+          </button>
+          <button type="button" (click)="setGridPreset('4-col')" [disabled]="isDisabled">
+            4 Columns
+          </button>
+          <button type="button" (click)="setGridPreset('auto-fill')" [disabled]="isDisabled">
+            Auto Fill
+          </button>
+          <button type="button" (click)="setGridPreset('auto-fit')" [disabled]="isDisabled">
+            Auto Fit
+          </button>
+        </div>
       </div>
-    </div>
-
-    <!-- Grid Template -->
-    <div class="control-group">
-      <label>Grid Template Columns:</label>
-      <input
-        type="text"
-        [(ngModel)]="gridTemplateColumns"
-        (ngModelChange)="update()"
-        placeholder="e.g., repeat(3, 1fr)"
-        [disabled]="isDisabled"
-      />
-      <small>Examples: "200px 1fr 2fr", "repeat(3, 1fr)", "minmax(100px, 1fr)"</small>
-    </div>
-
-    <div class="control-group">
-      <label>Grid Template Rows:</label>
-      <input
-        type="text"
-        [(ngModel)]="gridTemplateRows"
-        (ngModelChange)="update()"
-        placeholder="e.g., auto 1fr auto"
-        [disabled]="isDisabled"
-      />
-    </div>
-
-    <div class="control-group">
-      <label>Grid Template Areas:</label>
-      <textarea
-        [(ngModel)]="gridTemplateAreas"
-        (ngModelChange)="update()"
-        placeholder="e.g., 'header header' 'sidebar main' 'footer footer'"
-        [disabled]="isDisabled"
-        rows="3"
-      ></textarea>
-    </div>
-
-    <!-- Grid Auto -->
-    <div class="control-row">
+      <!-- Grid Template -->
       <div class="control-group">
-        <label>Grid Auto Columns:</label>
+        <label>Grid Template Columns:</label>
         <input
           type="text"
-          [(ngModel)]="gridAutoColumns"
+          [(ngModel)]="gridTemplateColumns"
           (ngModelChange)="update()"
-          placeholder="e.g., 1fr"
+          placeholder="e.g., repeat(3, 1fr)"
           [disabled]="isDisabled"
-        />
+          />
+        <small>Examples: "200px 1fr 2fr", "repeat(3, 1fr)", "minmax(100px, 1fr)"</small>
       </div>
       <div class="control-group">
-        <label>Grid Auto Rows:</label>
+        <label>Grid Template Rows:</label>
         <input
           type="text"
-          [(ngModel)]="gridAutoRows"
+          [(ngModel)]="gridTemplateRows"
           (ngModelChange)="update()"
-          placeholder="e.g., 1fr"
+          placeholder="e.g., auto 1fr auto"
           [disabled]="isDisabled"
-        />
+          />
+      </div>
+      <div class="control-group">
+        <label>Grid Template Areas:</label>
+        <textarea
+          [(ngModel)]="gridTemplateAreas"
+          (ngModelChange)="update()"
+          placeholder="e.g., 'header header' 'sidebar main' 'footer footer'"
+          [disabled]="isDisabled"
+          rows="3"
+        ></textarea>
+      </div>
+      <!-- Grid Auto -->
+      <div class="control-row">
+        <div class="control-group">
+          <label>Grid Auto Columns:</label>
+          <input
+            type="text"
+            [(ngModel)]="gridAutoColumns"
+            (ngModelChange)="update()"
+            placeholder="e.g., 1fr"
+            [disabled]="isDisabled"
+            />
+        </div>
+        <div class="control-group">
+          <label>Grid Auto Rows:</label>
+          <input
+            type="text"
+            [(ngModel)]="gridAutoRows"
+            (ngModelChange)="update()"
+            placeholder="e.g., 1fr"
+            [disabled]="isDisabled"
+            />
+        </div>
       </div>
     </div>
-  </div>
+  }
 </div>

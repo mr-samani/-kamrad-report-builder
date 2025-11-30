@@ -19,7 +19,7 @@ import { PageBuilderService } from '../../services/page-builder.service';
 import { DynamicElementService } from '../../services/dynamic-element.service';
 import { DynamicDataService } from '../../services/dynamic-data.service';
 import { NgxDragDropKitModule } from 'ngx-drag-drop-kit';
-import { CommonModule } from '@angular/common';
+
 import { BlockHelper } from '../../helper/BlockHelper';
 import { cloneDeep } from '../../utiles/clone-deep';
 import { SvgIconDirective } from '../../directives/svg-icon.directive';
@@ -41,7 +41,7 @@ import { SelectedCellInfo, RangeSelectionInfo, TableSection } from './model';
   templateUrl: './hero-table.component.html',
   styleUrls: ['./hero-table.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgxDragDropKitModule, CommonModule, SvgIconDirective],
+  imports: [NgxDragDropKitModule, SvgIconDirective],
   encapsulation: ViewEncapsulation.None,
 })
 export class HeroTableComponent implements OnInit, AfterViewInit {

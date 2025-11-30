@@ -7,7 +7,7 @@
         (click)="execCommand('bold')"
         [class.active]="isCommandActive('bold')"
         title="Bold"
-      >
+        >
         B
       </button>
       <button
@@ -16,7 +16,7 @@
         (click)="execCommand('italic')"
         [class.active]="isCommandActive('italic')"
         title="Italic"
-      >
+        >
         I
       </button>
     </div>
@@ -27,22 +27,26 @@
         type="color"
         (change)="applyStyle({ color: $any($event).target.value })"
         [value]="textColor"
-      />
+        />
       <label class="label">Background</label>
       <input
         type="color"
         (change)="applyStyle({ backgroundColor: $any($event).target.value })"
         [value]="bgColor"
-      />
+        />
     </div>
 
     <div class="group">
       <select (change)="setFontFamily($any($event).target.value)" [value]="fontFamily">
-        <option *ngFor="let f of fontFamilies" [value]="f">{{ f }}</option>
+        @for (f of fontFamilies; track f) {
+          <option [value]="f">{{ f }}</option>
+        }
       </select>
 
       <select (change)="setFontSize($any($event).target.value)" [value]="fontSize">
-        <option *ngFor="let s of fontSizes" [value]="s">{{ s }}px</option>
+        @for (s of fontSizes; track s) {
+          <option [value]="s">{{ s }}px</option>
+        }
       </select>
     </div>
 

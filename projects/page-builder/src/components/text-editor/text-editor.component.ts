@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogClose } from '@angular/material/dialog';
 import { PageItem } from '../../models/PageItem';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer } from '@angular/platform-browser';
 import { DynamicAutocompleteDirective } from '../../directives/ngx-dynamic-data-autocomplete.directive';
@@ -24,7 +24,7 @@ import { fromEvent, Subscription } from 'rxjs';
   selector: 'app-text-editor',
   templateUrl: './text-editor.component.html',
   styleUrls: ['./text-editor.component.scss'],
-  imports: [CommonModule, FormsModule, MatDialogClose, DynamicAutocompleteDirective],
+  imports: [FormsModule, MatDialogClose, DynamicAutocompleteDirective],
 })
 export class TextEditorComponent implements AfterViewInit, OnDestroy {
   @ViewChild('editable', { static: true }) editableRef!: ElementRef<HTMLElement>;

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import {
   AfterViewInit,
   ChangeDetectorRef,
@@ -25,7 +25,7 @@ import { Notify } from '../../extensions/notify';
   selector: 'ngx-page-preview',
   templateUrl: './page-preview.component.html',
   styleUrls: ['../../styles/paper.scss', './page-preview.component.scss'],
-  imports: [CommonModule],
+  imports: [],
 })
 export class NgxPagePreviewComponent implements OnInit, AfterViewInit {
   @Input('dynamicData') set setDynamicData(val: DynamicDataStructure[]) {

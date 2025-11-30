@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import {
   Component,
   EventEmitter,
@@ -30,13 +30,12 @@ import { SwitchComponent } from '../../controls/switch/switch.component';
   styleUrls: ['./text-binding.component.scss'],
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     SafeHtmlPipe,
     DataSourceSelectorComponent,
     SvgIconDirective,
-    SwitchComponent,
-  ],
+    SwitchComponent
+],
 })
 export class TextBindingComponent extends BaseComponent implements OnInit {
   @Input() item!: PageItem;

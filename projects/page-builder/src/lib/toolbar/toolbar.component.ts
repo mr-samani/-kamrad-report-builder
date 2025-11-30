@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import {
   ChangeDetectionStrategy,
   Component,
@@ -24,7 +24,7 @@ import { SvgIconDirective } from '../../directives/svg-icon.directive';
   templateUrl: './toolbar.component.html',
   styleUrls: ['./toolbar.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, SvgIconDirective],
+  imports: [FormsModule, RouterModule, SvgIconDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit {

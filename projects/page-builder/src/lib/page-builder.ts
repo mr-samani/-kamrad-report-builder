@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import {
   ChangeDetectionStrategy,
   Component,
@@ -33,14 +33,13 @@ import { SvgIconDirective } from '../directives/svg-icon.directive';
   templateUrl: './page-builder.html',
   styleUrls: ['../styles/paper.scss', './page-builder.scss'],
   imports: [
-    CommonModule,
     NgxDragDropKitModule,
     ToolbarComponent,
     BlockSelectorComponent,
     SideConfigComponent,
     NgxPgNotifyModule,
-    SvgIconDirective,
-  ],
+    SvgIconDirective
+],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -9,7 +9,7 @@ import {
   Output,
 } from '@angular/core';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+
 import { PageItem } from '../../models/PageItem';
 import { BaseControl } from '../base-control';
 import { mergeCssStyles } from '../../utiles/merge-css-styles';
@@ -41,7 +41,7 @@ export type DisplayType =
     },
   ],
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DisplayControlComponent extends BaseControl implements OnInit, ControlValueAccessor {

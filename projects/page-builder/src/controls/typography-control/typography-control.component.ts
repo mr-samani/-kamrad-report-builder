@@ -10,7 +10,7 @@ import {
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { PageItem } from '../../models/PageItem';
 
-import { CommonModule } from '@angular/common';
+
 import { BaseControl } from '../base-control';
 import { mergeCssStyles } from '../../utiles/merge-css-styles';
 
@@ -26,7 +26,7 @@ import { mergeCssStyles } from '../../utiles/merge-css-styles';
     },
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
 })
 export class TypographyControlComponent
   extends BaseControl
