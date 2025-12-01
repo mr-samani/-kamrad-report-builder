@@ -8,6 +8,7 @@ import {
   WritableSignal,
   signal,
   RendererFactory2,
+  Inject,
 } from '@angular/core';
 import { PageItem } from '../models/PageItem';
 import { DynamicElementService } from './dynamic-element.service';
@@ -19,6 +20,7 @@ import { IDropEvent, moveItemInArray, transferArrayItem } from 'ngx-drag-drop-ki
 import { SourceItem } from '../models/SourceItem';
 import { Notify } from '../extensions/notify';
 import { BlockSelectorComponent } from '../components/block-selector/block-selector.component';
+import { STORAGE_SERVICE, IStorageService } from '../public-api';
 
 export interface PageItemChange {
   item: PageItem | null;
@@ -36,6 +38,7 @@ export interface PageItemChange {
 })
 export class PageBuilderService implements OnDestroy {
   mode: 'Edit' | 'Preview' = 'Preview';
+  isSaving: boolean = false;
   sources: SourceItem[] = LibConsts.SourceItemList;
 
   currentPageIndex = signal<number>(-1);
@@ -66,6 +69,7 @@ export class PageBuilderService implements OnDestroy {
 
   blockSelector?: BlockSelectorComponent;
 
+  storageService!: IStorageService;
   constructor(
     rendererFactory: RendererFactory2,
     private dynamicElementService: DynamicElementService,
@@ -152,7 +156,7 @@ export class PageBuilderService implements OnDestroy {
         type: 'MoveBlock',
       });
     }
-    // this.pageBuilderService.items = items;
+    // this.pageBuilder.items = items;
     // this.chdRef.detectChanges();
     this.onPageChange$.next(this.currentPage);
   }
@@ -404,5 +408,51 @@ export class PageBuilderService implements OnDestroy {
       // item.style = encodeURIComponent(item.el.style.cssText);
     }
     this.updateChangeDetection({ item: item, type: 'ChangeBlockProperties' });
+  }
+
+  save() {
+    this.isSaving = true;
+    this.storageService
+      .saveData()
+      .then((result) => {
+        console.log('Data saved successfully:', result);
+        Notify.success('Data saved successfully');
+      })
+      .finally(() => (this.isSaving = false));
+  }
+
+  async open() {
+    this.storageService
+      .loadData()
+      .then(async (data) => {
+        await this.removeAllPages();
+        this.pageInfo = PageBuilderDto.fromJSON(data);
+        if (this.pageInfo.pages.length == 0) {
+          this.addPage();
+          return;
+        } else {
+          this.changePage(1);
+        }
+        // this.chdRef.detectChanges();
+      })
+      .catch((error) => {
+        Notify.error(error);
+      });
+  }
+
+  redo() {
+    throw new Error('Method not implemented.');
+  }
+  undo() {
+    throw new Error('Method not implemented.');
+  }
+  duplicateBlock(currentBlock: PageItem) {
+    throw new Error('Method not implemented.');
+  }
+  pasteBlock() {
+    throw new Error('Method not implemented.');
+  }
+  copyBlock(currentBlock: PageItem) {
+    throw new Error('Method not implemented.');
   }
 }

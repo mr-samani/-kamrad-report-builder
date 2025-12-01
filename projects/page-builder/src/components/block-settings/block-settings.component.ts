@@ -31,7 +31,7 @@ export class BlockSettingsComponent extends BaseComponent implements OnInit {
   constructor(injector: Injector) {
     super(injector);
     effect(async () => {
-      this.item = this.pageBuilderService.activeEl();
+      this.item = this.pageBuilder.activeEl();
       if (
         this.item &&
         this.item.customComponent &&

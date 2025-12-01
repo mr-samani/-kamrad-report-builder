@@ -94,7 +94,7 @@ export class TextBindingComponent extends BaseComponent implements OnInit {
       .subscribe((result) => {
         if (result && this.item) {
           this.item.content = result;
-          this.pageBuilderService.writeItemValue(this.item);
+          this.pageBuilder.writeItemValue(this.item);
         }
       });
   }

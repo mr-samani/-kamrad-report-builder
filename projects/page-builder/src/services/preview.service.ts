@@ -13,7 +13,7 @@ export class PreviewService {
   private previewWindow?: Window | null;
   mustBePrint = false;
   constructor(
-    private pageBuilderService: PageBuilderService,
+    private pageBuilder: PageBuilderService,
     private dynamicDataService: DynamicDataService,
     @Inject(PLATFORM_ID) private platformId: Object,
     private router: Router,
@@ -66,7 +66,7 @@ export class PreviewService {
     const messageHandler = (event: MessageEvent) => {
       if (event.data?.type === 'NGX_PAGE_PREVIEW_READY') {
         console.log('Preview window is ready');
-        const sanitized = preparePageDataForSave(this.pageBuilderService.pageInfo);
+        const sanitized = preparePageDataForSave(this.pageBuilder.pageInfo);
         this.previewWindow?.postMessage(
           {
             type: PREVIEW_CONSTS.MESSAGE_TYPES.GET_DATA,

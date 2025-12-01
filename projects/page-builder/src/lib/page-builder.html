@@ -4,10 +4,10 @@
     class="components"
     id="blockSourceList"
     ngxDropList
-    [data]="pageBuilderService.sources"
+    [data]="pageBuilder.sources"
     [disableSort]="true"
   >
-    @for (item of pageBuilderService.sources; track $index) {
+    @for (item of pageBuilder.sources; track $index) {
       <div class="tool" ngxDraggable [title]="item.title" (click)="preventDefault()">
         <svg [Icon]="item.icon"></svg>
       </div>
@@ -15,41 +15,41 @@
   </div>
   <div
     class="page-container full-height"
-    (click)="pageBuilderService.deSelectBlock()"
+    (click)="pageBuilder.deSelectBlock()"
     (scroll)="blockSelector.updatePosition()"
   >
     <div
-      [hidden]="pageBuilderService.currentPageIndex() < 0"
-      class="paper {{ pageBuilderService.pageInfo.config.size }} {{
-        pageBuilderService.pageInfo.config.orientation
+      [hidden]="pageBuilder.currentPageIndex() < 0"
+      class="paper {{ pageBuilder.pageInfo.config.size }} {{
+        pageBuilder.pageInfo.config.orientation
       }}"
     >
       <div
         class="page-header"
         #PageHeader
-        [class.show-outlines]="pageBuilderService.showOutlines"
+        [class.show-outlines]="pageBuilder.showOutlines"
         ngxDropList
-        [data]="pageBuilderService.currentPage.headerItems"
-        [class.is-empty]="pageBuilderService.currentPage.headerItems.length == 0"
-        (drop)="pageBuilderService.onDrop($event)"
+        [data]="pageBuilder.currentPage.headerItems"
+        [class.is-empty]="pageBuilder.currentPage.headerItems.length == 0"
+        (drop)="pageBuilder.onDrop($event)"
       ></div>
 
       <div
         class="page-body"
         #PageBody
-        [class.show-outlines]="pageBuilderService.showOutlines"
+        [class.show-outlines]="pageBuilder.showOutlines"
         ngxDropList
-        [data]="pageBuilderService.currentPage.bodyItems"
-        (drop)="pageBuilderService.onDrop($event)"
+        [data]="pageBuilder.currentPage.bodyItems"
+        (drop)="pageBuilder.onDrop($event)"
       ></div>
       <div
         class="page-footer"
         #PageFooter
-        [class.show-outlines]="pageBuilderService.showOutlines"
+        [class.show-outlines]="pageBuilder.showOutlines"
         ngxDropList
-        [class.is-empty]="pageBuilderService.currentPage.footerItems.length == 0"
-        [data]="pageBuilderService.currentPage.footerItems"
-        (drop)="pageBuilderService.onDrop($event)"
+        [class.is-empty]="pageBuilder.currentPage.footerItems.length == 0"
+        [data]="pageBuilder.currentPage.footerItems"
+        (drop)="pageBuilder.onDrop($event)"
       ></div>
     </div>
     <block-selector #blockSelector />

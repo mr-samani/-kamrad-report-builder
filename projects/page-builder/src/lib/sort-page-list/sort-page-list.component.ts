@@ -1,4 +1,3 @@
-
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { PageBuilderService } from '../../services/page-builder.service';
@@ -18,16 +17,16 @@ export class SortPageListComponent implements OnInit {
   constructor(
     @Inject(MAT_DIALOG_DATA) _data: any,
     private dialogRef: MatDialogRef<SortPageListComponent>,
-    private pageBuilderService: PageBuilderService,
+    private pageBuilder: PageBuilderService,
   ) {
-    this.pageList = [...(pageBuilderService.pageInfo.pages ?? [])];
+    this.pageList = [...(pageBuilder.pageInfo.pages ?? [])];
     this.pageList.map((m, index) => (m.order = index));
   }
 
   ngOnInit() {}
 
   ok() {
-    this.pageBuilderService.pageInfo.pages = this.pageList;
+    this.pageBuilder.pageInfo.pages = this.pageList;
     this.dialogRef.close(true);
   }
   onDrop(event: IDropEvent) {

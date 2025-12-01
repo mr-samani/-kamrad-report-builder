@@ -43,7 +43,7 @@ export interface FileSelectOptions {
 
 @Injectable()
 export class JsonFileStorageService implements IStorageService {
-  constructor(private pageBuilderService: PageBuilderService) {}
+  constructor(private pageBuilder: PageBuilderService) {}
 
   async loadData(): Promise<PageBuilderDto> {
     return new Promise<PageBuilderDto>(async (resolve, reject) => {
@@ -76,7 +76,7 @@ export class JsonFileStorageService implements IStorageService {
 
   async saveData(): Promise<PageBuilderDto> {
     try {
-      const sanitized = preparePageDataForSave(this.pageBuilderService.pageInfo);
+      const sanitized = preparePageDataForSave(this.pageBuilder.pageInfo);
       const json = JSON.stringify(sanitized, null, 2);
       this.downloadFile(json, 'page-data.json', 'application/json');
       return new PageBuilderDto(sanitized);

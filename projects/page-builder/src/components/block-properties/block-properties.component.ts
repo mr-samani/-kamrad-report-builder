@@ -1,4 +1,3 @@
-
 import {
   ChangeDetectionStrategy,
   Component,
@@ -33,8 +32,8 @@ import { DynamicDataService } from '../../services/dynamic-data.service';
     DisplayControlComponent,
     TextCssControlComponent,
     SizeControlComponent,
-    TextBindingComponent
-],
+    TextBindingComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
 })
@@ -50,7 +49,7 @@ export class BlockPropertiesComponent extends BaseComponent implements OnInit {
   ) {
     super(injector);
     effect(() => {
-      this.item = this.pageBuilderService.activeEl();
+      this.item = this.pageBuilder.activeEl();
       // console.log('updated properties', this.item);
       this.checkParentIsCollection();
 
@@ -61,7 +60,7 @@ export class BlockPropertiesComponent extends BaseComponent implements OnInit {
   ngOnInit() {}
 
   onChangeProperties() {
-    if (this.item) this.pageBuilderService.changedProperties(this.item);
+    if (this.item) this.pageBuilder.changedProperties(this.item);
   }
 
   checkParentIsCollection() {

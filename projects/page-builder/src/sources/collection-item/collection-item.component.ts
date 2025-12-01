@@ -66,7 +66,7 @@ export class CollectionItemComponent implements OnInit, OnDestroy, AfterViewInit
   constructor(
     @Inject(COMPONENT_DATA) private context: ComponentDataContext<DataSourceSetting>,
     private chdRef: ChangeDetectorRef,
-    private pageBuilderService: PageBuilderService,
+    private pageBuilder: PageBuilderService,
     private dynamicElementService: DynamicElementService,
     private dynamicDataService: DynamicDataService,
   ) {
@@ -81,7 +81,7 @@ export class CollectionItemComponent implements OnInit, OnDestroy, AfterViewInit
      * - move block -> not rebuild all: only move same contents
      * - addd block only add new block
      */
-    this.pagebuiderChangeSubscription = this.pageBuilderService.changed$
+    this.pagebuiderChangeSubscription = this.pageBuilder.changed$
       .pipe(debounceTime(300))
       .subscribe((data) => {
         if (
@@ -145,10 +145,7 @@ export class CollectionItemComponent implements OnInit, OnDestroy, AfterViewInit
     for (let i = 0; i < childCount; i++) {
       let cloned = cloneTemplate(this.dataList, this.pageItem.template!, i);
 
-      await this.pageBuilderService.createBlockElement(
-        cloned,
-        this.collectionContainer.nativeElement,
-      );
+      await this.pageBuilder.createBlockElement(cloned, this.collectionContainer.nativeElement);
       this.pageItem.children.push(cloned);
     }
     this.chdRef.detectChanges();
@@ -165,10 +162,7 @@ export class CollectionItemComponent implements OnInit, OnDestroy, AfterViewInit
     const childCount = count;
     for (let i = 0; i < childCount; i++) {
       let cloned = cloneTemplate(this.dataList, this.pageItem.template!, i);
-      await this.pageBuilderService.createBlockElement(
-        cloned,
-        this.collectionContainer.nativeElement,
-      );
+      await this.pageBuilder.createBlockElement(cloned, this.collectionContainer.nativeElement);
       this.pageItem.children.push(cloned);
     }
     this.chdRef.detectChanges();

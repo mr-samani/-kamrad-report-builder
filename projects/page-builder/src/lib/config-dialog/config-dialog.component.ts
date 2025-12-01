@@ -18,16 +18,16 @@ export class ConfigDialogComponent implements OnInit {
   constructor(
     @Inject(MAT_DIALOG_DATA) _data: any,
     private dialogRef: MatDialogRef<ConfigDialogComponent>,
-    private pageBuilderService: PageBuilderService,
+    private pageBuilder: PageBuilderService,
   ) {
-    this.configs = Object.assign({}, pageBuilderService.pageInfo.config);
+    this.configs = Object.assign({}, pageBuilder.pageInfo.config);
   }
 
   ngOnInit() {}
 
   ok() {
-    this.pageBuilderService.pageInfo.config = this.configs;
-    this.pageBuilderService.updateChangeDetection({ item: null, type: 'ChangePageConfig' });
+    this.pageBuilder.pageInfo.config = this.configs;
+    this.pageBuilder.updateChangeDetection({ item: null, type: 'ChangePageConfig' });
     this.dialogRef.close(true);
   }
 }

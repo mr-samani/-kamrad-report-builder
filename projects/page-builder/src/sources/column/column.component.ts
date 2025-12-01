@@ -26,7 +26,7 @@ export class ColumnComponent implements OnInit {
   @ViewChild('colContainer', { static: true }) colContainer!: ElementRef<HTMLDivElement>;
   constructor(
     private dynamicElementService: DynamicElementService,
-    public pageBuilderService: PageBuilderService,
+    public pageBuilder: PageBuilderService,
   ) {}
 
   ngOnInit() {
@@ -39,10 +39,7 @@ export class ColumnComponent implements OnInit {
   }
   async loadCols() {
     for (const child of this.pageItem.children) {
-      let el = await this.pageBuilderService.createBlockElement(
-        child,
-        this.colContainer.nativeElement,
-      );
+      let el = await this.pageBuilder.createBlockElement(child, this.colContainer.nativeElement);
       if (!el) continue;
       if (child.children && child.children.length > 0 && el) {
         this.loadChilds(child.children, el);
@@ -52,7 +49,7 @@ export class ColumnComponent implements OnInit {
 
   loadChilds(childs: PageItem[], container: HTMLElement) {
     for (const child of childs) {
-      this.pageBuilderService.createBlockElement(child, container);
+      this.pageBuilder.createBlockElement(child, container);
     }
   }
   addNewColumn(index?: number) {
@@ -68,7 +65,7 @@ export class ColumnComponent implements OnInit {
       },
       this.pageItem,
     );
-    this.pageBuilderService.createBlockElement(newColumn, this.colContainer.nativeElement, index);
+    this.pageBuilder.createBlockElement(newColumn, this.colContainer.nativeElement, index);
     this.pageItem.children.splice(index ?? this.pageItem.children.length, 0, newColumn);
   }
 

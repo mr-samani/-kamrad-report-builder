@@ -7,7 +7,7 @@ import { preparePageDataForSave } from './prepare-page-builder-data';
 
 @Injectable()
 export class LocalStorageService implements IStorageService {
-  constructor(private pageBuilderService: PageBuilderService) {}
+  constructor(private pageBuilder: PageBuilderService) {}
   loadData() {
     return new Promise<PageBuilderDto>((resolve, reject) => {
       try {
@@ -27,7 +27,7 @@ export class LocalStorageService implements IStorageService {
 
   saveData() {
     return new Promise<PageBuilderDto>((resolve, reject) => {
-      const sanitized = preparePageDataForSave(this.pageBuilderService.pageInfo);
+      const sanitized = preparePageDataForSave(this.pageBuilder.pageInfo);
       localStorage.setItem(LOCAL_STORAGE_SAVE_KEY, JSON.stringify(sanitized));
       resolve(new PageBuilderDto(sanitized));
     });

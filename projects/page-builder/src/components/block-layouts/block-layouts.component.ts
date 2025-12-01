@@ -19,7 +19,7 @@ export class BlockLayoutsComponent extends BaseComponent implements OnInit {
   constructor(injector: Injector) {
     super(injector);
 
-    this.pageBuilderService.onPageChange$.subscribe((page) => {
+    this.pageBuilder.onPageChange$.subscribe((page) => {
       this.reloadLayout(page);
     });
   }
@@ -37,6 +37,6 @@ export class BlockLayoutsComponent extends BaseComponent implements OnInit {
   }
 
   onSelectBlock(ev: PointerEvent, item: PageItem) {
-    this.pageBuilderService.onSelectBlock(item, ev);
+    this.pageBuilder.onSelectBlock(item, ev);
   }
 }

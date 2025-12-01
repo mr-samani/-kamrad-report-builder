@@ -37,13 +37,13 @@ export class BlockSelectorComponent extends BaseComponent implements OnDestroy {
 
     // Signal effect: runs when activeEl changes
     effect(() => {
-      const newItem = this.pageBuilderService.activeEl();
+      const newItem = this.pageBuilder.activeEl();
       this.item = newItem;
       // console.log('Active element changed:', newItem);
       this.observeActiveElement();
     });
 
-    this.pageBuilderService.changed$.subscribe((data) => {
+    this.pageBuilder.changed$.subscribe((data) => {
       this.item = data.item;
       this.observeActiveElement();
     });
@@ -118,13 +118,13 @@ export class BlockSelectorComponent extends BaseComponent implements OnDestroy {
 
   deleteBlock() {
     if (this.item && !this.item.disableDelete) {
-      this.pageBuilderService.removeBlock(this.item);
+      this.pageBuilder.removeBlock(this.item);
     }
   }
 
   selectParent(ev: PointerEvent) {
     if (this.item && this.item.parent) {
-      this.pageBuilderService.onSelectBlock(this.item.parent, ev);
+      this.pageBuilder.onSelectBlock(this.item.parent, ev);
     }
   }
 }

@@ -10,7 +10,7 @@ export abstract class TableHelper {
    * add new \<TR>
    */
   static async addRow(
-    pageBuilderService: PageBuilderService,
+    pageBuilder: PageBuilderService,
     table: PageItem,
     section: TableSection,
     after = false,
@@ -30,7 +30,7 @@ export abstract class TableHelper {
     }
     theadOrTbody.children?.splice(after ? safeRowIndex + 1 : safeRowIndex, 0, row);
 
-    await pageBuilderService.createBlockElement(
+    await pageBuilder.createBlockElement(
       row,
       theadOrTbody.el!,
       after ? safeRowIndex + 1 : safeRowIndex,
@@ -41,7 +41,7 @@ export abstract class TableHelper {
    * delete selected \<TR>
    */
   static async deleteRow(
-    pageBuilderService: PageBuilderService,
+    pageBuilder: PageBuilderService,
     dynamicElementService: DynamicElementService,
     table: PageItem,
     section: TableSection,
@@ -55,7 +55,7 @@ export abstract class TableHelper {
     const row = theadOrTbody.children[rowIndex];
     dynamicElementService.destroy(row);
     theadOrTbody.children.splice(rowIndex, 1);
-    pageBuilderService.deSelectBlock();
+    pageBuilder.deSelectBlock();
   }
 
   /**
