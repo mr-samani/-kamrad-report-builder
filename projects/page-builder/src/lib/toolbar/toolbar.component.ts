@@ -1,4 +1,3 @@
-
 import {
   ChangeDetectionStrategy,
   Component,
@@ -98,21 +97,22 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
   }
 
   async onOpen() {
-    try {
-      this.pageBuilderService.pageInfo = PageBuilderDto.fromJSON(
-        await this.storageService.loadData(),
-      );
-      if (this.pageBuilderService.pageInfo.pages.length == 0) {
-        this.pageBuilderService.addPage();
-        return;
-      } else {
-        this.pageBuilderService.changePage(1);
-      }
-      this.chdRef.detectChanges();
-    } catch (error) {
-      console.error('Error loading page data:', error);
-      Notify.error('Error loading page data: ' + error);
-    }
+    this.storageService
+      .loadData()
+      .then(async (data) => {
+        await this.pageBuilderService.removeAllPages();
+        this.pageBuilderService.pageInfo = PageBuilderDto.fromJSON(data);
+        if (this.pageBuilderService.pageInfo.pages.length == 0) {
+          this.pageBuilderService.addPage();
+          return;
+        } else {
+          this.pageBuilderService.changePage(1);
+        }
+        this.chdRef.detectChanges();
+      })
+      .catch((error) => {
+        Notify.error(error);
+      });
   }
 
   toggleOutlines() {

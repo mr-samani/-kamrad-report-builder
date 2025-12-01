@@ -1,4 +1,3 @@
-
 import {
   ChangeDetectionStrategy,
   Component,
@@ -38,8 +37,8 @@ import { SvgIconDirective } from '../directives/svg-icon.directive';
     BlockSelectorComponent,
     SideConfigComponent,
     NgxPgNotifyModule,
-    SvgIconDirective
-],
+    SvgIconDirective,
+  ],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

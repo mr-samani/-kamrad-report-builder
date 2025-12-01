@@ -203,6 +203,32 @@ export class PageBuilderService implements OnDestroy {
     });
   }
 
+  /**
+   * clean all pages
+   * @returns
+   */
+  removeAllPages(): Promise<number> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        this.deSelectBlock();
+        for (let i = 0; i < this.pageInfo.pages.length; i++) {
+          const sections = [
+            ...this.pageInfo.pages[i].headerItems,
+            ...this.pageInfo.pages[i].bodyItems,
+            ...this.pageInfo.pages[i].footerItems,
+          ];
+          for (let index = 0; index < sections.length; index++) {
+            await this.cleanCanvas(index);
+          }
+        }
+        this.pageInfo.pages = [];
+        resolve(0);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
   nextPage(): Promise<number> {
     return new Promise((resolve, reject) => {
       let index = this.currentPageIndex();

@@ -38,23 +38,27 @@ export class MessagePackStorageService implements IStorageService {
   // --- Helpers ---
   private selectFile(accept: string[]): Promise<File> {
     return new Promise((resolve, reject) => {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = accept.join(',');
-      input.style.display = 'none';
-      document.body.appendChild(input);
-      input.click();
+      try {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = accept.join(',');
+        input.style.display = 'none';
+        document.body.appendChild(input);
+        input.click();
 
-      input.onchange = () => {
-        if (input.files && input.files.length > 0) resolve(input.files[0]);
-        else reject('No file selected');
-        document.body.removeChild(input);
-      };
+        input.onchange = () => {
+          if (input.files && input.files.length > 0) resolve(input.files[0]);
+          else reject('No file selected');
+          document.body.removeChild(input);
+        };
 
-      input.onerror = (e) => {
-        reject(e);
-        document.body.removeChild(input);
-      };
+        input.onerror = (e) => {
+          reject(e);
+          document.body.removeChild(input);
+        };
+      } catch (error) {
+        reject(error);
+      }
     });
   }
 

@@ -1,4 +1,3 @@
-
 import {
   Component,
   EventEmitter,
@@ -34,8 +33,8 @@ import { SwitchComponent } from '../../controls/switch/switch.component';
     SafeHtmlPipe,
     DataSourceSelectorComponent,
     SvgIconDirective,
-    SwitchComponent
-],
+    SwitchComponent,
+  ],
 })
 export class TextBindingComponent extends BaseComponent implements OnInit {
   @Input() item!: PageItem;
@@ -119,7 +118,7 @@ export class TextBindingComponent extends BaseComponent implements OnInit {
   }
 
   onChangeSrcImage() {
-    this.item.dataSource!.binding = '';
+    if (this.item.dataSource) this.item.dataSource.binding = '';
     if (!this.filePicker) {
       console.warn('Provider for file picker is not available');
       return;
