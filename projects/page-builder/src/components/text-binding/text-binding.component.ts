@@ -88,7 +88,7 @@ export class TextBindingComponent extends BaseComponent implements OnInit {
   openTextEditor() {
     if (!this.item) return;
     if (this.htmlEditor) {
-      this.htmlEditor.openEditor().then((content) => {
+      this.htmlEditor.openEditor(this.item.content ?? '').then((content) => {
         this.item.content = content;
         this.pageBuilder.writeItemValue(this.item);
       });

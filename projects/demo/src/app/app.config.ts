@@ -8,7 +8,6 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { providePageBuilder, StorageType } from '@ngx-page-builder';
 import { CustomSources } from './custom-source/custom-sources';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideHighcharts } from 'highcharts-angular';
 
 export const appConfig: ApplicationConfig = {
@@ -20,7 +19,6 @@ export const appConfig: ApplicationConfig = {
       customSources: CustomSources,
       storageType: StorageType.JSONFile,
     }),
-    provideAnimationsAsync(),
     // {
     //   provide: STORAGE_SERVICE,
     //   useClass: MessagePackStorageService,

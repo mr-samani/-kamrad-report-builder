@@ -1,3 +1,3 @@
 export interface IPageBuilderHtmlEditor {
-  openEditor(): Promise<string>;
+  openEditor(content: string): Promise<string>;
 }
