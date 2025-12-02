@@ -10,7 +10,7 @@
           (click)="setDisplay(option.value)"
           [disabled]="isDisabled"
           type="button"
-          >
+        >
           <span class="icon">{{ option.icon }}</span>
           <span class="label">{{ option.label }}</span>
         </button>
@@ -71,7 +71,7 @@
             [class.active]="justifyContent === 'flex-start'"
             (click)="justifyContent = 'flex-start'; update()"
             [disabled]="isDisabled"
-            >
+          >
             <span class="visual">⫷|||</span>
             <span>Start</span>
           </button>
@@ -80,7 +80,7 @@
             [class.active]="justifyContent === 'center'"
             (click)="justifyContent = 'center'; update()"
             [disabled]="isDisabled"
-            >
+          >
             <span class="visual">|⫷|⫸|</span>
             <span>Center</span>
           </button>
@@ -89,7 +89,7 @@
             [class.active]="justifyContent === 'flex-end'"
             (click)="justifyContent = 'flex-end'; update()"
             [disabled]="isDisabled"
-            >
+          >
             <span class="visual">|||⫸</span>
             <span>End</span>
           </button>
@@ -98,7 +98,7 @@
             [class.active]="justifyContent === 'space-between'"
             (click)="justifyContent = 'space-between'; update()"
             [disabled]="isDisabled"
-            >
+          >
             <span class="visual">|⫷⫷|</span>
             <span>Between</span>
           </button>
@@ -107,7 +107,7 @@
             [class.active]="justifyContent === 'space-around'"
             (click)="justifyContent = 'space-around'; update()"
             [disabled]="isDisabled"
-            >
+          >
             <span class="visual">⫷|⫷|⫷</span>
             <span>Around</span>
           </button>
@@ -116,7 +116,7 @@
             [class.active]="justifyContent === 'space-evenly'"
             (click)="justifyContent = 'space-evenly'; update()"
             [disabled]="isDisabled"
-            >
+          >
             <span class="visual">⫷|⫷|⫷</span>
             <span>Evenly</span>
           </button>
@@ -131,7 +131,7 @@
             [class.active]="alignItems === 'flex-start'"
             (click)="alignItems = 'flex-start'; update()"
             [disabled]="isDisabled"
-            >
+          >
             Start
           </button>
           <button
@@ -139,7 +139,7 @@
             [class.active]="alignItems === 'center'"
             (click)="alignItems = 'center'; update()"
             [disabled]="isDisabled"
-            >
+          >
             Center
           </button>
           <button
@@ -147,7 +147,7 @@
             [class.active]="alignItems === 'flex-end'"
             (click)="alignItems = 'flex-end'; update()"
             [disabled]="isDisabled"
-            >
+          >
             End
           </button>
           <button
@@ -155,7 +155,7 @@
             [class.active]="alignItems === 'stretch'"
             (click)="alignItems = 'stretch'; update()"
             [disabled]="isDisabled"
-            >
+          >
             Stretch
           </button>
           <button
@@ -163,7 +163,7 @@
             [class.active]="alignItems === 'baseline'"
             (click)="alignItems = 'baseline'; update()"
             [disabled]="isDisabled"
-            >
+          >
             Baseline
           </button>
         </div>
@@ -189,7 +189,7 @@
           (ngModelChange)="update()"
           placeholder="e.g., 10px"
           [disabled]="isDisabled"
-          />
+        />
       </div>
       <div class="control-row">
         <div class="control-group">
@@ -200,7 +200,7 @@
             (ngModelChange)="update()"
             placeholder="e.g., 10px"
             [disabled]="isDisabled"
-            />
+          />
         </div>
         <div class="control-group">
           <label>Column Gap:</label>
@@ -210,7 +210,7 @@
             (ngModelChange)="update()"
             placeholder="e.g., 10px"
             [disabled]="isDisabled"
-            />
+          />
         </div>
       </div>
       <!-- Flex Item Properties -->
@@ -225,7 +225,7 @@
               (ngModelChange)="update()"
               placeholder="e.g., 1"
               [disabled]="isDisabled"
-              />
+            />
           </div>
           <div class="control-group">
             <label>Flex Shrink:</label>
@@ -235,7 +235,7 @@
               (ngModelChange)="update()"
               placeholder="e.g., 1"
               [disabled]="isDisabled"
-              />
+            />
           </div>
         </div>
         <div class="control-group">
@@ -246,7 +246,7 @@
             (ngModelChange)="update()"
             placeholder="e.g., auto, 200px"
             [disabled]="isDisabled"
-            />
+          />
         </div>
         <div class="control-group">
           <label>Align Self:</label>
@@ -267,7 +267,7 @@
             (ngModelChange)="update()"
             placeholder="e.g., 0, 1, -1"
             [disabled]="isDisabled"
-            />
+          />
         </div>
       </div>
     </div>
@@ -307,7 +307,7 @@
           (ngModelChange)="update()"
           placeholder="e.g., repeat(3, 1fr)"
           [disabled]="isDisabled"
-          />
+        />
         <small>Examples: "200px 1fr 2fr", "repeat(3, 1fr)", "minmax(100px, 1fr)"</small>
       </div>
       <div class="control-group">
@@ -318,7 +318,7 @@
           (ngModelChange)="update()"
           placeholder="e.g., auto 1fr auto"
           [disabled]="isDisabled"
-          />
+        />
       </div>
       <div class="control-group">
         <label>Grid Template Areas:</label>
@@ -340,7 +340,7 @@
             (ngModelChange)="update()"
             placeholder="e.g., 1fr"
             [disabled]="isDisabled"
-            />
+          />
         </div>
         <div class="control-group">
           <label>Grid Auto Rows:</label>
@@ -350,7 +350,7 @@
             (ngModelChange)="update()"
             placeholder="e.g., 1fr"
             [disabled]="isDisabled"
-            />
+          />
         </div>
       </div>
     </div>

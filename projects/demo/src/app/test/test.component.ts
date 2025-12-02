@@ -2,7 +2,6 @@ import { CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk
 import { Component, OnInit } from '@angular/core';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 
-
 @Component({
   selector: 'app-test',
   templateUrl: './test.component.html',
