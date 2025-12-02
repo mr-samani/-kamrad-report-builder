@@ -283,6 +283,21 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
     //     this.pageBuilder.moveActiveBlock(distance, 0);
     //   },
     // });
+
+    // ========================================
+    // debuge log pageinfo
+    // ========================================
+    this.shortcuts.register('logconsole', {
+      key: 'p',
+      ctrl: true,
+      shift: true,
+      alt: true,
+      contexts: [FocusContext.CANVAS, FocusContext.TEXT_EDITING, FocusContext.SIDEBAR],
+      description: 'log console',
+      action: () => {
+        console.log(this.pageBuilder.pageInfo);
+      },
+    });
   }
 
   /**

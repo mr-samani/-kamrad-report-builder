@@ -1,6 +1,19 @@
 <h2 mat-dialog-title>Configuration</h2>
 <mat-dialog-content>
   <p>Configure your settings below:</p>
+
+  <p>Direction:</p>
+  <div class="radio-group">
+    <label>
+      <input type="radio" name="direction" id="RTL" [(ngModel)]="configs.direction" value="rtl" />
+      RTL
+    </label>
+    <label>
+      <input type="radio" name="direction" id="LTR" [(ngModel)]="configs.direction" value="ltr" />
+      LTR
+    </label>
+  </div>
+
   <p>Page size: {{ configs.size }}</p>
   <div class="box-list">
     @for (size of sizeList; track $index) {

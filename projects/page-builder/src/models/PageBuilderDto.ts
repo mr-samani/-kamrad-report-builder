@@ -29,6 +29,7 @@ export class PageBuilderConfig {
   description?: string = '';
   size: PageSize = 'A4';
   orientation: PageOrientation = 'Portrait';
+  direction: 'rtl' | 'ltr' = 'ltr';
   constructor(data?: PageBuilderConfig | any) {
     if (data) {
       for (var property in data) {

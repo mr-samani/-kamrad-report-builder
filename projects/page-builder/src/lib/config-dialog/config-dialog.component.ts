@@ -4,12 +4,13 @@ import { PageBuilderService } from '../../services/page-builder.service';
 import { PageBuilderConfig } from '../../models/PageBuilderDto';
 import { MatButtonModule } from '@angular/material/button';
 import { PageOrientation, PageSize } from '../../models/types';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-config-dialog',
   templateUrl: './config-dialog.component.html',
   styleUrls: ['../../styles/paper.scss', './config-dialog.component.scss'],
-  imports: [MatDialogModule, MatButtonModule],
+  imports: [FormsModule, MatDialogModule, MatButtonModule],
 })
 export class ConfigDialogComponent implements OnInit {
   configs: PageBuilderConfig;

@@ -88,7 +88,9 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
   }
 
   async onOpen() {
-    this.pageBuilder.open();
+    await this.pageBuilder.open();
+    console.log(this.pageBuilder.pageInfo, this.pageBuilder.pageInfo.pages.length);
+    this.chdRef.detectChanges();
   }
 
   toggleOutlines() {
@@ -119,8 +121,13 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
       });
   }
   openConfigDialog() {
-    this.matDialog.open(ConfigDialogComponent, {
-      panelClass: 'ngx-page-builder',
-    });
+    this.matDialog
+      .open(ConfigDialogComponent, {
+        panelClass: 'ngx-page-builder',
+      })
+      .afterClosed()
+      .subscribe((r) => {
+        this.chdRef.detectChanges();
+      });
   }
 }

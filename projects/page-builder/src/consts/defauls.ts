@@ -18,10 +18,9 @@ export const DEFAULT_IMAGE_URL = '/assets/default-image.png';
 
 export function getDefaultBlockDirective(pageItem: PageItem, onDropFn: Function) {
   return new Promise<Directive[]>((resolve, reject) => {
-    let dir: Directive[] = [];
-    if (!pageItem.disableMovement) {
-      dir = [{ directive: NgxDraggableDirective }];
-    }
+    // حتما باید برای همه المان ها NgxDraggableDirective اضاف شود در غیر اینصورت در جابجایی ایتم ها ایندکس اشتباه خواهد بود
+    // حتی اگر disableMovement باشد باید NgxDraggableDirective اضافه شود
+    let dir: Directive[] = [{ directive: NgxDraggableDirective }];
 
     if (pageItem.canHaveChild) {
       dir = [

@@ -21,6 +21,7 @@ import { SourceItem } from '../models/SourceItem';
 import { Notify } from '../extensions/notify';
 import { BlockSelectorComponent } from '../components/block-selector/block-selector.component';
 import { STORAGE_SERVICE, IStorageService } from '../public-api';
+import { BlockHelper } from '../helper/BlockHelper';
 
 export interface PageItemChange {
   item: PageItem | null;
@@ -98,10 +99,12 @@ export class PageBuilderService implements OnDestroy {
 
   async onDrop(event: IDropEvent<PageItem>, parent?: PageItem) {
     console.log('Dropped:', event);
-    if (event.container == event.previousContainer && event.currentIndex == event.previousIndex) {
+    const containerEl = event.container.el;
+    const previousEl = event.previousContainer.el;
+    if (containerEl == previousEl && event.currentIndex == event.previousIndex) {
       return;
     }
-    const dragItem = event.previousContainer.data[event.previousIndex];
+    const dragItem: PageItem = event.previousContainer.data[event.previousIndex];
     if (!dragItem) {
       return;
     }
@@ -111,7 +114,7 @@ export class PageBuilderService implements OnDestroy {
       // انتقال از یک container به container دیگه
       const source = new PageItem(this.sources[event.previousIndex], parent);
       source.children = []; // very important to create reference to droplist data
-      await this.createBlockElement(source, event.container.el, event.currentIndex);
+      await this.createBlockElement(source, containerEl, event.currentIndex);
       event.container.data.splice(event.currentIndex, 0, source);
       this.onSelectBlock(source);
       this.updateChangeDetection({ item: source, type: 'AddBlock' });
@@ -122,41 +125,22 @@ export class PageBuilderService implements OnDestroy {
         return;
       }
 
-      const nativeEl = dragItem.el;
-      if (event.container == event.previousContainer) {
-        moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
-      } else {
-        transferArrayItem(
-          event.previousContainer.data,
-          event.container.data,
-          event.previousIndex,
-          event.currentIndex,
-        );
+      let container = BlockHelper.findItemByHtml(
+        containerEl,
+        this.pageInfo.pages[this.currentPageIndex()],
+      );
+      if (container) {
+        this.removeBlock(dragItem);
+        await this.createBlockElement(dragItem, containerEl, event.currentIndex);
+        dragItem.parent = container;
+        container.children.splice(event.currentIndex, 0, dragItem);
       }
 
-      const containerEl = event.container.el;
-      const children = Array.from(containerEl.children).filter(
-        (x) => !x.classList.contains('ngx-drag-placeholder'),
-      );
-      // اگر باید به آخر لیست اضافه بشه
-      if (event.currentIndex >= children.length - 1) {
-        this.renderer.appendChild(containerEl, nativeEl);
-      } else {
-        // وگرنه قبل از المنت مورد نظر قرارش بده
-        // توجه: چون یه element رو remove کردیم، باید index رو تنظیم کنیم
-        const refNode = children[event.currentIndex];
-        this.renderer.insertBefore(containerEl, nativeEl, refNode);
-        // this.renderer.removeChild(containerEl, nativeEl);
-      }
-      // update register item
-      // TODO: probably not needed
-      (event.item as any).dragRegister?.registerDragItem?.(event.item);
       this.updateChangeDetection({
         item: event.container.data[event.currentIndex],
         type: 'MoveBlock',
       });
     }
-    // this.pageBuilder.items = items;
     // this.chdRef.detectChanges();
     this.onPageChange$.next(this.currentPage);
   }
@@ -168,6 +152,7 @@ export class PageBuilderService implements OnDestroy {
    * @returns boolean
    */
   private canMove(source: PageItem, destination: any): boolean {
+    if (source.disableMovement) return false;
     let p = this.getParentTemplate(source);
     if (!p || !p.lockMoveInnerChild) return true;
     return destination.el.closest('.template-container') == p.el;
@@ -182,14 +167,14 @@ export class PageBuilderService implements OnDestroy {
   }
 
   addPage(): Promise<number> {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       let index = this.currentPageIndex() + 1;
       this.pageInfo.pages.splice(index, 0, new Page());
-      return this.changePage(index + 1);
+      return await this.changePage(index + 1);
     });
   }
   removePage(): Promise<number> {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       let index = this.currentPageIndex();
       if (index > -1) {
         this.cleanCanvas(index);
@@ -200,7 +185,7 @@ export class PageBuilderService implements OnDestroy {
           if (index == 0) {
             index++;
           }
-          return this.changePage(index);
+          return await this.changePage(index);
         }
       }
       return reject('Invalid page index');
@@ -234,19 +219,19 @@ export class PageBuilderService implements OnDestroy {
   }
 
   nextPage(): Promise<number> {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       let index = this.currentPageIndex();
       if (index < this.pageInfo.pages.length - 1) {
-        return this.changePage(index + 2);
+        return await this.changePage(index + 2);
       }
       return reject('No next page');
     });
   }
   previousPage(): Promise<number> {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       let index = this.currentPageIndex();
       if (index > 0) {
-        return this.changePage(index);
+        return await this.changePage(index);
       }
       return reject('No previous page');
     });
@@ -285,8 +270,8 @@ export class PageBuilderService implements OnDestroy {
       list[i].el = await this.createBlockElement(list[i], container, index);
     }
   }
-  reloadCurrentPage() {
-    this.changePage(this.currentPageIndex() + 1);
+  async reloadCurrentPage() {
+    await this.changePage(this.currentPageIndex() + 1);
   }
 
   /**
@@ -356,6 +341,11 @@ export class PageBuilderService implements OnDestroy {
     this.onSelectBlock$.next(undefined);
   }
 
+  /**
+   * return parent root bodyItems|headerItems|footerItems
+   * @param item block
+   * @returns parent root
+   */
   findRootParentItem(item: PageItem) {
     const page = this.pageInfo.pages[this.currentPageIndex()];
     for (let p of page.headerItems) if (p == item) return page.headerItems;
@@ -383,21 +373,6 @@ export class PageBuilderService implements OnDestroy {
     this.updateChangeDetection({ item: item, type: 'RemoveBlock' });
   }
 
-  private findInTree(list: PageItem[], id: string): PageItem[] | null {
-    for (const item of list) {
-      if (item.id === id) {
-        return list; // این لیست شامل بلاک مورد نظر است
-      }
-
-      if (item.children && item.children.length > 0) {
-        const found = this.findInTree(item.children, id);
-        if (found) return found; // فقط در صورت پیدا شدن بازگشت
-      }
-    }
-
-    return null;
-  }
-
   writeItemValue(data: PageItem) {
     this.dynamicElementService.updateElementContent(data);
     this.updateChangeDetection({ item: data, type: 'ChangeBlockContent' });
@@ -422,22 +397,25 @@ export class PageBuilderService implements OnDestroy {
   }
 
   async open() {
-    this.storageService
-      .loadData()
-      .then(async (data) => {
-        await this.removeAllPages();
-        this.pageInfo = PageBuilderDto.fromJSON(data);
-        if (this.pageInfo.pages.length == 0) {
-          this.addPage();
-          return;
-        } else {
-          this.changePage(1);
-        }
-        // this.chdRef.detectChanges();
-      })
-      .catch((error) => {
-        Notify.error(error);
-      });
+    return new Promise((resolve, reject) => {
+      this.storageService
+        .loadData()
+        .then(async (data) => {
+          await this.removeAllPages();
+          this.pageInfo = PageBuilderDto.fromJSON(data);
+          console.log(this.pageInfo.pages.length);
+          if (this.pageInfo.pages.length == 0) {
+            this.addPage();
+          } else {
+            await this.changePage(1);
+          }
+          resolve(true);
+        })
+        .catch((error) => {
+          Notify.error(error);
+          reject(error);
+        });
+    });
   }
 
   redo() {
