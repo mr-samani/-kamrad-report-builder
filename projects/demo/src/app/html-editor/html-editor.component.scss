@@ -1,0 +1,18 @@
+::ng-deep .tox-tinymce:not(.tox-fullscreen) {
+  min-height: 200px !important;
+}
+
+::ng-deep .tox-tinymce-aux,
+::ng-deep .tox .tox-dialog__title {
+  font-family: inherit !important;
+}
+
+.dont-show-file-choser {
+  visibility: hidden;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+editor {
+  height: 100%;
+}

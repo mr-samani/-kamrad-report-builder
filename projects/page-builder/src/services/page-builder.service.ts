@@ -398,6 +398,7 @@ export class PageBuilderService implements OnDestroy {
 
   async open() {
     return new Promise((resolve, reject) => {
+      this.deSelectBlock();
       this.storageService
         .loadData()
         .then(async (data) => {

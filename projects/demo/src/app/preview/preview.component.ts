@@ -3,7 +3,6 @@ import { NgxPagePreviewComponent, PageBuilderDto } from '@ngx-page-builder';
 import { DynamicData } from '../dynamic-data/dynamic-data';
 import { FormsModule } from '@angular/forms';
 
-
 @Component({
   selector: 'app-preview',
   templateUrl: './preview.component.html',

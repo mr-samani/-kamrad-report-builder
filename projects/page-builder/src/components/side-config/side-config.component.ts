@@ -1,4 +1,3 @@
-
 import { Component, Injector, OnInit } from '@angular/core';
 import { BaseComponent } from '../BaseComponent';
 import { BlockPropertiesComponent } from '../block-properties/block-properties.component';
@@ -15,8 +14,8 @@ import { SvgIconDirective } from '../../directives/svg-icon.directive';
     BlockPropertiesComponent,
     BlockLayoutsComponent,
     BlockSettingsComponent,
-    SvgIconDirective
-],
+    SvgIconDirective,
+  ],
 })
 export class SideConfigComponent extends BaseComponent implements OnInit {
   selectedTab: 'layouts' | 'properties' | 'settings' = 'properties';

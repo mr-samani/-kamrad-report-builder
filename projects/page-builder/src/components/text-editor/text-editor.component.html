@@ -7,7 +7,7 @@
         (click)="execCommand('bold')"
         [class.active]="isCommandActive('bold')"
         title="Bold"
-        >
+      >
         B
       </button>
       <button
@@ -16,7 +16,7 @@
         (click)="execCommand('italic')"
         [class.active]="isCommandActive('italic')"
         title="Italic"
-        >
+      >
         I
       </button>
     </div>
@@ -27,13 +27,13 @@
         type="color"
         (change)="applyStyle({ color: $any($event).target.value })"
         [value]="textColor"
-        />
+      />
       <label class="label">Background</label>
       <input
         type="color"
         (change)="applyStyle({ backgroundColor: $any($event).target.value })"
         [value]="bgColor"
-        />
+      />
     </div>
 
     <div class="group">

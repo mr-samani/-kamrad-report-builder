@@ -1762,6 +1762,13 @@
   resolved "https://registry.yarnpkg.com/@socket.io/component-emitter/-/component-emitter-3.1.2.tgz#821f8442f4175d8f0467b9daf26e3a18e2d02af2"
   integrity sha512-9BCxFwvbGg/RsZK9tjXd8s4UcwR0MWeFQ1XEKIQVVvAGJyINdrqKMcTRyLoK8Rse1GjzLV9cwjWV1olXRWEXVA==
 
+"@tinymce/tinymce-angular@^9.1.1":
+  version "9.1.1"
+  resolved "https://registry.yarnpkg.com/@tinymce/tinymce-angular/-/tinymce-angular-9.1.1.tgz#8a3a986af109e8466a728449962c99879533a1f2"
+  integrity sha512-4W15Ruheqg9hnCUhtNoYX/SnvytT9N0ugv1Tk/aXXXVQMUCQwL3MQBNn8SNer8iZvkDbP+11au0zWW9dWVGSVA==
+  dependencies:
+    tslib "^2.3.0"
+
 "@tufjs/canonical-json@2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@tufjs/canonical-json/-/canonical-json-2.0.0.tgz#a52f61a3d7374833fca945b2549bc30a2dd40d0a"
@@ -4714,6 +4721,11 @@ tinyglobby@0.2.15, tinyglobby@^0.2.12, tinyglobby@^0.2.15:
   dependencies:
     fdir "^6.5.0"
     picomatch "^4.0.3"
+
+tinymce@^8.2.2:
+  version "8.2.2"
+  resolved "https://registry.yarnpkg.com/tinymce/-/tinymce-8.2.2.tgz#0eafd350759871067b2692cde4078d6b179af1fc"
+  integrity sha512-CFDSZwciMvFGW2czK/Xig1HcOGpXI0qcQMIqaIcG2F4RuuTdf+LQTreyEZunAJoFTQ9L0KAugOqL7OA5TJkoAA==
 
 tmp@^0.2.1:
   version "0.2.5"
