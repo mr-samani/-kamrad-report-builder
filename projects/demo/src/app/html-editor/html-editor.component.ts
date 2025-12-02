@@ -1,28 +1,8 @@
-import {
-  Component,
-  EventEmitter,
-  forwardRef,
-  Inject,
-  Injector,
-  Input,
-  OnInit,
-  Output,
-} from '@angular/core';
-import {
-  AbstractControl,
-  ControlValueAccessor,
-  FormsModule,
-  ValidationErrors,
-  Validator,
-} from '@angular/forms';
-import {
-  MAT_DIALOG_DATA,
-  MatDialog,
-  MatDialogModule,
-  MatDialogRef,
-} from '@angular/material/dialog';
+import { AfterViewInit, Component, Inject, Injector, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { Editor, TinyMCE } from 'tinymce';
-import { EditorComponent, EditorModule, TINYMCE_SCRIPT_SRC } from '@tinymce/tinymce-angular';
+import { EditorComponent, TINYMCE_SCRIPT_SRC } from '@tinymce/tinymce-angular';
 import { MatButtonModule } from '@angular/material/button';
 
 type EditorOptions = Parameters<TinyMCE['init']>[0];
@@ -40,7 +20,7 @@ export interface CustomButton {
   providers: [{ provide: TINYMCE_SCRIPT_SRC, useValue: 'assets/tinymce/tinymce.min.js' }],
   imports: [FormsModule, EditorComponent, MatDialogModule, MatButtonModule],
 })
-export class HtmlEditorComponent implements OnInit {
+export class HtmlEditorComponent implements OnInit, AfterViewInit {
   tinyMceEditor: any;
   simplePlugIn = ['wordcount'];
   fullPlugIn = [
@@ -82,6 +62,11 @@ export class HtmlEditorComponent implements OnInit {
 
   ngOnInit(): void {
     this.initTinyConfig();
+  }
+
+  ngAfterViewInit(): void {
+    // fix bug for show colors in tinymce editor
+    document.querySelector('.cdk-overlay-popover')?.removeAttribute('popover');
   }
 
   initTinyConfig() {
