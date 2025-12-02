@@ -1,5 +1,5 @@
 import { isPlatformBrowser } from '@angular/common';
-import { Injectable } from '@angular/core';
+import { DOCUMENT, Inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Notify } from '../extensions/notify';
 import { preparePageDataForSave } from './storage/prepare-page-builder-data';
@@ -7,28 +7,22 @@ import { PageBuilderService } from './page-builder.service';
 import { PREVIEW_CONSTS } from '../lib/page-preview/PREVIEW_CONSTS';
 import { DynamicDataService } from './dynamic-data.service';
 import { downloadFile } from '../utiles/file';
+import { DynamicElementService } from './dynamic-element.service';
+import { PageItem } from '../models/PageItem';
 
 @Injectable()
 export class ImportExportHtmlService {
-  private previewWindow?: Window | null;
   constructor(
     private router: Router,
     private pageBuilder: PageBuilderService,
     private dynamicDataService: DynamicDataService,
+    private dynamicElementService: DynamicElementService,
+
+    @Inject(DOCUMENT) private doc: Document,
   ) {}
   exportHtml() {
-    // ساخت URL برای preview route
-    const previewUrl = this.createPreviewUrl();
-
-    // باز کردن window جدید با URL
-    this.previewWindow = window.open(previewUrl, '_blank');
-    if (!this.previewWindow) {
-      Notify.error('Popup blocked! Please allow popups for this site.');
-      return;
-    }
-    this.listenToPreviewMessages()
+    this.loadPageData()
       .then((html: string) => {
-        debugger;
         downloadFile(html, 'export.html', 'plain/text');
       })
       .catch((err) => {
@@ -36,59 +30,68 @@ export class ImportExportHtmlService {
       });
   }
 
-  private createPreviewUrl(): string {
-    // ساخت URL با base URL فعلی اپلیکیشن
-    // const baseUrl = window.location.origin;
-    // const currentPath = window.location.pathname != '/' ? window.location.pathname : '';
-    // const url = `${baseUrl}${currentPath}/ngx-page-preview?preview-builder=true&timestamp=${Date.now()}`;
-
-    const url = this.router.serializeUrl(
-      this.router.createUrlTree(['/ngx-page-preview'], {
-        queryParams: {
-          'preview-builder': true,
-          timestamp: Date.now(),
-        },
-      }),
-    );
-    console.log('Preview URL:', url);
-    return url;
-  }
-
-  private listenToPreviewMessages() {
-    return new Promise<string>((resolve, reject) => {
+  private async loadPageData() {
+    return new Promise<string>(async (resolve, reject) => {
       try {
-        const messageHandler = (event: MessageEvent) => {
-          if (event.data?.type === 'NGX_PAGE_PREVIEW_READY') {
-            console.log('Preview window is ready');
-            const sanitized = preparePageDataForSave(this.pageBuilder.pageInfo);
-            this.previewWindow?.postMessage(
-              {
-                type: PREVIEW_CONSTS.MESSAGE_TYPES.GET_DATA,
-                payload: {
-                  pageInfo: JSON.stringify(sanitized),
-                  dynamicData: this.dynamicDataService.dynamicData,
-                },
-              },
-              '*',
-            );
-          } else if (event.data?.type === PREVIEW_CONSTS.MESSAGE_TYPES.LOAD_ENDED) {
-            console.log('Preview load ended');
+        if (!this.pageBuilder.pageInfo) return;
+        const html = this.createPageHtml();
+        for (let page of this.pageBuilder.pageInfo.pages) {
+          const { header, body, footer } = {
+            header: document.createElement('div'),
+            body: document.createElement('div'),
+            footer: document.createElement('div'),
+          };
+          const { headerItems, bodyItems, footerItems } = page;
+          await this.genElms(headerItems, header);
+          await this.genElms(bodyItems, body);
+          await this.genElms(footerItems, footer);
 
-            resolve(this.previewWindow?.document?.documentElement?.outerHTML ?? '');
-            this.previewWindow?.close();
-            this.previewWindow = null;
-            window.removeEventListener('message', messageHandler);
-          } else if (event.data?.type === PREVIEW_CONSTS.MESSAGE_TYPES.CLOSE) {
-            this.previewWindow?.close();
-            this.previewWindow = null;
-            window.removeEventListener('message', messageHandler);
-          }
-        };
-
-        window.addEventListener('message', messageHandler);
+          html.appendChild(header);
+          html.appendChild(body);
+          html.appendChild(footer);
+        }
+        this.dynamicDataService.replaceValues(this.pageBuilder.pageInfo.pages);
+        resolve(html.outerHTML);
       } catch (error) {
+        console.error('Error loading page data:', error);
+        Notify.error('Error loading page data: ' + error);
         reject(error);
       }
     });
+  }
+  private async genElms(list: PageItem[], container: HTMLElement, index = -1) {
+    for (let i = 0; i < list.length; i++) {
+      list[i].el = await this.createBlockElement(list[i], container, index);
+    }
+  }
+  private async createBlockElement(item: PageItem, container: HTMLElement, index = -1) {
+    let el = await this.dynamicElementService.createBlockElement(container, index, item);
+    if (item.children && item.children.length > 0 && el) {
+      for (const child of item.children) {
+        await this.createBlockElement(child, el);
+      }
+    }
+    return el;
+  }
+  createPageHtml(): HTMLElement {
+    const html = this.doc.createElement('html');
+    const body = this.doc.createElement('body');
+    const head = this.doc.createElement('head');
+    head.innerHTML = `
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NgxPageBuilder</title>
+    <style>
+        body{
+            margin:0;
+            padding:0;
+        }
+
+    </style>
+    `;
+    html.appendChild(head);
+    html.appendChild(body);
+
+    return html;
   }
 }
