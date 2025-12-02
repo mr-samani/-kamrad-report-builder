@@ -1,9 +1,7 @@
 import { Injectable } from '@angular/core';
 import { IPageBuilderFilePicker } from '@ngx-page-builder';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable()
 export class FilePickerService implements IPageBuilderFilePicker {
   baseUrlAddress: string = '';
   openFilePicker(type: 'image' | 'file'): Promise<string> {

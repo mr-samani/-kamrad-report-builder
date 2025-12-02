@@ -22,6 +22,9 @@ import { IPageBuilderFilePicker } from '../../services/file-picker/IFilePicker';
 import { NGX_PAGE_BUILDER_FILE_PICKER } from '../../services/file-picker/token.filepicker';
 import { SvgIconDirective } from '../../directives/svg-icon.directive';
 import { SwitchComponent } from '../../controls/switch/switch.component';
+import { NGX_PAGE_BUILDER_HTML_EDITOR } from '../../services/html-editor/token.html-editor';
+import { IPageBuilderHtmlEditor } from '../../services/html-editor/IHtmlEditor';
+import { Notify } from '../../extensions/notify';
 
 @Component({
   selector: 'text-binding',
@@ -59,6 +62,7 @@ export class TextBindingComponent extends BaseComponent implements OnInit {
     public dynamicDataService: DynamicDataService,
     private renderer: Renderer2,
     @Inject(NGX_PAGE_BUILDER_FILE_PICKER) private filePicker: IPageBuilderFilePicker | null,
+    @Inject(NGX_PAGE_BUILDER_HTML_EDITOR) private htmlEditor: IPageBuilderHtmlEditor | null,
   ) {
     super(injector);
     // dynamic data if is not item collection
@@ -83,20 +87,27 @@ export class TextBindingComponent extends BaseComponent implements OnInit {
 
   openTextEditor() {
     if (!this.item) return;
-    this.matDialog
-      .open(TextEditorComponent, {
-        data: this.item,
-        width: '80vw',
-        maxWidth: '100%',
-        height: '90vh',
-      })
-      .afterClosed()
-      .subscribe((result) => {
-        if (result && this.item) {
-          this.item.content = result;
-          this.pageBuilder.writeItemValue(this.item);
-        }
+    if (this.htmlEditor) {
+      this.htmlEditor.openEditor().then((content) => {
+        this.item.content = content;
+        this.pageBuilder.writeItemValue(this.item);
       });
+    } else {
+      this.matDialog
+        .open(TextEditorComponent, {
+          data: this.item,
+          width: '80vw',
+          maxWidth: '100%',
+          height: '90vh',
+        })
+        .afterClosed()
+        .subscribe((result) => {
+          if (result && this.item) {
+            this.item.content = result;
+            this.pageBuilder.writeItemValue(this.item);
+          }
+        });
+    }
   }
   onChangeKey(event: string[]) {
     this.item.content = `{{${event.join('.')}}}`;
@@ -121,6 +132,7 @@ export class TextBindingComponent extends BaseComponent implements OnInit {
     if (this.item.dataSource) this.item.dataSource.binding = '';
     if (!this.filePicker) {
       console.warn('Provider for file picker is not available');
+      Notify.warning('Provider for file picker is not available');
       return;
     }
     this.filePicker.openFilePicker('image').then((result) => {

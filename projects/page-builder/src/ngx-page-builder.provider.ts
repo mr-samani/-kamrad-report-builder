@@ -10,6 +10,8 @@ import { SOURCE_ITEMS } from './sources/SOURCE_ITEMS';
 import { LibConsts } from './consts/defauls';
 import { PageBuilderConfiguration } from './models/PageBuilderConfiguration';
 import { PAGE_BUILDER_CONFIGURATION } from './models/tokens';
+import { NGX_PAGE_BUILDER_HTML_EDITOR } from './services/html-editor/token.html-editor';
+import { NGX_PAGE_BUILDER_FILE_PICKER } from './public-api';
 
 export function providePageBuilder(config: PageBuilderConfiguration) {
   let storage: any;
@@ -59,6 +61,14 @@ export function providePageBuilder(config: PageBuilderConfiguration) {
     {
       provide: PAGE_BUILDER_CONFIGURATION,
       useValue: config,
+    },
+    {
+      provide: NGX_PAGE_BUILDER_HTML_EDITOR,
+      useValue: '',
+    },
+    {
+      provide: NGX_PAGE_BUILDER_FILE_PICKER,
+      useValue: '',
     },
 
     // 🧩 اضافه کردن route به router در زمان bootstrap

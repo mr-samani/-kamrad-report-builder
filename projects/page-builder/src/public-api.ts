@@ -16,6 +16,9 @@ export * from './services/page-builder.service';
 export * from './services/file-picker/IFilePicker';
 export * from './services/file-picker/token.filepicker';
 
+export * from './services/html-editor/IHtmlEditor';
+export * from './services/html-editor/token.html-editor';
+
 export * from './models/SourceItem';
 export * from './models/PageBuilderDto';
 

@@ -18,6 +18,7 @@ import { NGX_PAGE_BUILDER_FILE_PICKER } from '../../services/file-picker/token.f
 import { PageItem } from '../../models/PageItem';
 import { BaseControl } from '../base-control';
 import { mergeCssStyles } from '../../utiles/merge-css-styles';
+import { Notify } from '../../extensions/notify';
 
 export type BackgroundMode = 'color' | 'gradient' | 'image' | 'color+gradient' | 'color+image';
 
@@ -162,6 +163,7 @@ export class BackgroundControlComponent
   openImagePicker() {
     if (!this.filePicker) {
       console.warn('Provider for file picker is not available');
+      Notify.warning('Provider for file picker is not available');
       return;
     }
     this.filePicker.openFilePicker('image').then((result) => {
