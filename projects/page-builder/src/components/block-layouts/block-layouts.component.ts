@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Injector, OnInit } from '@angular/core';
+import { Component, effect, Injector, OnInit } from '@angular/core';
 import { BaseComponent } from '../BaseComponent';
 import { PageItem } from '../../models/PageItem';
 import { Page } from '../../models/Page';
@@ -18,7 +18,10 @@ export class BlockLayoutsComponent extends BaseComponent implements OnInit {
   currentPageBodyItems: PageItem[] = [];
   constructor(injector: Injector) {
     super(injector);
-
+    effect(() => {
+      const activeItem = this.pageBuilder.activeEl();
+      this.openToParent(activeItem);
+    });
     this.pageBuilder.onPageChange$.subscribe((page) => {
       this.reloadLayout(page);
     });
@@ -38,5 +41,13 @@ export class BlockLayoutsComponent extends BaseComponent implements OnInit {
 
   onSelectBlock(ev: PointerEvent, item: PageItem) {
     this.pageBuilder.onSelectBlock(item, ev);
+  }
+
+  openToParent(item?: PageItem) {
+    if (!item) return;
+    (item as any).isOpen = true;
+    if (item.parent) {
+      this.openToParent(item.parent);
+    }
   }
 }
