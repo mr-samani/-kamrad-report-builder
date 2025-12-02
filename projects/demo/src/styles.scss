@@ -5,6 +5,14 @@
 // custom components at https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
 @use '../../page-builder/src/assets/style.scss';
+@font-face {
+  font-family: 'iranSans';
+  src:
+    url('/fonts/farsiNum/iransans-regular.eot') format('embedded-opentype'),
+    url('/fonts/farsiNum/iransans-regular.ttf') format('truetype'),
+    url('/fonts/farsiNum/iransans-regular.woff') format('woff'),
+    url('/fonts/farsiNum/iransans-regular.woff2') format('woff2');
+}
 
 html {
   @include mat.theme(
@@ -13,7 +21,7 @@ html {
         primary: mat.$azure-palette,
         tertiary: mat.$blue-palette,
       ),
-      typography: Roboto,
+      typography: iranSans,
       density: 0,
     )
   );
@@ -31,15 +39,6 @@ body {
   background-color: var(--mat-sys-surface);
   color: var(--mat-sys-on-surface);
   // font: var(--mat-sys-body-medium);
-
+  font-family: iranSans;
   margin: 0;
-}
-
-html,
-body {
-  height: 100%;
-}
-body {
-  margin: 0;
-  font-family: Roboto, 'Helvetica Neue', sans-serif;
 }
