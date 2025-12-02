@@ -1,22 +1,12 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  effect,
-  Inject,
-  Injector,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, Injector, OnInit } from '@angular/core';
 import { PageBuilderBaseComponent } from '../page-builder-base-component';
 import { FormsModule } from '@angular/forms';
-import { STORAGE_SERVICE } from '../../services/storage/token.storage';
-import { IStorageService } from '../../services/storage/IStorageService';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfigDialogComponent } from '../config-dialog/config-dialog.component';
 import { SortPageListComponent } from '../sort-page-list/sort-page-list.component';
-import { PageBuilderDto } from '../../models/PageBuilderDto';
 import { RouterModule } from '@angular/router';
-import { Notify } from '../../extensions/notify';
 import { SvgIconDirective } from '../../directives/svg-icon.directive';
+import { ImportExportHtmlService } from '../../services/import-export-html.service';
 
 @Component({
   selector: 'toolbar',
@@ -25,12 +15,14 @@ import { SvgIconDirective } from '../../directives/svg-icon.directive';
   standalone: true,
   imports: [FormsModule, RouterModule, SvgIconDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [ImportExportHtmlService],
 })
 export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit {
   pageNumber: number = 1;
   constructor(
     injector: Injector,
     private matDialog: MatDialog,
+    private importExportHtmlService: ImportExportHtmlService,
   ) {
     super(injector);
     effect(() => {
@@ -129,5 +121,9 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
       .subscribe((r) => {
         this.chdRef.detectChanges();
       });
+  }
+
+  exportHtml() {
+    this.importExportHtmlService.exportHtml();
   }
 }

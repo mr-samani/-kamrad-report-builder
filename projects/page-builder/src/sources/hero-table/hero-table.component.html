@@ -1,40 +1,41 @@
 <div class="hero-table-wrapper" #wrapper>
   <div class="table-container" #tableContainer></div>
+  @if (!editMode) {
+    <div class="table-toolbar" #toolbar [class.hide]="!firstSelectedCell">
+      @if (showMergeButton) {
+        <button class="btn-icon" (click)="mergeCells($event)" title="Merge cells">
+          <svg Icon="assets/icons/table-merge-cell.svg"></svg>
+        </button>
+      } @else {
+        @if (canChangeRows) {
+          <button class="btn-icon" (click)="addRow($event, true)" title="Insert row after">
+            <svg Icon="assets/icons/table-insert-row-after.svg"></svg>
+          </button>
+          <button class="btn-icon" (click)="addRow($event)" title="Insert row above">
+            <svg Icon="assets/icons/table-insert-row-above.svg"></svg>
+          </button>
+          <button class="btn-icon" (click)="deleteRow($event)" title="Delete row">
+            <svg Icon="assets/icons/table-delete-row.svg"></svg>
+          </button>
+        }
+        <button class="btn-icon" (click)="addColumn($event, true)" title="Insert column after">
+          <svg Icon="assets/icons/table-insert-column-after.svg"></svg>
+        </button>
+        <button class="btn-icon" (click)="addColumn($event)" title="Insert column before">
+          <svg Icon="assets/icons/table-insert-column-before.svg"></svg>
+        </button>
+        <button class="btn-icon" (click)="deleteColumn($event)" title="Delete column">
+          <svg Icon="assets/icons/table-delete-column.svg"></svg>
+        </button>
 
-  <div class="table-toolbar" #toolbar [class.hide]="!firstSelectedCell">
-    @if (showMergeButton) {
-      <button class="btn-icon" (click)="mergeCells($event)" title="Merge cells">
-        <svg Icon="assets/icons/table-merge-cell.svg"></svg>
-      </button>
-    } @else {
-      @if (canChangeRows) {
-        <button class="btn-icon" (click)="addRow($event, true)" title="Insert row after">
-          <svg Icon="assets/icons/table-insert-row-after.svg"></svg>
-        </button>
-        <button class="btn-icon" (click)="addRow($event)" title="Insert row above">
-          <svg Icon="assets/icons/table-insert-row-above.svg"></svg>
-        </button>
-        <button class="btn-icon" (click)="deleteRow($event)" title="Delete row">
-          <svg Icon="assets/icons/table-delete-row.svg"></svg>
+        <button class="btn-icon" (click)="unMergeCells($event)" title="Unmerge cells">
+          <svg Icon="assets/icons/table-unmerge-cell.svg"></svg>
         </button>
       }
-      <button class="btn-icon" (click)="addColumn($event, true)" title="Insert column after">
-        <svg Icon="assets/icons/table-insert-column-after.svg"></svg>
-      </button>
-      <button class="btn-icon" (click)="addColumn($event)" title="Insert column before">
-        <svg Icon="assets/icons/table-insert-column-before.svg"></svg>
-      </button>
-      <button class="btn-icon" (click)="deleteColumn($event)" title="Delete column">
-        <svg Icon="assets/icons/table-delete-column.svg"></svg>
-      </button>
+    </div>
 
-      <button class="btn-icon" (click)="unMergeCells($event)" title="Unmerge cells">
-        <svg Icon="assets/icons/table-unmerge-cell.svg"></svg>
-      </button>
-    }
-  </div>
-
-  <div class="selection-range" #selectionRange></div>
+    <div class="selection-range" #selectionRange></div>
+  }
 </div>
 
 @if (editMode) {
