@@ -1,0 +1,52 @@
+::ng-deep :root {
+  --spinner-border-color: #056edb;
+  --spinner-bg-border-color: var(--spinner-bg-border-color);
+  --diameter: 26px;
+  --border-size: 2px;
+}
+
+::ng-deep spinner {
+  display: inline-block;
+  margin: 0px 5px;
+  line-height: 1;
+}
+
+.loader,
+.loader:after {
+  border-radius: 50%;
+  width: var(--diameter);
+  height: var(--diameter);
+}
+
+.loader {
+  position: relative;
+  border-top: var(--border-size) solid var(--spinner-bg-border-color);
+  border-right: var(--border-size) solid var(--spinner-bg-border-color);
+  border-bottom: var(--border-size) solid var(--spinner-bg-border-color);
+  border-left: var(--border-size) solid var(--spinner-border-color);
+  transform: translateZ(0);
+  animation: load8 1.1s infinite linear;
+  display: inline-block;
+}
+
+@-webkit-keyframes load8 {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes load8 {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
