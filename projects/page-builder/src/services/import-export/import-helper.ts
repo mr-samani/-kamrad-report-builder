@@ -211,14 +211,13 @@ export abstract class HtmlImporter {
 
     // تعیین canHaveChild بر اساس تگ
     pageItem.canHaveChild = this.canHaveChildren(pageItem.tag);
-
     // استخراج محتوای متنی (فقط برای تگ‌های بدون فرزند)
-    if (!pageItem.canHaveChild || element.children.length === 0) {
-      const textContent = this.getDirectTextContent(element);
-      if (textContent) {
-        pageItem.content = textContent;
-      }
+    // if (!pageItem.canHaveChild || element.children.length === 0) {
+    const textContent = this.getDirectTextContent(element);
+    if (textContent) {
+      pageItem.content = textContent;
     }
+    //}
 
     // استخراج options (attributes, inputs, outputs)
     pageItem.options = this.extractOptions(element, options);

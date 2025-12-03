@@ -20,8 +20,9 @@ import { IDropEvent, moveItemInArray, transferArrayItem } from 'ngx-drag-drop-ki
 import { SourceItem } from '../models/SourceItem';
 import { Notify } from '../extensions/notify';
 import { BlockSelectorComponent } from '../components/block-selector/block-selector.component';
-import { STORAGE_SERVICE, IStorageService } from '../public-api';
+import { STORAGE_SERVICE, IStorageService, preparePageDataForSave } from '../public-api';
 import { BlockHelper } from '../helper/BlockHelper';
+import { cloneDeep } from '../utiles/clone-deep';
 
 export interface PageItemChange {
   item: PageItem | null;
@@ -71,6 +72,8 @@ export class PageBuilderService implements OnDestroy {
   blockSelector?: BlockSelectorComponent;
 
   storageService!: IStorageService;
+
+  copyStorage?: PageItem;
   constructor(
     rendererFactory: RendererFactory2,
     private dynamicElementService: DynamicElementService,
@@ -97,10 +100,13 @@ export class PageBuilderService implements OnDestroy {
     this.pageInfo.pages[this.currentPageIndex()] = page;
   }
 
-  async onDrop(event: IDropEvent<PageItem>, parent?: PageItem) {
+  async onDrop(event: IDropEvent<PageItem[]>, parent?: PageItem) {
     console.log('Dropped:', event);
     const containerEl = event.container.el;
     const previousEl = event.previousContainer.el;
+    if (!event.container.data || !event.previousContainer.data) {
+      return;
+    }
     if (containerEl == previousEl && event.currentIndex == event.previousIndex) {
       return;
     }
@@ -129,7 +135,6 @@ export class PageBuilderService implements OnDestroy {
         containerEl,
         this.pageInfo.pages[this.currentPageIndex()],
       );
-      debugger;
       if (container) {
         this.removeBlock(dragItem);
         await this.createBlockElement(dragItem, containerEl, event.currentIndex);
@@ -255,7 +260,6 @@ export class PageBuilderService implements OnDestroy {
           await this.genElms(headerItems, this.pageHeader()!.nativeElement);
           await this.genElms(bodyItems, this.pageBody()!.nativeElement);
           await this.genElms(footerItems, this.pageFooter()!.nativeElement);
-          debugger;
           this.currentPageIndex.set(pageNumber - 1);
           resolve(this.currentPageIndex());
           this.onPageChange$.next(this.pageInfo.pages[this.currentPageIndex()]);
@@ -435,10 +439,18 @@ export class PageBuilderService implements OnDestroy {
   duplicateBlock(currentBlock: PageItem) {
     throw new Error('Method not implemented.');
   }
-  pasteBlock() {
-    throw new Error('Method not implemented.');
+  async pasteBlock() {
+    if (!this.activeEl() || !this.copyStorage || !this.activeEl()?.el) {
+      return;
+    }
+    let item = PageItem.fromJSON(this.copyStorage);
+    await this.createBlockElement(item, this.activeEl()?.el);
+    this.activeEl()?.children.push(item);
+    this.onSelectBlock(item);
+    Notify.success('Paste successfully');
   }
   copyBlock(currentBlock: PageItem) {
-    throw new Error('Method not implemented.');
+    this.copyStorage = Object.assign({}, currentBlock);
+    Notify.info('Block copied to memory');
   }
 }

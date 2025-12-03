@@ -181,8 +181,10 @@ export class ImportHtmlService {
       }
 
       // گرفتن body یا اولین المنت
+      const rootElement =
+        querySelector != 'html' && doc.body.children.length > 0 ? doc.body : doc.documentElement;
 
-      if (!doc.documentElement || doc.documentElement.children.length === 0) {
+      if (!rootElement || rootElement.children.length === 0) {
         return {
           success: false,
           error: 'Invalid html structure!',
@@ -190,9 +192,10 @@ export class ImportHtmlService {
       }
 
       // پیدا کردن المنت با querySelector
+
       const elChilds =
         !querySelector || querySelector == 'html'
-          ? [doc.documentElement]
+          ? [rootElement]
           : doc.documentElement.querySelectorAll(querySelector);
 
       if (!elChilds || elChilds.length == 0) {
