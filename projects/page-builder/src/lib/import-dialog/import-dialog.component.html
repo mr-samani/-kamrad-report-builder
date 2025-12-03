@@ -1,0 +1,90 @@
+<h2 mat-dialog-title class="dialog-title">
+  Import Html
+
+  <button matButton mat-dialog-close class="close-btn">
+    <svg Icon="assets/icons/xmark.svg"></svg>
+  </button>
+</h2>
+<mat-dialog-content>
+  <!-- Import from URL -->
+  <section class="import-section">
+    <h3>1. Import from URL</h3>
+    <div class="form-group">
+      <label>URL:</label>
+      <input type="text" [(ngModel)]="urlInput" placeholder="https://example.com/page.html" />
+    </div>
+    <div class="form-group">
+      <label>Query Selector:</label>
+      <input type="text" [(ngModel)]="querySelectorInput" placeholder=".main-content" />
+    </div>
+    <button (click)="importFromUrl(resultSection)" [disabled]="loading">Import from URL</button>
+  </section>
+
+  <!-- Import from HTML String -->
+  <section class="import-section">
+    <h3>2. Import from HTML String</h3>
+    <div class="form-group">
+      <label>HTML Content:</label>
+      <textarea
+        [(ngModel)]="htmlInput"
+        rows="10"
+        placeholder="<div>HTML Content ... </div>"
+      ></textarea>
+    </div>
+    <button (click)="importFromHtml(resultSection)" [disabled]="loading">Import from HTML</button>
+  </section>
+
+  <!-- نتیجه -->
+  <div #resultSection>
+    @if (result) {
+      <section class="result-section">
+        <h3>نتیجه Import:</h3>
+        <div [ngClass]="result.success ? 'success' : 'error'">
+          @if (result.success) {
+            <p>✅ Import با موفقیت انجام شد</p>
+          } @else {
+            <p>❌ {{ result.error }}</p>
+          }
+          @if (result.warnings && result.warnings.length > 0) {
+            <div>
+              <h4>هشدارها:</h4>
+              <ul>
+                @for (warning of result.warnings; track $index) {
+                  <li>{{ warning }}</li>
+                }
+              </ul>
+            </div>
+          }
+
+          @if (result.data && result.data.length > 0) {
+            <div>
+              <h4>تعداد آیتم‌ها: {{ result.data.length }}</h4>
+              <button (click)="showJson = !showJson">
+                {{ showJson ? 'مخفی کردن' : 'نمایش' }} JSON
+              </button>
+              @if (showJson) {
+                <pre>{{ getJsonOutput() }}</pre>
+              }
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- نمایش ساختار -->
+    @if (result && result.data && result.data.length > 0) {
+      <section class="preview-section">
+        <h3>ساختار Imported:</h3>
+        <div class="tree-view">
+          @for (item of result.data; track $index) {
+            <preview-import-tree [item]="item"></preview-import-tree>
+          }
+        </div>
+      </section>
+    }
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button matButton mat-dialog-close>Cancel</button>
+  <button matButton (click)="ok()" [disabled]="!result || !result.data || loading">Ok</button>
+</mat-dialog-actions>

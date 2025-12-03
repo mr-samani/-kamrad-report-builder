@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, effect, Injector, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  Injector,
+  OnInit,
+} from '@angular/core';
 import { PageBuilderBaseComponent } from '../page-builder-base-component';
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
@@ -6,7 +13,9 @@ import { ConfigDialogComponent } from '../config-dialog/config-dialog.component'
 import { SortPageListComponent } from '../sort-page-list/sort-page-list.component';
 import { RouterModule } from '@angular/router';
 import { SvgIconDirective } from '../../directives/svg-icon.directive';
-import { ImportExportHtmlService } from '../../services/import-export-html.service';
+import { ImportDialogComponent } from '../import-dialog/import-dialog.component';
+import { ExportHtmlService } from '../../services/import-export/export-html.service';
+import { PageItem } from '../../models/PageItem';
 
 @Component({
   selector: 'toolbar',
@@ -15,14 +24,14 @@ import { ImportExportHtmlService } from '../../services/import-export-html.servi
   standalone: true,
   imports: [FormsModule, RouterModule, SvgIconDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [ImportExportHtmlService],
+  providers: [ExportHtmlService],
 })
 export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit {
   pageNumber: number = 1;
   constructor(
     injector: Injector,
     private matDialog: MatDialog,
-    private importExportHtmlService: ImportExportHtmlService,
+    private exporter: ExportHtmlService,
   ) {
     super(injector);
     effect(() => {
@@ -123,7 +132,25 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
       });
   }
 
-  exportHtml() {
-    this.importExportHtmlService.exportHtml();
+  async exportHtml() {
+    this.exporter.exportHtml();
+  }
+  importHtml() {
+    this.matDialog
+      .open(ImportDialogComponent, {
+        panelClass: 'ngx-page-builder',
+        width: '80%',
+        minWidth: '80%',
+        maxWidth: '100%',
+      })
+      .afterClosed()
+      .subscribe(async (r?: PageItem[]) => {
+        if (r) {
+          const pageIndex = this.pageBuilder.currentPageIndex();
+          this.pageBuilder.pageInfo.pages[pageIndex].bodyItems.push(...r);
+          r.map(async (item) => await this.pageBuilder.createBlockElement(item));
+          this.chdRef.detectChanges();
+        }
+      });
   }
 }

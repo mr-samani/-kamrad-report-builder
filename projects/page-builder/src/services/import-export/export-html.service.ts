@@ -1,17 +1,14 @@
-import { isPlatformBrowser } from '@angular/common';
 import { DOCUMENT, Inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { Notify } from '../extensions/notify';
-import { preparePageDataForSave } from './storage/prepare-page-builder-data';
-import { PageBuilderService } from './page-builder.service';
-import { PREVIEW_CONSTS } from '../lib/page-preview/PREVIEW_CONSTS';
-import { DynamicDataService } from './dynamic-data.service';
-import { downloadFile } from '../utiles/file';
-import { DynamicElementService } from './dynamic-element.service';
-import { PageItem } from '../models/PageItem';
+import { Notify } from '../../extensions/notify';
+import { PageBuilderService } from '../page-builder.service';
+import { DynamicDataService } from '../dynamic-data.service';
+import { downloadFile } from '../../utiles/file';
+import { DynamicElementService } from '../dynamic-element.service';
+import { PageItem } from '../../models/PageItem';
 
 @Injectable()
-export class ImportExportHtmlService {
+export class ExportHtmlService {
   constructor(
     private router: Router,
     private pageBuilder: PageBuilderService,

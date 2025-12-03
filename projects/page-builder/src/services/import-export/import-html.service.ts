@@ -1,0 +1,518 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { catchError, firstValueFrom } from 'rxjs';
+import { PageItem } from '../../models/PageItem';
+import { ISourceOptions } from '../../models/SourceItem';
+
+export interface ImportOptions {
+  /**
+   * لیست attribute های مجاز برای نگه‌داری
+   */
+  allowedAttributes?: string[];
+  /**
+   * آیا استایل‌های inline را حفظ کنیم؟
+   */
+  preserveInlineStyles?: boolean;
+  /**
+   * آیا استایل‌های computed را استخراج کنیم؟
+   */
+  extractComputedStyles?: boolean;
+  /**
+   * فیلتر کردن استایل‌های خاص
+   */
+  styleFilter?: (propertyName: string, value: string) => boolean;
+}
+
+export interface ImportResult {
+  success: boolean;
+  data?: PageItem[];
+  error?: string;
+  warnings?: string[];
+}
+
+@Injectable()
+export class ImportHtmlService {
+  // لیست پیش‌فرض attribute های مجاز
+  private readonly DEFAULT_ALLOWED_ATTRIBUTES = [
+    'src',
+    'href',
+    'alt',
+    'title',
+    'colspan',
+    'rowspan',
+    'target',
+    'rel',
+    'type',
+    'name',
+    'value',
+    'placeholder',
+    'disabled',
+    'readonly',
+    'checked',
+    'selected',
+    'multiple',
+    'min',
+    'max',
+    'step',
+    'pattern',
+    'required',
+    'maxlength',
+    'width',
+    'height',
+    // 'data-*',
+    'aria-*',
+    'role',
+  ];
+
+  // استایل‌هایی که معمولاً مفید هستند
+  private readonly USEFUL_STYLES = [
+    'display',
+    'position',
+    'top',
+    'right',
+    'bottom',
+    'left',
+    'width',
+    'height',
+    'min-width',
+    'min-height',
+    'max-width',
+    'max-height',
+    'margin',
+    'margin-top',
+    'margin-right',
+    'margin-bottom',
+    'margin-left',
+    'padding',
+    'padding-top',
+    'padding-right',
+    'padding-bottom',
+    'padding-left',
+    'border',
+    'border-width',
+    'border-style',
+    'border-color',
+    'border-radius',
+    'background',
+    'background-color',
+    'background-image',
+    'background-size',
+    'background-position',
+    'color',
+    'font-size',
+    'font-weight',
+    'font-family',
+    'line-height',
+    'text-align',
+    'text-decoration',
+    'text-transform',
+    'letter-spacing',
+    'word-spacing',
+    'flex',
+    'flex-direction',
+    'flex-wrap',
+    'justify-content',
+    'align-items',
+    'gap',
+    'grid',
+    'grid-template-columns',
+    'grid-template-rows',
+    'grid-gap',
+    'overflow',
+    'overflow-x',
+    'overflow-y',
+    'z-index',
+    'opacity',
+    'cursor',
+    'transform',
+    'transition',
+    'animation',
+    'box-shadow',
+    'text-shadow',
+  ];
+
+  constructor(private http: HttpClient) {}
+
+  /**
+   * Import از URL با querySelector
+   */
+  async importFromUrl(
+    url: string,
+    querySelector: string,
+    options?: ImportOptions,
+  ): Promise<ImportResult> {
+    return new Promise((resolve, reject) => {
+      try {
+        // اعتبارسنجی URL
+        if (!this.isValidUrl(url)) {
+          resolve({
+            success: false,
+            error: 'Invalid Url Address!',
+          });
+        }
+        // دریافت محتوای HTML
+        this.http
+          .get(url, { responseType: 'text' })
+          .pipe(
+            catchError((error: any) => {
+              resolve({
+                success: false,
+                error: `Error on get data from Url: ${error.message || 'Unknow Error'}`,
+              });
+              return '';
+            }),
+          )
+          .subscribe(async (htmlContent) => {
+            // ساخت یک DOM موقت
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlContent, 'text/html');
+
+            // پیدا کردن المنت با querySelector
+            const element = doc.querySelector(querySelector);
+
+            if (!element) {
+              resolve({
+                success: false,
+                error: `Element with this selector "${querySelector}"not found!`,
+              });
+            }
+
+            // تبدیل به PageItem
+            const pageItems = await this.convertElementToPageItem(element as HTMLElement, options);
+
+            resolve({
+              success: true,
+              data: pageItems ? [pageItems] : [],
+            });
+          });
+      } catch (error: any) {
+        resolve({
+          success: false,
+          error: `Error on get data from Url: ${error.message || 'Unknow Error'}`,
+        });
+      }
+    });
+  }
+
+  /**
+   * Import از HTML String
+   */
+  async importFromHtml(htmlString: string, options?: ImportOptions): Promise<ImportResult> {
+    try {
+      if (!htmlString || htmlString.trim().length === 0) {
+        return {
+          success: false,
+          error: 'Html content is empty!',
+        };
+      }
+
+      // پارس کردن HTML
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlString, 'text/html');
+
+      // گرفتن body یا اولین المنت
+      const rootElement = doc.body.children.length > 0 ? doc.body : doc.documentElement;
+
+      if (!rootElement || rootElement.children.length === 0) {
+        return {
+          success: false,
+          error: 'Invalid html structure!',
+        };
+      }
+
+      // تبدیل تمام المنت‌های اصلی
+      const pageItems: PageItem[] = [];
+      const warnings: string[] = [];
+      for (let i = 0; i < rootElement.children.length; i++) {
+        const child = rootElement.children[i] as HTMLElement;
+        try {
+          const pageItem = await this.convertElementToPageItem(child, options);
+          if (pageItem) {
+            pageItems.push(pageItem);
+          }
+        } catch (error: any) {
+          warnings.push(`Error on convert element ${child.tagName}: ${error.message}`);
+        }
+      }
+
+      return {
+        success: true,
+        data: pageItems,
+        warnings: warnings.length > 0 ? warnings : undefined,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: `Error on process HTML: ${error.message || 'Unknow Error'}`,
+      };
+    }
+  }
+
+  /**
+   * تبدیل HTMLElement به PageItem
+   */
+  private async convertElementToPageItem(
+    element: HTMLElement,
+    options?: ImportOptions,
+  ): Promise<PageItem | null> {
+    if (!element || element.nodeType !== Node.ELEMENT_NODE) {
+      return null;
+    }
+
+    const pageItem = new PageItem();
+    pageItem.tag = element.tagName.toLowerCase();
+
+    // تعیین canHaveChild بر اساس تگ
+    pageItem.canHaveChild = this.canHaveChildren(pageItem.tag);
+
+    // استخراج محتوای متنی (فقط برای تگ‌های بدون فرزند)
+    if (!pageItem.canHaveChild || element.children.length === 0) {
+      const textContent = this.getDirectTextContent(element);
+      if (textContent) {
+        pageItem.content = textContent;
+      }
+    }
+
+    // استخراج options (attributes, inputs, outputs)
+    pageItem.options = this.extractOptions(element, options);
+
+    // استخراج استایل‌ها
+    pageItem.style = await this.extractStyles(element, options);
+
+    // پردازش فرزندان
+    if (pageItem.canHaveChild && element.children.length > 0) {
+      pageItem.children = [];
+
+      for (let i = 0; i < element.children.length; i++) {
+        const child = element.children[i] as HTMLElement;
+        const childPageItem = await this.convertElementToPageItem(child, options);
+
+        if (childPageItem) {
+          childPageItem.parent = pageItem;
+          pageItem.children.push(childPageItem);
+        }
+      }
+    }
+
+    return pageItem;
+  }
+
+  /**
+   * استخراج options از المنت
+   */
+  private extractOptions(element: HTMLElement, options?: ImportOptions): ISourceOptions {
+    const allowedAttrs = options?.allowedAttributes || this.DEFAULT_ALLOWED_ATTRIBUTES;
+    const attributes: Record<string, any> = {};
+
+    // استخراج attribute ها
+    Array.from(element.attributes).forEach((attr) => {
+      const attrName = attr.name;
+
+      // بررسی مجاز بودن attribute
+      const isAllowed = allowedAttrs.some((allowed) => {
+        if (allowed.endsWith('*')) {
+          // برای الگوهای wildcard مثل data-* و aria-*
+          const prefix = allowed.slice(0, -1);
+          return attrName.startsWith(prefix);
+        }
+        return attrName === allowed;
+      });
+
+      if (isAllowed) {
+        attributes[attrName] = attr.value;
+      }
+    });
+
+    const sourceOptions: ISourceOptions = {};
+
+    if (Object.keys(attributes).length > 0) {
+      sourceOptions.attributes = attributes;
+    }
+
+    return sourceOptions;
+  }
+
+  /**
+   * استخراج استایل‌های المنت
+   */
+  private async extractStyles(
+    element: HTMLElement,
+    options?: ImportOptions,
+  ): Promise<string | undefined> {
+    const styles: Record<string, string> = {};
+
+    // 1. استایل‌های inline
+    if (options?.preserveInlineStyles !== false && element.style.length > 0) {
+      for (let i = 0; i < element.style.length; i++) {
+        const propertyName = element.style[i];
+        const value = element.style.getPropertyValue(propertyName);
+
+        if (this.shouldIncludeStyle(propertyName, value, options)) {
+          styles[propertyName] = value;
+        }
+      }
+    }
+
+    // 2. استایل‌های computed (اختیاری)
+    if (options?.extractComputedStyles && typeof window !== 'undefined') {
+      try {
+        const computedStyles = window.getComputedStyle(element);
+
+        this.USEFUL_STYLES.forEach((propertyName) => {
+          const value = computedStyles.getPropertyValue(propertyName);
+
+          // فقط استایل‌هایی که مقدار غیر پیش‌فرض دارند
+          if (
+            value &&
+            value !== 'none' &&
+            value !== 'initial' &&
+            value !== 'normal' &&
+            !styles[propertyName] && // اگر از قبل نداریم
+            this.shouldIncludeStyle(propertyName, value, options)
+          ) {
+            styles[propertyName] = value;
+          }
+        });
+      } catch (error) {
+        console.warn('Error on export computed styles:', error);
+      }
+    }
+
+    // تبدیل به string CSS
+    if (Object.keys(styles).length > 0) {
+      return Object.entries(styles)
+        .map(([prop, value]) => `${prop}: ${value};`)
+        .join(' ');
+    }
+
+    return undefined;
+  }
+
+  /**
+   * بررسی اینکه آیا استایل باید شامل شود
+   */
+  private shouldIncludeStyle(
+    propertyName: string,
+    value: string,
+    options?: ImportOptions,
+  ): boolean {
+    // اگر فیلتر سفارشی داریم
+    if (options?.styleFilter) {
+      return options.styleFilter(propertyName, value);
+    }
+
+    // فیلتر پیش‌فرض: فقط استایل‌های مفید
+    return this.USEFUL_STYLES.includes(propertyName);
+  }
+
+  /**
+   * گرفتن محتوای مستقیم متنی (بدون فرزندان)
+   */
+  private getDirectTextContent(element: HTMLElement): string {
+    let text = '';
+
+    element.childNodes.forEach((node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        text += node.textContent || '';
+      }
+    });
+
+    return text.trim();
+  }
+
+  /**
+   * تعیین اینکه تگ می‌تواند فرزند داشته باشد
+   */
+  private canHaveChildren(tag: string): boolean {
+    const noChildTags = [
+      'img',
+      'input',
+      'br',
+      'hr',
+      'meta',
+      'link',
+      'area',
+      'base',
+      'col',
+      'embed',
+      'param',
+      'source',
+      'track',
+      'wbr',
+    ];
+
+    return !noChildTags.includes(tag.toLowerCase());
+  }
+
+  /**
+   * اعتبارسنجی URL
+   */
+  private isValidUrl(url: string): boolean {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * تبدیل PageItem به JSON
+   */
+  exportToJson(pageItem: PageItem | PageItem[]): string {
+    return JSON.stringify(pageItem, this.jsonReplacer, 2);
+  }
+
+  /**
+   * Replacer برای حذف فیلدهای غیر ضروری در JSON
+   */
+  private jsonReplacer(key: string, value: any): any {
+    // حذف parent برای جلوگیری از circular reference
+    if (key === 'parent') {
+      return undefined;
+    }
+    // حذف el (HTMLElement)
+    if (key === 'el') {
+      return undefined;
+    }
+    return value;
+  }
+
+  /**
+   * Import از JSON
+   */
+  importFromJson(jsonString: string): ImportResult {
+    try {
+      const parsed = JSON.parse(jsonString);
+      const pageItems = Array.isArray(parsed) ? parsed : [parsed];
+
+      // بازسازی روابط parent-child
+      pageItems.forEach((item) => this.reconstructParentRelations(item));
+
+      return {
+        success: true,
+        data: pageItems,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: `Error on process JSON: ${error.message}`,
+      };
+    }
+  }
+
+  /**
+   * بازسازی روابط parent در ساختار
+   */
+  private reconstructParentRelations(pageItem: PageItem, parent?: PageItem): void {
+    if (parent) {
+      pageItem.parent = parent;
+    }
+
+    if (pageItem.children && pageItem.children.length > 0) {
+      pageItem.children.forEach((child) => {
+        this.reconstructParentRelations(child, pageItem);
+      });
+    }
+  }
+}

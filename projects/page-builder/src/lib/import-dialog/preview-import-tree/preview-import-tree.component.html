@@ -1,0 +1,48 @@
+<div class="tree-item">
+  <div class="tree-node" (click)="toggle()">
+    @if (item.children && item.children.length > 0) {
+      <span class="toggle-icon">
+        {{ isExpanded ? '▼' : '▶' }}
+      </span>
+    }
+
+    <span class="tag-name">&lt;{{ item.tag }}&gt;</span>
+    @if (item.content) {
+      <span class="item-info">
+        "{{ item.content && item.content.substring(0, 30)
+        }}{{ item.content && item.content.length > 30 ? '...' : '' }}"
+      </span>
+    }
+    @if (item.children && item.children.length > 0) {
+      <span class="children-count"> ({{ item.children.length }} فرزند) </span>
+    }
+  </div>
+
+  @if (isExpanded) {
+    <div class="tree-details">
+      @if (item.options?.attributes) {
+        <div>
+          <strong>Attributes:</strong>
+          <pre>{{ item.options?.attributes | json }}</pre>
+        </div>
+      }
+      @if (item.style) {
+        <div>
+          <strong>Style:</strong>
+          <pre>{{ item.style }}</pre>
+        </div>
+      }
+
+      @if (!item.options && !item.style) {
+        <div>No style and options</div>
+      }
+    </div>
+  }
+  @if (isExpanded && item.children && item.children.length > 0) {
+    <div class="tree-children">
+      @for (child of item.children; track $index) {
+        <preview-import-tree [item]="child"></preview-import-tree>
+      }
+    </div>
+  }
+</div>

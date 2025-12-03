@@ -277,7 +277,13 @@ export class PageBuilderService implements OnDestroy {
   /**
    *  ایجاد المنت جدید حتما باید با await انجام شود
    */
-  async createBlockElement(item: PageItem, container: HTMLElement, index = -1) {
+  async createBlockElement(item: PageItem, container?: HTMLElement, index: number = -1) {
+    if (!container) {
+      container = this.pageBody()?.nativeElement;
+    }
+    if (!container) {
+      throw new Error('Required container to create element');
+    }
     if (this.mode == 'Edit') {
       item.options ??= {};
       item.options.directives ??= [];

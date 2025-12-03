@@ -1,0 +1,54 @@
+.tree-item {
+  margin-left: 20px;
+  margin-top: 5px;
+}
+
+.tree-node {
+  padding: 5px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.tree-node:hover {
+  background-color: #f0f0f0;
+}
+
+.toggle-icon {
+  display: inline-block;
+  width: 15px;
+  font-size: 12px;
+}
+
+.tag-name {
+  color: #0066cc;
+  font-weight: bold;
+}
+
+.item-info {
+  color: #666;
+  font-size: 12px;
+  margin-left: 10px;
+}
+
+.children-count {
+  color: #999;
+  font-size: 11px;
+  margin-left: 5px;
+}
+
+.tree-details {
+  margin: 10px 0;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-left: 3px solid #0066cc;
+  font-size: 12px;
+}
+
+.tree-children {
+  border-left: 1px dashed #ccc;
+}
+
+pre {
+  margin: 5px 0;
+  font-size: 11px;
+}
