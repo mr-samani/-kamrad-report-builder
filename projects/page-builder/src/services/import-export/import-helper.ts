@@ -7,6 +7,7 @@ import {
   USEFUL_STYLES,
 } from './allowed-consts';
 import { ImportOptions } from './ImportOptions';
+import { StyleHelper } from './style-helper';
 
 export abstract class HtmlImporter {
   /**
@@ -140,7 +141,7 @@ export abstract class HtmlImporter {
     pageItem.options = this.extractOptions(element, options);
 
     // استخراج استایل‌ها (با پشتیبانی از computed styles در iframe)
-    pageItem.style = await this.extractStyles(element, options);
+    pageItem.style = await StyleHelper.extractStyles(element, options);
 
     // پردازش فرزندان
     if (pageItem.canHaveChild && element.children.length > 0) {
@@ -283,70 +284,6 @@ export abstract class HtmlImporter {
     }
 
     return sourceOptions;
-  }
-
-  /**
-   * استخراج استایل‌های المنت
-   */
-  private static async extractStyles(
-    element: HTMLElement,
-    options?: ImportOptions,
-  ): Promise<string | undefined> {
-    const styles: Record<string, string> = {};
-
-    // 1. استایل‌های inline
-    if (options?.preserveInlineStyles !== false && element.style.length > 0) {
-      for (let i = 0; i < element.style.length; i++) {
-        const propertyName = element.style[i];
-        const value = element.style.getPropertyValue(propertyName);
-
-        if (this.shouldIncludeStyle(propertyName, value, options)) {
-          styles[propertyName] = value;
-        }
-      }
-    }
-
-    // 2. استایل‌های computed
-    // اگر useSpaRenderer فعال باشه، حتماً computed styles رو بگیر
-    // یا اگر extractComputedStyles صریحاً true باشه
-    const shouldExtractComputed = options?.useSpaRenderer || options?.extractComputedStyles;
-
-    if (shouldExtractComputed && typeof window !== 'undefined') {
-      try {
-        const computedStyles = window.getComputedStyle(element);
-
-        USEFUL_STYLES.forEach((propertyName) => {
-          const value = computedStyles.getPropertyValue(propertyName);
-
-          // فقط استایل‌هایی که مقدار غیر پیش‌فرض دارند
-          if (
-            value &&
-            value !== 'none' &&
-            value !== 'initial' &&
-            value !== 'normal' &&
-            value !== '' &&
-            !styles[propertyName] && // اگر از قبل نداریم
-            this.shouldIncludeStyle(propertyName, value, options)
-          ) {
-            // فیلتر کردن مقادیر پیش‌فرض بیشتر
-            if (!this.isDefaultValue(propertyName, value)) {
-              styles[propertyName] = value;
-            }
-          }
-        });
-      } catch (error) {
-        console.warn('Error on export computed styles:', error);
-      }
-    }
-
-    // تبدیل به string CSS
-    if (Object.keys(styles).length > 0) {
-      return Object.entries(styles)
-        .map(([prop, value]) => `${prop}: ${value};`)
-        .join(' ');
-    }
-
-    return undefined;
   }
 
   /**
