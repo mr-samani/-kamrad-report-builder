@@ -1,6 +1,3 @@
-// backend-api/server.js
-// نصب dependencies: npm install express puppeteer cors body-parser
-
 const express = require('express');
 const puppeteer = require('puppeteer');
 const cors = require('cors');
@@ -56,7 +53,9 @@ function releaseBrowser(browser) {
  * Endpoint اصلی برای رندر کردن صفحات
  */
 app.post('/api/render', async (req, res) => {
+  // console.log(req.query);
   const { url, waitForSelector, waitTime = 3000 } = req.body;
+  //const { url, waitForSelector, waitTime = 30000 } = req.query;
 
   if (!url) {
     return res.status(400).json({
@@ -79,7 +78,6 @@ app.post('/api/render', async (req, res) => {
 
   try {
     console.log('Rendering:', url);
-
     browser = await getBrowser();
     page = await browser.newPage();
 
@@ -115,7 +113,10 @@ app.post('/api/render', async (req, res) => {
       }
     } else {
       // منتظر ماندن عمومی برای رندر شدن
-      await page.waitForTimeout(waitTime);
+      // await page.waitForTimeout(waitTime);
+      await page.waitForResponse(url, {
+        timeout: waitTime,
+      });
     }
 
     // گرفتن HTML رندر شده
@@ -134,6 +135,8 @@ app.post('/api/render', async (req, res) => {
     });
 
     res.json(result);
+    // res.contentType('html');
+    // res.set(result);
   } catch (error) {
     console.error('Error rendering page:', error);
     res.status(500).json({
@@ -295,61 +298,8 @@ process.on('SIGTERM', async () => {
 app.listen(PORT, () => {
   console.log(`🚀 SPA Renderer API running on port ${PORT}`);
   console.log(`📝 Endpoints:`);
-  console.log(`   POST /api/render - رندر کردن کامل صفحه`);
-  console.log(`   POST /api/render-selector - رندر کردن یک selector خاص`);
-  console.log(`   POST /api/screenshot - گرفتن اسکرین‌شات`);
-  console.log(`   GET  /health - بررسی وضعیت سرور`);
+  console.log(`     Render fullpage: POST /api/render`);
+  console.log(`     Render special selector: POST /api/render-selector`);
+  console.log(`     Take screenshot: POST /api/screenshot`);
+  console.log(`     Check Server status: GET  /health`);
 });
-
-// ========== Dockerfile برای deploy ==========
-/*
-FROM node:18-alpine
-
-# نصب Chromium dependencies
-RUN apk add --no-cache \
-    chromium \
-    nss \
-    freetype \
-    freetype-dev \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont
-
-# تنظیم environment variable
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm ci --only=production
-
-COPY . .
-
-EXPOSE 3000
-
-CMD ["node", "server.js"]
-*/
-
-// ========== package.json ==========
-/*
-{
-  "name": "spa-renderer-api",
-  "version": "1.0.0",
-  "description": "API for rendering SPA pages with Puppeteer",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
-  },
-  "dependencies": {
-    "express": "^4.18.2",
-    "puppeteer": "^21.6.0",
-    "cors": "^2.8.5",
-    "body-parser": "^1.20.2"
-  },
-  "devDependencies": {
-    "nodemon": "^3.0.2"
-  }
-}
-*/
