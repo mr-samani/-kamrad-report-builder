@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { catchError, firstValueFrom } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { PageItem } from '../../models/PageItem';
 import { ISourceOptions } from '../../models/SourceItem';
 
@@ -21,6 +21,22 @@ export interface ImportOptions {
    * فیلتر کردن استایل‌های خاص
    */
   styleFilter?: (propertyName: string, value: string) => boolean;
+  /**
+   * استفاده از CORS proxy برای دور زدن مشکل CORS
+   */
+  useCorsProxy?: boolean;
+  /**
+   * آدرس CORS proxy سفارشی
+   */
+  corsProxyUrl?: string;
+  /**
+   * زمان انتظار برای رندر شدن SPA (میلی‌ثانیه)
+   */
+  spaWaitTime?: number;
+  /**
+   * استفاده از iframe برای رندر کردن SPA
+   */
+  useSpaRenderer?: boolean;
 }
 
 export interface ImportResult {
@@ -32,6 +48,17 @@ export interface ImportResult {
 
 @Injectable()
 export class ImportHtmlService {
+  private readonly NOT_ALLOWED_TAGS = [
+    'style',
+    'link',
+    'script',
+    'meta',
+    'title',
+    'html',
+    'head',
+    'body',
+  ];
+
   // لیست پیش‌فرض attribute های مجاز
   private readonly DEFAULT_ALLOWED_ATTRIBUTES = [
     'src',
@@ -62,6 +89,10 @@ export class ImportHtmlService {
     // 'data-*',
     'aria-*',
     'role',
+
+    //svg
+    'xmlns',
+    'viewBox',
   ];
 
   // استایل‌هایی که معمولاً مفید هستند
@@ -131,6 +162,13 @@ export class ImportHtmlService {
     'text-shadow',
   ];
 
+  // لیست CORS Proxy های عمومی
+  private readonly CORS_PROXIES = [
+    'https://api.allorigins.win/raw?url=',
+    'https://corsproxy.io/?',
+    'https://cors-anywhere.herokuapp.com/',
+  ];
+
   constructor(private http: HttpClient) {}
 
   /**
@@ -141,57 +179,217 @@ export class ImportHtmlService {
     querySelector: string,
     options?: ImportOptions,
   ): Promise<ImportResult> {
-    return new Promise((resolve, reject) => {
-      try {
-        // اعتبارسنجی URL
-        if (!this.isValidUrl(url)) {
-          resolve({
-            success: false,
-            error: 'Invalid Url Address!',
-          });
-        }
-        // دریافت محتوای HTML
-        this.http
-          .get(url, { responseType: 'text' })
-          .pipe(
-            catchError((error: any) => {
-              resolve({
-                success: false,
-                error: `Error on get data from Url: ${error.message || 'Unknow Error'}`,
-              });
-              return '';
-            }),
-          )
-          .subscribe(async (htmlContent) => {
-            // ساخت یک DOM موقت
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(htmlContent, 'text/html');
-
-            // پیدا کردن المنت با querySelector
-            const element = doc.querySelector(querySelector);
-
-            if (!element) {
-              resolve({
-                success: false,
-                error: `Element with this selector "${querySelector}"not found!`,
-              });
-            }
-
-            // تبدیل به PageItem
-            const pageItems = await this.convertElementToPageItem(element as HTMLElement, options);
-
-            resolve({
-              success: true,
-              data: pageItems ? [pageItems] : [],
-            });
-          });
-      } catch (error: any) {
-        resolve({
+    try {
+      // اعتبارسنجی URL
+      if (!this.isValidUrl(url)) {
+        return {
           success: false,
-          error: `Error on get data from Url: ${error.message || 'Unknow Error'}`,
-        });
+          error: 'Invalid Url Address!',
+        };
       }
+
+      let htmlContent: string;
+
+      // اگر باید از SPA Renderer استفاده کنیم
+      if (options?.useSpaRenderer) {
+        htmlContent = await this.fetchWithSpaRenderer(url, options);
+      } else {
+        // تلاش برای دریافت مستقیم
+        try {
+          htmlContent = await this.fetchUrl(url);
+        } catch (corsError) {
+          // اگر CORS error داشت، از proxy استفاده کن
+          if (options?.useCorsProxy !== false) {
+            console.warn('CORS error detected, trying with proxy...');
+            htmlContent = await this.fetchWithCorsProxy(url, options);
+          } else {
+            throw corsError;
+          }
+        }
+      }
+
+      // ساخت یک DOM موقت
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlContent, 'text/html');
+
+      // پیدا کردن المنت با querySelector
+      const element = doc.querySelector(querySelector);
+
+      if (!element) {
+        return {
+          success: false,
+          error: `Element with this selector "${querySelector}"not found!`,
+          warnings: [
+            'احتمالاً صفحه یک SPA است و نیاز به رندر دارد. گزینه useSpaRenderer را فعال کنید.',
+          ],
+        };
+      }
+
+      // تبدیل به PageItem
+      const pageItems = await this.convertElementToPageItem(element as HTMLElement, options);
+
+      return {
+        success: true,
+        data: pageItems ? [pageItems] : [],
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: `Error on get data from Url: ${error.message || 'Unknow Error'}`,
+      };
+    }
+  }
+
+  /**
+   * دریافت محتوا با استفاده از CORS Proxy
+   */
+  private async fetchWithCorsProxy(url: string, options?: ImportOptions): Promise<string> {
+    const proxyUrl = options?.corsProxyUrl || this.CORS_PROXIES[0];
+    const proxiedUrl = proxyUrl + encodeURIComponent(url);
+
+    try {
+      return await firstValueFrom(this.http.get(proxiedUrl, { responseType: 'text' }));
+    } catch (error) {
+      // اگر اولین proxy کار نکرد، بقیه رو امتحان کن
+      for (let i = 1; i < this.CORS_PROXIES.length; i++) {
+        try {
+          const altProxiedUrl = this.CORS_PROXIES[i] + encodeURIComponent(url);
+          return await firstValueFrom(this.http.get(altProxiedUrl, { responseType: 'text' }));
+        } catch (e) {
+          continue;
+        }
+      }
+      throw new Error('تمام CORS Proxy ها ناموفق بودند');
+    }
+  }
+
+  /**
+   * دریافت محتوای URL به صورت مستقیم
+   */
+  private async fetchUrl(url: string): Promise<string> {
+    return await firstValueFrom(this.http.get(url, { responseType: 'text' }));
+  }
+
+  /**
+   * دریافت و رندر کردن SPA با استفاده از iframe
+   */
+  private async fetchWithSpaRenderer(url: string, options?: ImportOptions): Promise<string> {
+    return new Promise((resolve, reject) => {
+      // ساخت iframe مخفی
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.style.position = 'absolute';
+      iframe.style.width = '1920px';
+      iframe.style.height = '1080px';
+
+      // تنظیم sandbox برای امنیت
+      iframe.sandbox.add('allow-same-origin', 'allow-scripts');
+
+      document.body.appendChild(iframe);
+
+      let timeoutId: any;
+      let resolved = false;
+
+      const cleanup = () => {
+        if (timeoutId) clearTimeout(timeoutId);
+        if (iframe && iframe.parentNode) {
+          iframe.parentNode.removeChild(iframe);
+        }
+      };
+
+      // Timeout برای رندر شدن
+      const waitTime = options?.spaWaitTime || 10000; // پیش‌فرض 10 ثانیه
+
+      iframe.onload = () => {
+        try {
+          // منتظر بمانیم تا JavaScript ها اجرا شوند
+          timeoutId = setTimeout(() => {
+            if (resolved) return;
+            resolved = true;
+
+            try {
+              const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+
+              if (!iframeDoc) {
+                cleanup();
+                reject(
+                  new Error('دسترسی به محتوای iframe امکان‌پذیر نیست (احتمالاً به دلیل CORS)'),
+                );
+                return;
+              }
+
+              const html = iframeDoc.documentElement.outerHTML;
+              cleanup();
+              resolve(html);
+            } catch (error: any) {
+              cleanup();
+              reject(new Error(`خطا در خواندن محتوای iframe: ${error.message}`));
+            }
+          }, waitTime);
+        } catch (error: any) {
+          cleanup();
+          reject(error);
+        }
+      };
+
+      iframe.onerror = (error) => {
+        cleanup();
+        reject(new Error('خطا در بارگذاری iframe'));
+      };
+
+      // بارگذاری URL
+      try {
+        iframe.src = url;
+      } catch (error) {
+        cleanup();
+        reject(error);
+      }
+
+      // Timeout کلی
+      setTimeout(() => {
+        if (!resolved) {
+          cleanup();
+          reject(new Error('Timeout: زمان انتظار برای بارگذاری صفحه تمام شد'));
+        }
+      }, waitTime + 5000);
     });
+  }
+
+  /**
+   * Import از URL با استفاده از Puppeteer/Playwright proxy
+   * این متد نیاز به یک backend API دارد
+   */
+  async importFromUrlWithBackend(
+    url: string,
+    querySelector: string,
+    backendApiUrl: string,
+    options?: ImportOptions,
+  ): Promise<ImportResult> {
+    try {
+      // ارسال درخواست به backend
+      const response = await firstValueFrom(
+        this.http.post<{ html: string; success: boolean; error?: string }>(backendApiUrl, {
+          url: url,
+          waitForSelector: querySelector,
+          waitTime: options?.spaWaitTime || 10000,
+        }),
+      );
+
+      if (!response.success) {
+        return {
+          success: false,
+          error: response.error || 'خطا در دریافت محتوا از backend',
+        };
+      }
+
+      // پردازش HTML دریافتی
+      return await this.importFromHtml(response.html, options);
+    } catch (error: any) {
+      return {
+        success: false,
+        error: `خطا در ارتباط با backend: ${error.message}`,
+      };
+    }
   }
 
   /**
@@ -223,8 +421,15 @@ export class ImportHtmlService {
       // تبدیل تمام المنت‌های اصلی
       const pageItems: PageItem[] = [];
       const warnings: string[] = [];
+
       for (let i = 0; i < rootElement.children.length; i++) {
         const child = rootElement.children[i] as HTMLElement;
+
+        // نادیده گرفتن script و style tags
+        if (this.NOT_ALLOWED_TAGS.includes(child.tagName.toLowerCase())) {
+          continue;
+        }
+
         try {
           const pageItem = await this.convertElementToPageItem(child, options);
           if (pageItem) {
@@ -256,6 +461,11 @@ export class ImportHtmlService {
     options?: ImportOptions,
   ): Promise<PageItem | null> {
     if (!element || element.nodeType !== Node.ELEMENT_NODE) {
+      return null;
+    }
+
+    // نادیده گرفتن script و style tags
+    if (this.NOT_ALLOWED_TAGS.includes(element.tagName.toLowerCase())) {
       return null;
     }
 

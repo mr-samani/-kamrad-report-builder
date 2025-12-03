@@ -35,42 +35,8 @@ export class ImportDialogComponent implements OnInit {
 
   // تنظیمات پیشرفته
   importOptions: ImportOptions = {
-    allowedAttributes: [
-      'src',
-      'href',
-      'alt',
-      'title',
-      'colspan',
-      'rowspan',
-      'target',
-      'rel',
-      'type',
-      'name',
-      'value',
-      'placeholder',
-      'data-*',
-      'aria-*',
-    ],
     preserveInlineStyles: true,
     extractComputedStyles: false,
-    styleFilter: (propertyName: string, value: string) => {
-      // فیلتر سفارشی: فقط استایل‌های خاص
-      const importantStyles = [
-        'display',
-        'position',
-        'width',
-        'height',
-        'margin',
-        'padding',
-        'background',
-        'color',
-        'font-size',
-        'text-align',
-        'border',
-      ];
-
-      return importantStyles.some((style) => propertyName.startsWith(style));
-    },
   };
   loading: boolean = false;
   constructor(

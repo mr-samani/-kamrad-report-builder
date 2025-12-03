@@ -129,6 +129,7 @@ export class PageBuilderService implements OnDestroy {
         containerEl,
         this.pageInfo.pages[this.currentPageIndex()],
       );
+      debugger;
       if (container) {
         this.removeBlock(dragItem);
         await this.createBlockElement(dragItem, containerEl, event.currentIndex);
