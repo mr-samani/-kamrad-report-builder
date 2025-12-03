@@ -31,8 +31,8 @@ export class ImportHtmlService {
       let htmlContent: string;
 
       // اگر باید از SPA Renderer استفاده کنیم
-      if (options?.useSpaRenderer) {
-        htmlContent = await this.fetchWithSpaRenderer(url, options);
+      if (options?.useRenderer) {
+        htmlContent = await HtmlImporter.fetchWithSpaRenderer(url, options);
       } else {
         // تلاش برای دریافت مستقیم
         try {
@@ -56,12 +56,16 @@ export class ImportHtmlService {
       const element = doc.querySelector(querySelector);
 
       if (!element) {
+        const warnings = [];
+        if (!options?.useRenderer) {
+          warnings.push(
+            'The page is probably an SPA and needs to be rendered. Enable the useRenderer option.',
+          );
+        }
         return {
           success: false,
           error: `Element with this selector "${querySelector}"not found!`,
-          warnings: [
-            'احتمالاً صفحه یک SPA است و نیاز به رندر دارد. گزینه useSpaRenderer را فعال کنید.',
-          ],
+          warnings,
         };
       }
 
@@ -102,7 +106,7 @@ export class ImportHtmlService {
           continue;
         }
       }
-      throw new Error('تمام CORS Proxy ها ناموفق بودند');
+      throw new Error('All CORS Proxies failed.');
     }
   }
 
@@ -111,91 +115,6 @@ export class ImportHtmlService {
    */
   private async fetchUrl(url: string): Promise<string> {
     return await firstValueFrom(this.http.get(url, { responseType: 'text' }));
-  }
-
-  /**
-   * دریافت و رندر کردن SPA با استفاده از iframe
-   */
-  private async fetchWithSpaRenderer(url: string, options?: ImportOptions): Promise<string> {
-    return new Promise((resolve, reject) => {
-      // ساخت iframe مخفی
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      iframe.style.position = 'absolute';
-      iframe.style.width = '1920px';
-      iframe.style.height = '1080px';
-
-      // تنظیم sandbox برای امنیت
-      iframe.sandbox.add('allow-same-origin', 'allow-scripts');
-
-      document.body.appendChild(iframe);
-
-      let timeoutId: any;
-      let resolved = false;
-
-      const cleanup = () => {
-        if (timeoutId) clearTimeout(timeoutId);
-        if (iframe && iframe.parentNode) {
-          iframe.parentNode.removeChild(iframe);
-        }
-      };
-
-      // Timeout برای رندر شدن
-      const waitTime = options?.spaWaitTime || 10000; // پیش‌فرض 10 ثانیه
-
-      iframe.onload = () => {
-        try {
-          // منتظر بمانیم تا JavaScript ها اجرا شوند
-          timeoutId = setTimeout(() => {
-            if (resolved) return;
-            resolved = true;
-
-            try {
-              const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-
-              if (!iframeDoc) {
-                cleanup();
-                reject(
-                  new Error('دسترسی به محتوای iframe امکان‌پذیر نیست (احتمالاً به دلیل CORS)'),
-                );
-                return;
-              }
-
-              const html = iframeDoc.documentElement.outerHTML;
-              cleanup();
-              resolve(html);
-            } catch (error: any) {
-              cleanup();
-              reject(new Error(`خطا در خواندن محتوای iframe: ${error.message}`));
-            }
-          }, waitTime);
-        } catch (error: any) {
-          cleanup();
-          reject(error);
-        }
-      };
-
-      iframe.onerror = (error) => {
-        cleanup();
-        reject(new Error('خطا در بارگذاری iframe'));
-      };
-
-      // بارگذاری URL
-      try {
-        iframe.src = url;
-      } catch (error) {
-        cleanup();
-        reject(error);
-      }
-
-      // Timeout کلی
-      setTimeout(() => {
-        if (!resolved) {
-          cleanup();
-          reject(new Error('Timeout: زمان انتظار برای بارگذاری صفحه تمام شد'));
-        }
-      }, waitTime + 5000);
-    });
   }
 
   /**
@@ -221,7 +140,7 @@ export class ImportHtmlService {
       if (!response.success) {
         return {
           success: false,
-          error: response.error || 'خطا در دریافت محتوا از backend',
+          error: response.error || 'Error retrieving content from backend',
         };
       }
 
@@ -230,7 +149,7 @@ export class ImportHtmlService {
     } catch (error: any) {
       return {
         success: false,
-        error: `خطا در ارتباط با backend: ${error.message}`,
+        error: `Error communicating with backend: ${error.message}`,
       };
     }
   }
@@ -252,8 +171,8 @@ export class ImportHtmlService {
       }
 
       let doc: Document;
-      // اگر useSpaRenderer فعال باشه، از iframe استفاده کن
-      if (options?.useSpaRenderer) {
+      // اگر useRenderer فعال باشه، از iframe استفاده کن
+      if (options?.useRenderer) {
         doc = await HtmlImporter.renderHtmlInIframe(htmlString, options);
       } else {
         // پارس کردن معمولی HTML
@@ -262,9 +181,8 @@ export class ImportHtmlService {
       }
 
       // گرفتن body یا اولین المنت
-      const rootElement = doc.body.children.length > 0 ? doc.body : doc.documentElement;
 
-      if (!rootElement || rootElement.children.length === 0) {
+      if (!doc.documentElement || doc.documentElement.children.length === 0) {
         return {
           success: false,
           error: 'Invalid html structure!',
@@ -272,16 +190,22 @@ export class ImportHtmlService {
       }
 
       // پیدا کردن المنت با querySelector
-      const elChilds = rootElement.querySelectorAll(querySelector);
-      debugger;
+      const elChilds =
+        !querySelector || querySelector == 'html'
+          ? [doc.documentElement]
+          : doc.documentElement.querySelectorAll(querySelector);
 
       if (!elChilds || elChilds.length == 0) {
+        const warnings = [];
+        if (!options?.useRenderer) {
+          warnings.push(
+            'The page is probably an SPA and needs to be rendered. Enable the useRenderer option.',
+          );
+        }
         return {
           success: false,
-          error: `Element with this selector "${querySelector}"not found!`,
-          warnings: [
-            'احتمالاً صفحه یک SPA است و نیاز به رندر دارد. گزینه useSpaRenderer را فعال کنید.',
-          ],
+          error: `Element with this selector "${querySelector}" not found!`,
+          warnings,
         };
       }
 

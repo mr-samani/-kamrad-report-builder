@@ -11,6 +11,7 @@ import { Notify } from '../../extensions/notify';
 import { MatAnchor } from '@angular/material/button';
 import { TabGroupModule } from '../../controls/tab-group/tab-group.module';
 import { LoadingComponent } from '../../controls/loading/loading.component';
+import { LibConsts } from '../../consts/defauls';
 
 @Component({
   selector: 'app-import-dialog',
@@ -39,9 +40,11 @@ export class ImportDialogComponent implements OnInit {
     preserveInlineStyles: true,
     extractComputedStyles: true,
     spaWaitTime: 20000,
-
-    corsProxyUrl: 'http://localhost:3000/api/render?url=',
   };
+
+  showBackendapiCheckbox = LibConsts.backendProxyImportUrl != '';
+  useBackendApi = false;
+
   loading: boolean = false;
   constructor(
     private dialogRef: MatDialogRef<ImportDialogComponent>,
@@ -64,8 +67,21 @@ export class ImportDialogComponent implements OnInit {
     this.result = undefined;
     this.loading = true;
 
-    this.importer
-      .importFromUrl(this.urlInput, this.querySelectorInput, this.importOptions)
+    let api = this.importer.importFromUrl(
+      this.urlInput,
+      this.querySelectorInput,
+      this.importOptions,
+    );
+    if (this.useBackendApi) {
+      api = this.importer.importFromUrlWithBackend(
+        this.urlInput,
+        this.querySelectorInput,
+        LibConsts.backendProxyImportUrl,
+        this.importOptions,
+      );
+    }
+
+    api
       .finally(() => (this.loading = false))
       .then((result) => {
         this.result = result;

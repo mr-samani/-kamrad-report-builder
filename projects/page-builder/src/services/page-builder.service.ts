@@ -255,7 +255,7 @@ export class PageBuilderService implements OnDestroy {
           await this.genElms(headerItems, this.pageHeader()!.nativeElement);
           await this.genElms(bodyItems, this.pageBody()!.nativeElement);
           await this.genElms(footerItems, this.pageFooter()!.nativeElement);
-
+          debugger;
           this.currentPageIndex.set(pageNumber - 1);
           resolve(this.currentPageIndex());
           this.onPageChange$.next(this.pageInfo.pages[this.currentPageIndex()]);

@@ -25,7 +25,7 @@ export abstract class StyleHelper {
     }
 
     // 2. استایل‌های computed (با مقایسه با parent)
-    const shouldExtractComputed = options?.useSpaRenderer || options?.extractComputedStyles;
+    const shouldExtractComputed = options?.useRenderer || options?.extractComputedStyles;
 
     if (shouldExtractComputed && typeof window !== 'undefined') {
       try {
@@ -263,7 +263,7 @@ export abstract class StyleHelper {
     }
 
     // 2. استایل‌های computed با فیلتر هوشمند
-    const shouldExtractComputed = options?.useSpaRenderer || options?.extractComputedStyles;
+    const shouldExtractComputed = options?.useRenderer || options?.extractComputedStyles;
 
     if (shouldExtractComputed && typeof window !== 'undefined') {
       try {

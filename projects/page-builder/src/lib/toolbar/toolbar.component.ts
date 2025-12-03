@@ -138,7 +138,7 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
   }
   importHtml() {
     const pageIndex = this.pageBuilder.currentPageIndex();
-    if (!pageIndex || pageIndex < 0) {
+    if (pageIndex < 0) {
       Notify.error('Create page to import');
       return;
     }

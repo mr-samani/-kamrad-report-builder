@@ -21,15 +21,21 @@
         </div>
         <div>
           <label>
-            <input type="checkbox" [(ngModel)]="importOptions.useSpaRenderer" />Spa renderer</label
-          >
+            <input type="checkbox" [(ngModel)]="importOptions.useRenderer" />Use renderer
+          </label>
         </div>
         <div>
           <label>
-            <input type="checkbox" [(ngModel)]="importOptions.useCorsProxy" />Use public
-            proxies</label
-          >
+            <input type="checkbox" [(ngModel)]="importOptions.useCorsProxy" />Use public proxies
+          </label>
         </div>
+        @if (showBackendapiCheckbox) {
+          <div>
+            <label>
+              <input type="checkbox" [(ngModel)]="useBackendApi" />Use backend api proxy
+            </label>
+          </div>
+        }
         <button mat-raised-button (click)="importFromUrl(resultSection)" [disabled]="loading">
           <span>Import from URL</span>
           <loading [loading]="loading"></loading>
@@ -55,8 +61,8 @@
         </div>
         <div>
           <label>
-            <input type="checkbox" [(ngModel)]="importOptions.useSpaRenderer" />Spa renderer</label
-          >
+            <input type="checkbox" [(ngModel)]="importOptions.useRenderer" />Use renderer
+          </label>
         </div>
         <button mat-raised-button (click)="importFromHtml(resultSection)" [disabled]="loading">
           <span> Import from HTML</span>

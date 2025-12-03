@@ -30,5 +30,5 @@ export interface ImportOptions {
   /**
    * استفاده از iframe برای رندر کردن SPA
    */
-  useSpaRenderer?: boolean;
+  useRenderer?: boolean;
 }

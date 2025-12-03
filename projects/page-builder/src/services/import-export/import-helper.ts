@@ -11,6 +11,89 @@ import { StyleHelper } from './style-helper';
 
 export abstract class HtmlImporter {
   /**
+   * دریافت و رندر کردن SPA با استفاده از iframe
+   */
+  static async fetchWithSpaRenderer(url: string, options?: ImportOptions): Promise<string> {
+    return new Promise((resolve, reject) => {
+      // ساخت iframe مخفی
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.style.position = 'absolute';
+      iframe.style.width = '1920px';
+      iframe.style.height = '1080px';
+
+      // تنظیم sandbox برای امنیت
+      iframe.sandbox.add('allow-same-origin', 'allow-scripts');
+
+      document.body.appendChild(iframe);
+
+      let timeoutId: any;
+      let resolved = false;
+
+      const cleanup = () => {
+        if (timeoutId) clearTimeout(timeoutId);
+        if (iframe && iframe.parentNode) {
+          iframe.parentNode.removeChild(iframe);
+        }
+      };
+
+      // Timeout برای رندر شدن
+      const waitTime = options?.spaWaitTime || 10000; // پیش‌فرض 10 ثانیه
+
+      iframe.onload = () => {
+        try {
+          // منتظر بمانیم تا JavaScript ها اجرا شوند
+          timeoutId = setTimeout(() => {
+            if (resolved) return;
+            resolved = true;
+
+            try {
+              const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+
+              if (!iframeDoc) {
+                cleanup();
+                reject(new Error('Unable to access iframe content (possibly due to CORS)'));
+                return;
+              }
+
+              const html = iframeDoc.documentElement.outerHTML;
+              cleanup();
+              resolve(html);
+            } catch (error: any) {
+              cleanup();
+              reject(new Error(`Error reading iframe content: ${error.message}`));
+            }
+          }, waitTime);
+        } catch (error: any) {
+          cleanup();
+          reject(error);
+        }
+      };
+
+      iframe.onerror = (error) => {
+        cleanup();
+        reject(new Error('Error loading iframe'));
+      };
+
+      // بارگذاری URL
+      try {
+        iframe.src = url;
+      } catch (error) {
+        cleanup();
+        reject(error);
+      }
+
+      // Timeout کلی
+      setTimeout(() => {
+        if (!resolved) {
+          cleanup();
+          reject(new Error('Timeout: Timed out waiting for page to load'));
+        }
+      }, waitTime + 5000);
+    });
+  }
+
+  /**
    * رندر کردن HTML در iframe و گرفتن Document با استایل‌های computed
    */
   static async renderHtmlInIframe(htmlString: string, options?: ImportOptions): Promise<Document> {

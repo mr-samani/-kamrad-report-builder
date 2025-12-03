@@ -8,8 +8,15 @@ import { PageItem } from '../models/PageItem';
  */
 export const LibConsts: {
   SourceItemList: SourceItem[];
+
+  /**
+   * backend custom api address for handle cors policies to import with url
+   * @example backend-api folder
+   */
+  backendProxyImportUrl: string;
 } = {
   SourceItemList: [],
+  backendProxyImportUrl: 'http://localhost:3000/api/render',
 };
 
 export const LOCAL_STORAGE_SAVE_KEY = 'page';
