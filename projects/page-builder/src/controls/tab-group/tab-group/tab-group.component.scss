@@ -1,0 +1,58 @@
+$bgColortab-group: #ffffff00;
+$fgColortab-group: inherit;
+$borderColor: #b7b7b7;
+$borderColorActive: #007fdd;
+$duration: 0.3s;
+$activeBgColor: #007fdd;
+$activeFgColor: #fff;
+
+.tab-group-container {
+  background-color: $fgColortab-group;
+  padding-top: 20px;
+}
+.tab-group {
+  display: flex;
+  width: 100%;
+  font-size: 12px;
+  position: relative;
+  background-color: $bgColortab-group;
+  border-bottom: 2px $borderColorActive solid;
+  color: $fgColortab-group;
+  padding: 0 10px;
+  box-sizing: border-box;
+}
+
+.tab-group__item {
+  all: unset;
+  z-index: 50;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  will-change: transform;
+  justify-content: center;
+  line-height: 1;
+  margin: 0 10px;
+  border: 2px $borderColor solid;
+  border-radius: 5px 5px 0 0;
+  border-bottom: none;
+  padding: 10px 15px;
+  transition: transform $duration;
+
+  transform-origin: bottom;
+}
+
+.tab-group__item.plus {
+  font-size: 22px;
+}
+
+.tab-group__item.active {
+  transform: scale(1.25);
+  background: $activeBgColor;
+  color: $activeFgColor;
+  border-color: $borderColorActive;
+}
+
+.tab-group__item.active::before {
+  transform: scale(1);
+}
