@@ -1,16 +1,16 @@
 import { ChangeDetectorRef, Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import {
-  ImportHtmlService,
-  ImportOptions,
-  ImportResult,
-} from '../../services/import-export/import-html.service';
+import { ImportHtmlService } from '../../services/import-export/import-html.service';
+import { ImportResult } from '../../services/import-export/ImportResult';
+import { ImportOptions } from '../../services/import-export/ImportOptions';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PreviewImportTreeComponent } from './preview-import-tree/preview-import-tree.component';
 import { SvgIconDirective } from '../../directives/svg-icon.directive';
 import { Notify } from '../../extensions/notify';
 import { MatAnchor } from '@angular/material/button';
+import { TabGroupModule } from '../../controls/tab-group/tab-group.module';
+import { LoadingComponent } from '../../controls/loading/loading.component';
 
 @Component({
   selector: 'app-import-dialog',
@@ -23,6 +23,8 @@ import { MatAnchor } from '@angular/material/button';
     PreviewImportTreeComponent,
     SvgIconDirective,
     MatAnchor,
+    TabGroupModule,
+    LoadingComponent,
   ],
   providers: [ImportHtmlService],
 })
@@ -31,12 +33,14 @@ export class ImportDialogComponent implements OnInit {
   querySelectorInput = '';
   htmlInput = '';
   result?: ImportResult;
-  showJson = false;
 
   // تنظیمات پیشرفته
   importOptions: ImportOptions = {
     preserveInlineStyles: true,
-    extractComputedStyles: false,
+    extractComputedStyles: true,
+    spaWaitTime: 20000,
+
+    corsProxyUrl: 'http://localhost:3000/api/render?url=',
   };
   loading: boolean = false;
   constructor(
@@ -47,12 +51,17 @@ export class ImportDialogComponent implements OnInit {
   ) {}
 
   ngOnInit() {}
+  ngAfterViewInit(): void {
+    // fix bug for show colors in tinymce editor
+    document.querySelector('.cdk-overlay-popover')?.removeAttribute('popover');
+  }
 
   importFromUrl(resultSection: HTMLElement) {
     if (!this.urlInput || !this.querySelectorInput) {
       Notify.warning('لطفاً URL و Query Selector را وارد کنید');
       return;
     }
+    this.result = undefined;
     this.loading = true;
 
     this.importer
@@ -73,9 +82,10 @@ export class ImportDialogComponent implements OnInit {
       Notify.warning('لطفاً محتوای HTML را وارد کنید');
       return;
     }
+    this.result = undefined;
     this.loading = true;
     this.importer
-      .importFromHtml(this.htmlInput, this.importOptions)
+      .importFromHtml(this.htmlInput, this.querySelectorInput, this.importOptions)
       .finally(() => (this.loading = false))
       .then((result) => {
         this.result = result;
@@ -85,11 +95,6 @@ export class ImportDialogComponent implements OnInit {
         }, 100);
         this.chdr.detectChanges();
       });
-  }
-
-  getJsonOutput(): string {
-    if (!this.result?.data) return '';
-    return this.importer.exportToJson(this.result.data);
   }
 
   ok() {

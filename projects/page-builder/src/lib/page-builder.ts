@@ -19,7 +19,7 @@ import { IStorageService } from '../services/storage/IStorageService';
 import { STORAGE_SERVICE } from '../services/storage/token.storage';
 import { PageBuilderConfiguration } from '../models/PageBuilderConfiguration';
 import { DynamicDataStructure } from '../models/DynamicData';
-import { fromEvent, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { SideConfigComponent } from '../components/side-config/side-config.component';
 import { PAGE_BUILDER_CONFIGURATION } from '../models/tokens';
 import { PageItemChange } from '../services/page-builder.service';

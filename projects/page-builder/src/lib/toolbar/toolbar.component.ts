@@ -16,6 +16,7 @@ import { SvgIconDirective } from '../../directives/svg-icon.directive';
 import { ImportDialogComponent } from '../import-dialog/import-dialog.component';
 import { ExportHtmlService } from '../../services/import-export/export-html.service';
 import { PageItem } from '../../models/PageItem';
+import { Notify } from '../../extensions/notify';
 
 @Component({
   selector: 'toolbar',
@@ -136,6 +137,11 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
     this.exporter.exportHtml();
   }
   importHtml() {
+    const pageIndex = this.pageBuilder.currentPageIndex();
+    if (!pageIndex || pageIndex < 0) {
+      Notify.error('Create page to import');
+      return;
+    }
     this.matDialog
       .open(ImportDialogComponent, {
         panelClass: 'ngx-page-builder',
@@ -146,7 +152,6 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
       .afterClosed()
       .subscribe(async (r?: PageItem[]) => {
         if (r) {
-          const pageIndex = this.pageBuilder.currentPageIndex();
           this.pageBuilder.pageInfo.pages[pageIndex].bodyItems.push(...r);
           r.map(async (item) => await this.pageBuilder.createBlockElement(item));
           this.chdRef.detectChanges();

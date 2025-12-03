@@ -6,43 +6,65 @@
   </button>
 </h2>
 <mat-dialog-content>
-  <!-- Import from URL -->
-  <section class="import-section">
-    <h3>1. Import from URL</h3>
-    <div class="form-group">
-      <label>URL:</label>
-      <input type="text" [(ngModel)]="urlInput" placeholder="https://example.com/page.html" />
-    </div>
-    <div class="form-group">
-      <label>Query Selector:</label>
-      <input type="text" [(ngModel)]="querySelectorInput" placeholder=".main-content" />
-    </div>
-    <div class="form-group">
-      <label>
-        <input type="checkbox" [(ngModel)]="importOptions.useSpaRenderer" />Spa renderer</label
-      >
-    </div>
-    <div class="form-group">
-      <label>
-        <input type="checkbox" [(ngModel)]="importOptions.useCorsProxy" />Use public proxies</label
-      >
-    </div>
-    <button (click)="importFromUrl(resultSection)" [disabled]="loading">Import from URL</button>
-  </section>
+  <tab-group>
+    <tab-item title="Import from URL" [active]="true">
+      <!-- Import from URL -->
+      <section class="import-section">
+        <h3>1. Import from URL</h3>
+        <div class="form-group">
+          <label>URL:</label>
+          <input type="text" [(ngModel)]="urlInput" placeholder="https://example.com/page.html" />
+        </div>
+        <div class="form-group">
+          <label>Query Selector:</label>
+          <input type="text" [(ngModel)]="querySelectorInput" placeholder=".main-content" />
+        </div>
+        <div>
+          <label>
+            <input type="checkbox" [(ngModel)]="importOptions.useSpaRenderer" />Spa renderer</label
+          >
+        </div>
+        <div>
+          <label>
+            <input type="checkbox" [(ngModel)]="importOptions.useCorsProxy" />Use public
+            proxies</label
+          >
+        </div>
+        <button mat-raised-button (click)="importFromUrl(resultSection)" [disabled]="loading">
+          <span>Import from URL</span>
+          <loading [loading]="loading"></loading>
+        </button>
+      </section>
+    </tab-item>
 
-  <!-- Import from HTML String -->
-  <section class="import-section">
-    <h3>2. Import from HTML String</h3>
-    <div class="form-group">
-      <label>HTML Content:</label>
-      <textarea
-        [(ngModel)]="htmlInput"
-        rows="10"
-        placeholder="<div>HTML Content ... </div>"
-      ></textarea>
-    </div>
-    <button (click)="importFromHtml(resultSection)" [disabled]="loading">Import from HTML</button>
-  </section>
+    <tab-item title="Import from HTML">
+      <!-- Import from HTML String -->
+      <section class="import-section">
+        <h3>2. Import from HTML String</h3>
+        <div class="form-group">
+          <label>HTML Content:</label>
+          <textarea
+            [(ngModel)]="htmlInput"
+            rows="10"
+            placeholder="<div>HTML Content ... </div>"
+          ></textarea>
+        </div>
+        <div class="form-group">
+          <label>Query Selector:</label>
+          <input type="text" [(ngModel)]="querySelectorInput" placeholder=".main-content" />
+        </div>
+        <div>
+          <label>
+            <input type="checkbox" [(ngModel)]="importOptions.useSpaRenderer" />Spa renderer</label
+          >
+        </div>
+        <button mat-raised-button (click)="importFromHtml(resultSection)" [disabled]="loading">
+          <span> Import from HTML</span>
+          <loading [loading]="loading"></loading>
+        </button>
+      </section>
+    </tab-item>
+  </tab-group>
 
   <!-- نتیجه -->
   <div #resultSection>
@@ -69,12 +91,6 @@
           @if (result.data && result.data.length > 0) {
             <div>
               <h4>تعداد آیتم‌ها: {{ result.data.length }}</h4>
-              <button (click)="showJson = !showJson">
-                {{ showJson ? 'مخفی کردن' : 'نمایش' }} JSON
-              </button>
-              @if (showJson) {
-                <pre>{{ getJsonOutput() }}</pre>
-              }
             </div>
           }
         </div>
