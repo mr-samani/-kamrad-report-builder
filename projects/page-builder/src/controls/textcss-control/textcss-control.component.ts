@@ -11,6 +11,7 @@ import {
   ViewChild,
   AfterViewInit,
   Injector,
+  OnDestroy,
 } from '@angular/core';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 
@@ -37,16 +38,19 @@ import { mergeCssStyles } from '../../utiles/merge-css-styles';
 })
 export class TextCssControlComponent
   extends BaseControl
-  implements OnInit, AfterViewInit, ControlValueAccessor
+  implements OnInit, AfterViewInit, ControlValueAccessor, OnDestroy
 {
   @Output() change = new EventEmitter<PageItem>();
   @ViewChild('editorDiv', { static: false }) editorRef?: ElementRef<HTMLDivElement>;
 
   textCss = '';
+  private isUpdating = false;
+  private updateTimeout?: any;
+  private highlightTimeout?: any;
+  private editorListeners: Array<() => void> = [];
 
   constructor(
     injector: Injector,
-    @Inject(NGX_PAGE_BUILDER_FILE_PICKER) private filePicker: IPageBuilderFilePicker | null,
     private cdr: ChangeDetectorRef,
   ) {
     super(injector);
@@ -60,12 +64,23 @@ export class TextCssControlComponent
     }
   }
 
+  ngOnDestroy() {
+    // Clean up listeners
+    this.editorListeners.forEach((cleanup) => cleanup());
+    if (this.updateTimeout) {
+      clearTimeout(this.updateTimeout);
+    }
+    if (this.highlightTimeout) {
+      clearTimeout(this.highlightTimeout);
+    }
+  }
+
   writeValue(item: PageItem): void {
     this.item = item;
     this.el = item?.el;
     if (item && this.el) {
-      this.textCss = this.el.style.cssText.replace(/;/g, ';\n');
-      if (this.editorRef) {
+      this.textCss = this.el.style.cssText.replace(/;\s*/g, ';\n');
+      if (this.editorRef && !this.isUpdating) {
         this.updateEditorContent();
       }
     }
@@ -87,28 +102,91 @@ export class TextCssControlComponent
     // Set initial content
     this.updateEditorContent();
 
-    // Handle input
-    editor.addEventListener('input', () => {
+    // Handle input with debouncing
+    const inputHandler = () => {
+      if (this.isUpdating) return;
+
       this.textCss = this.getPlainText(editor);
-      this.update();
-    });
+
+      // Clear previous highlight timeout
+      if (this.highlightTimeout) {
+        clearTimeout(this.highlightTimeout);
+      }
+
+      // Highlight after user stops typing (300ms delay)
+      this.highlightTimeout = setTimeout(() => {
+        this.updateEditorContent();
+      }, 300);
+
+      // Debounce update to improve performance
+      if (this.updateTimeout) {
+        clearTimeout(this.updateTimeout);
+      }
+      this.updateTimeout = setTimeout(() => {
+        this.updateStyles();
+      }, 100);
+    };
+    editor.addEventListener('input', inputHandler);
+    this.editorListeners.push(() => editor.removeEventListener('input', inputHandler));
+
+    // Handle keydown for Enter key
+    const keydownHandler = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        // Insert newline at cursor position
+        const selection = window.getSelection();
+        if (selection && selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0);
+          range.deleteContents();
+          const textNode = document.createTextNode('\n');
+          range.insertNode(textNode);
+          range.setStartAfter(textNode);
+          range.setEndAfter(textNode);
+          selection.removeAllRanges();
+          selection.addRange(range);
+
+          // Trigger input event manually
+          editor.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      }
+    };
+    editor.addEventListener('keydown', keydownHandler);
+    this.editorListeners.push(() => editor.removeEventListener('keydown', keydownHandler));
 
     // Handle paste - remove formatting
-    editor.addEventListener('paste', (e: ClipboardEvent) => {
+    const pasteHandler = (e: ClipboardEvent) => {
       e.preventDefault();
       const text = e.clipboardData?.getData('text/plain') || '';
-      document.execCommand('insertText', false, text);
-    });
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        range.deleteContents();
+        const textNode = document.createTextNode(text);
+        range.insertNode(textNode);
+        range.setStartAfter(textNode);
+        range.setEndAfter(textNode);
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        // Trigger input event manually
+        editor.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    };
+    editor.addEventListener('paste', pasteHandler);
+    this.editorListeners.push(() => editor.removeEventListener('paste', pasteHandler));
 
     // Handle blur
-    editor.addEventListener('blur', () => {
+    const blurHandler = () => {
       this.onTouched();
-    });
+    };
+    editor.addEventListener('blur', blurHandler);
+    this.editorListeners.push(() => editor.removeEventListener('blur', blurHandler));
   }
 
   private updateEditorContent() {
-    if (!this.editorRef) return;
+    if (!this.editorRef || this.isUpdating) return;
 
+    this.isUpdating = true;
     const editor = this.editorRef.nativeElement;
     const cursorPosition = this.getCursorPosition(editor);
 
@@ -116,12 +194,17 @@ export class TextCssControlComponent
 
     // Restore cursor position
     if (cursorPosition !== null) {
-      this.setCursorPosition(editor, cursorPosition);
+      requestAnimationFrame(() => {
+        this.setCursorPosition(editor, cursorPosition);
+      });
     }
+
+    this.isUpdating = false;
   }
 
   private getPlainText(element: HTMLElement): string {
-    return element.innerText || '';
+    // Use textContent instead of innerText for better performance
+    return element.textContent || '';
   }
 
   private getCursorPosition(element: HTMLElement): number | null {
@@ -138,8 +221,9 @@ export class TextCssControlComponent
 
   private setCursorPosition(element: HTMLElement, position: number) {
     const selection = window.getSelection();
-    const range = document.createRange();
+    if (!selection) return;
 
+    const range = document.createRange();
     let currentPos = 0;
     let found = false;
 
@@ -147,7 +231,8 @@ export class TextCssControlComponent
       if (node.nodeType === Node.TEXT_NODE) {
         const textLength = node.textContent?.length || 0;
         if (currentPos + textLength >= position) {
-          range.setStart(node, position - currentPos);
+          const offset = Math.min(position - currentPos, textLength);
+          range.setStart(node, offset);
           range.collapse(true);
           found = true;
           return true;
@@ -165,7 +250,18 @@ export class TextCssControlComponent
 
     traverse(element);
 
-    if (found && selection) {
+    if (found) {
+      selection.removeAllRanges();
+      selection.addRange(range);
+    } else if (element.childNodes.length > 0) {
+      // Fallback: set cursor to end
+      const lastNode = element.childNodes[element.childNodes.length - 1];
+      if (lastNode.nodeType === Node.TEXT_NODE) {
+        range.setStart(lastNode, lastNode.textContent?.length || 0);
+      } else {
+        range.setStartAfter(lastNode);
+      }
+      range.collapse(true);
       selection.removeAllRanges();
       selection.addRange(range);
     }
@@ -175,10 +271,10 @@ export class TextCssControlComponent
     if (!css) return '<span class="css-placeholder">/* Enter CSS styles here */</span>';
 
     // Escape HTML
-    css = css.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const escaped = css.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
     // Split by lines and process each line
-    const lines = css.split('\n');
+    const lines = escaped.split('\n');
     const highlighted = lines.map((line) => {
       if (!line.trim()) return '';
 
@@ -193,7 +289,7 @@ export class TextCssControlComponent
         const isInvalid = !value.trim() || !semicolon;
         const invalidClass = isInvalid ? ' css-invalid' : '';
 
-        let highlightedValue = this.highlightValue(value.trim());
+        const highlightedValue = this.highlightValue(value.trim());
 
         return `${indent}<span class="css-property${invalidClass}">${property}</span><span class="css-colon">:</span> <span class="css-value${invalidClass}">${highlightedValue}</span><span class="css-semicolon">${semicolon}</span>`;
       }
@@ -248,11 +344,34 @@ export class TextCssControlComponent
   }
 
   update() {
-    if (!this.el || !this.item) return;
+    if (!this.el || !this.item || this.isUpdating) return;
 
     try {
-      this.renderer.setAttribute(this.el, 'style', this.textCss);
+      // Apply styles to element
+      this.el.style.cssText = this.textCss;
+
+      // Update editor with syntax highlighting
       this.updateEditorContent();
+
+      // Update item
+      this.item.style = mergeCssStyles(this.item.style, this.el.style.cssText);
+      this.onChange(this.item);
+      this.change.emit(this.item);
+    } catch (error) {
+      console.error('Invalid CSS:', error);
+    }
+
+    this.cdr.detectChanges();
+  }
+
+  private updateStyles() {
+    if (!this.el || !this.item || this.isUpdating) return;
+
+    try {
+      // Apply styles to element without updating editor
+      this.el.style.cssText = this.textCss;
+
+      // Update item
       this.item.style = mergeCssStyles(this.item.style, this.el.style.cssText);
       this.onChange(this.item);
       this.change.emit(this.item);
