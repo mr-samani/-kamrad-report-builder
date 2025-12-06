@@ -58,6 +58,9 @@ export class BlockPropertiesComponent extends BaseComponent implements OnInit {
   }
 
   ngOnInit() {}
+  openPanel(key: HTMLDetailsElement) {
+    this.chdRef.detectChanges();
+  }
 
   onChangeProperties() {
     if (this.item) this.pageBuilder.changedProperties(this.item);

@@ -12,31 +12,43 @@
       ></text-binding>
     }
 
-    <details>
+    <details name="block-properties" (toggle)="openPanel(display)" #display>
       <summary>Display</summary>
-      <display-control [(ngModel)]="item" (change)="onChangeProperties()"></display-control>
+      @if (display.open) {
+        <display-control [(ngModel)]="item" (change)="onChangeProperties()"></display-control>
+      }
     </details>
 
-    <details>
+    <details name="block-properties" (toggle)="openPanel(size)" #size>
       <summary>Size</summary>
-      <size-control [(ngModel)]="item" (change)="onChangeProperties()"></size-control>
+      @if (size.open) {
+        <size-control [(ngModel)]="item" (change)="onChangeProperties()"></size-control>
+      }
     </details>
 
-    <details>
+    <details name="block-properties" (toggle)="openPanel(spacing)" #spacing>
       <summary>Spacing</summary>
-      <spacing-control [(ngModel)]="item" (change)="onChangeProperties()"></spacing-control>
+      @if (spacing.open) {
+        <spacing-control [(ngModel)]="item" (change)="onChangeProperties()"></spacing-control>
+      }
     </details>
-    <details>
+    <details name="block-properties" (toggle)="openPanel(typography)" #typography>
       <summary>Typography</summary>
-      <typography-control [(ngModel)]="item" (change)="onChangeProperties()"></typography-control>
+      @if (typography.open) {
+        <typography-control [(ngModel)]="item" (change)="onChangeProperties()"></typography-control>
+      }
     </details>
-    <details>
+    <details name="block-properties" (toggle)="openPanel(background)" #background>
       <summary>Background</summary>
-      <background-control [(ngModel)]="item" (change)="onChangeProperties()"></background-control>
+      @if (background.open) {
+        <background-control [(ngModel)]="item" (change)="onChangeProperties()"></background-control>
+      }
     </details>
-    <details>
+    <details name="block-properties" (toggle)="openPanel(advanced)" #advanced>
       <summary>Advanced</summary>
-      <textcss-control [(ngModel)]="item" (change)="onChangeProperties()"></textcss-control>
+      @if (advanced.open) {
+        <textcss-control [(ngModel)]="item" (change)="onChangeProperties()"></textcss-control>
+      }
     </details>
   } @else {
     <p>None selected block.</p>
