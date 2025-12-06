@@ -139,7 +139,7 @@ export class BackgroundControlComponent
   }
 
   clear(property: string) {
-    (this as any)[property] = '' as any;
+    (this as any)[property] = undefined;
     this.update();
   }
 }
