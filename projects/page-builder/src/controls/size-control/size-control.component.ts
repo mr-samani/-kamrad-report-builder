@@ -32,7 +32,6 @@ export type SizeProperty = 'width' | 'minWidth' | 'maxWidth' | 'height' | 'minHe
 @Component({
   selector: 'size-control',
   templateUrl: './size-control.component.html',
-  styleUrls: ['./size-control.component.scss'],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

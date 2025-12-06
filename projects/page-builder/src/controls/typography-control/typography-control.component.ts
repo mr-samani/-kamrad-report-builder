@@ -16,7 +16,6 @@ import { mergeCssStyles } from '../../utiles/merge-css-styles';
 @Component({
   selector: 'typography-control',
   templateUrl: './typography-control.component.html',
-  styleUrls: ['./typography-control.component.scss'],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

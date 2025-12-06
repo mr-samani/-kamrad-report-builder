@@ -23,7 +23,6 @@ import { Notify } from '../../extensions/notify';
 @Component({
   selector: 'background-control',
   templateUrl: './background-control.component.html',
-  styleUrls: ['./background-control.component.scss'],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

@@ -50,7 +50,7 @@
       <label for="{{ property }}">{{ label }}:</label>
     </td>
     <td>
-      <div class="input-group">
+      <div class="pi-group">
         <input
           id="{{ property }}"
           [type]="sizeValue.unit != 'auto' ? 'number' : 'text'"
@@ -64,6 +64,7 @@
           [(ngModel)]="sizeValue.unit"
           (ngModelChange)="onChangeUnit(property)"
           [name]="'unit-' + property"
+          class="unit"
         >
           <option value="auto">{{ isMaxProperty(property) ? 'None' : 'Auto' }}</option>
           <option value="px">px</option>
