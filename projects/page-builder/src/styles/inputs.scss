@@ -22,6 +22,11 @@
     flex: auto;
     padding: 0 6px 0 6px;
     line-height: 2;
+    appearance: auto;
+    &:disabled {
+      background-color: #2b3138;
+      cursor: not-allowed;
+    }
   }
 
   &:has(input.color) {

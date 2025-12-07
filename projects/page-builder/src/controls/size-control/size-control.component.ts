@@ -170,4 +170,9 @@ export class SizeControlComponent extends BaseControl implements OnInit, Control
     this.onChange(this.item);
     this.change.emit(this.item);
   }
+  clear(property: any) {
+    debugger;
+    property = undefined;
+    this.update();
+  }
 }

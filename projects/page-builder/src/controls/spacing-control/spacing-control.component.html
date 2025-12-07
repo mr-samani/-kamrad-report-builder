@@ -57,9 +57,10 @@
       <label for="{{ key }}-{{ direction }}">{{ direction | titlecase }}:</label>
     </td>
     <td>
-      <div class="input-group">
+      <div class="pi-group">
         <input
           id="{{ key }}-{{ direction }}"
+          name="{{ key }}-{{ direction }}"
           [type]="unit != 'auto' ? 'number' : 'text'"
           [(ngModel)]="spacing[direction]"
           (ngModelChange)="update()"
@@ -71,6 +72,7 @@
           [(ngModel)]="spacing['unit']"
           (ngModelChange)="onChangeUnit(spacing, direction)"
           [name]="'unit-' + direction"
+          class="unit"
         >
           <option value="auto">Auto</option>
           <option value="px">px</option>
@@ -78,6 +80,7 @@
           <option value="rem">rem</option>
           <option value="%">%</option>
         </select>
+        <button class="btn-clear" type="button" (click)="clear(spacing, direction)">x</button>
       </div>
     </td>
   </tr>

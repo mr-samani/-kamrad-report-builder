@@ -33,10 +33,12 @@ import { mergeCssStyles } from '../../utiles/merge-css-styles';
 })
 export class SpacingControlComponent extends BaseControl implements OnInit, ControlValueAccessor {
   @Output() change = new EventEmitter<PageItem>();
-  spacing: ISpacingModel = {
-    margin: { top: 0, right: 0, bottom: 0, left: 0 },
-    padding: { top: 0, right: 0, bottom: 0, left: 0 },
+
+  DEFAULT_SPACING: ISpacingModel = {
+    margin: { top: undefined, right: undefined, bottom: undefined, left: undefined, unit: 'px' },
+    padding: { top: undefined, right: undefined, bottom: undefined, left: undefined, unit: 'px' },
   };
+  spacing: ISpacingModel = { ...this.DEFAULT_SPACING };
 
   constructor(injector: Injector) {
     super(injector);
@@ -49,15 +51,11 @@ export class SpacingControlComponent extends BaseControl implements OnInit, Cont
     this.el = item.el;
     let val = this.el.style;
     this.style = { padding: val?.padding, margin: val?.margin };
-    const defaultSpacing: ISpacingModel = {
-      margin: { top: 0, right: 0, bottom: 0, left: 0 },
-      padding: { top: 0, right: 0, bottom: 0, left: 0 },
-    };
 
     // Parse margin and padding from input
     this.spacing = {
-      margin: parseSpacingValues(val?.margin, defaultSpacing.margin),
-      padding: parseSpacingValues(val?.padding, defaultSpacing.padding),
+      margin: parseSpacingValues(val?.margin, this.DEFAULT_SPACING.margin),
+      padding: parseSpacingValues(val?.padding, this.DEFAULT_SPACING.padding),
     };
   }
 
@@ -82,5 +80,11 @@ export class SpacingControlComponent extends BaseControl implements OnInit, Cont
     this.onChange(this.item);
     this.item.style = mergeCssStyles(this.item.style, this.el.style.cssText);
     this.change.emit(this.item);
+  }
+
+  clear(spacing: IPosValue, direction: string) {
+    debugger;
+    (spacing as any)[direction] = undefined;
+    this.update();
   }
 }

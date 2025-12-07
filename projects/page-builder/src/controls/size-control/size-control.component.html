@@ -52,7 +52,8 @@
     <td>
       <div class="pi-group">
         <input
-          id="{{ property }}"
+          [id]="property"
+          [name]="property"
           [type]="sizeValue.unit != 'auto' ? 'number' : 'text'"
           [(ngModel)]="sizeValue.value"
           (ngModelChange)="update()"
@@ -74,6 +75,7 @@
           <option value="vh">vh</option>
           <option value="vw">vw</option>
         </select>
+        <button class="btn-clear" type="button" (click)="clear(sizeValue.value)">x</button>
       </div>
     </td>
   </tr>
