@@ -1,4 +1,4 @@
-import { ISpacing } from './ISpacingModel';
+import { Spacing } from './SpacingModel';
 
 export abstract class SpacingFormatter {
   private static unit: string = 'px'; // واحد پیش‌فرض
@@ -19,7 +19,7 @@ export abstract class SpacingFormatter {
     return String(value);
   }
 
-  static formatSpacingToCSS(spacing: ISpacing): string | undefined {
+  static formatSpacingToCSS(spacing: Spacing): string | undefined {
     // اگر spacing وجود نداشته باشه یا کامل نباشه
     if (!spacing) {
       return undefined;

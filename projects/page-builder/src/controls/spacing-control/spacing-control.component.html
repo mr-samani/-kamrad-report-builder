@@ -1,50 +1,49 @@
-@if (spacing) {
-  <table class="properties-table">
-    <tbody>
-      <tr>
-        <th colspan="2" align="start">Margin: {{ style?.margin }}</th>
-      </tr>
-      @for (direction of ['top', 'right', 'bottom', 'left']; track $index) {
-        <ng-container>
-          <ng-container
-            *ngTemplateOutlet="
-              spacingControl;
-              context: {
-                spacing: spacing.margin,
-                key: 'margin',
-                direction: direction,
-              }
-            "
-          ></ng-container>
-        </ng-container>
-      }
-    </tbody>
-  </table>
+<table class="properties-table">
+  <tbody>
+    <tr>
+      <th colspan="2" align="start">Margin: {{ style?.margin }}</th>
+    </tr>
+    @for (direction of margin | keyvalue: returnZero; track $index) {
+      <ng-container>
+        <ng-container
+          *ngTemplateOutlet="
+            spacingControl;
+            context: {
+              spacing: margin[direction.key],
+              key: 'margin',
+              direction: direction.key,
+            }
+          "
+        ></ng-container>
+      </ng-container>
+    }
+  </tbody>
+</table>
 
-  <table class="properties-table">
-    <tbody>
-      <tr>
-        <th colspan="2" align="start">Padding: {{ style?.padding }}</th>
-      </tr>
-      @for (direction of ['top', 'right', 'bottom', 'left']; track $index) {
-        <ng-container>
-          <ng-container
-            *ngTemplateOutlet="
-              spacingControl;
-              context: {
-                spacing: spacing.padding,
-                key: 'padding',
-                direction: direction,
-              }
-            "
-          ></ng-container>
-        </ng-container>
-      }
-    </tbody>
-  </table>
-}
+<table class="properties-table">
+  <tbody>
+    <tr>
+      <th colspan="2" align="start">Padding: {{ style?.padding }}</th>
+    </tr>
+    @for (direction of padding | keyvalue: returnZero; track $index) {
+      <ng-container>
+        <ng-container
+          *ngTemplateOutlet="
+            spacingControl;
+            context: {
+              spacing: padding[direction.key],
+              key: 'padding',
+              direction: direction.key,
+            }
+          "
+        ></ng-container>
+      </ng-container>
+    }
+  </tbody>
+</table>
+
 <ng-template #spacingControl let-spacing="spacing" let-key="key" let-direction="direction">
-  @if (spacing[direction]) {
+  @if (spacing) {
     <tr>
       <td>
         <label for="{{ key }}-{{ direction }}">{{ direction | titlecase }}:</label>
@@ -54,15 +53,15 @@
           <input
             id="{{ key }}-{{ direction }}"
             name="{{ key }}-{{ direction }}"
-            [type]="spacing[direction].unit != 'auto' ? 'number' : 'text'"
-            [(ngModel)]="spacing[direction].value"
+            [type]="spacing.unit != 'auto' ? 'number' : 'text'"
+            [(ngModel)]="spacing.value"
             (ngModelChange)="update()"
             [min]="key === 'padding' ? 0 : undefined"
-            [disabled]="spacing[direction].unit == 'auto'"
-            [readonly]="spacing[direction].unit == 'auto'"
+            [disabled]="spacing.unit == 'auto'"
+            [readonly]="spacing.unit == 'auto'"
           />
           <select
-            [(ngModel)]="spacing[direction].unit"
+            [(ngModel)]="spacing.unit"
             (ngModelChange)="onChangeUnit(spacing, direction)"
             [attr.name]="'unit-' + direction"
             class="unit"
