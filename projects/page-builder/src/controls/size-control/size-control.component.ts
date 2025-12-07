@@ -32,7 +32,6 @@ export type SizeProperty = 'width' | 'minWidth' | 'maxWidth' | 'height' | 'minHe
 @Component({
   selector: 'size-control',
   templateUrl: './size-control.component.html',
-  styleUrls: ['./size-control.component.scss'],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -170,5 +169,9 @@ export class SizeControlComponent extends BaseControl implements OnInit, Control
     this.item.style = mergeCssStyles(this.item.style, this.el.style.cssText);
     this.onChange(this.item);
     this.change.emit(this.item);
+  }
+  clear(property: any) {
+    property = undefined;
+    this.update();
   }
 }

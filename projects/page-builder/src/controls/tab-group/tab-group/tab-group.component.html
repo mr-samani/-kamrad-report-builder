@@ -1,0 +1,19 @@
+<div class="tab-group-container">
+  <div class="tab-group">
+    @for (tab of tabs; track $index; let tabIndex = $index) {
+      <div
+        class="tab-group__item"
+        #tabEl
+        (click)="selectTab(tab, tabIndex)"
+        [class.active]="tab.active"
+      >
+        {{ tab.title }}
+      </div>
+    }
+    @if (showPlusButton) {
+      <div class="tab-group__item plus" (click)="onClickPlus()">+</div>
+    }
+  </div>
+</div>
+
+<ng-content></ng-content>

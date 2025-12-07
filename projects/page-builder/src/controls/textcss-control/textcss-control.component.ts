@@ -11,6 +11,8 @@ import {
   ViewChild,
   AfterViewInit,
   Injector,
+  OnDestroy,
+  ViewEncapsulation,
 } from '@angular/core';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 
@@ -33,16 +35,19 @@ import { mergeCssStyles } from '../../utiles/merge-css-styles';
   ],
   standalone: true,
   imports: [FormsModule],
+  encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TextCssControlComponent
   extends BaseControl
-  implements OnInit, AfterViewInit, ControlValueAccessor
+  implements OnInit, AfterViewInit, ControlValueAccessor, OnDestroy
 {
   @Output() change = new EventEmitter<PageItem>();
-  @ViewChild('editorDiv', { static: false }) editorRef?: ElementRef<HTMLDivElement>;
+  @ViewChild('editorTextarea', { static: false }) textareaRef?: ElementRef<HTMLTextAreaElement>;
+  @ViewChild('highlightDiv', { static: false }) highlightRef?: ElementRef<HTMLDivElement>;
 
   textCss = '';
+  private updateTimeout?: any;
 
   constructor(
     injector: Injector,
@@ -55,8 +60,14 @@ export class TextCssControlComponent
   ngOnInit() {}
 
   ngAfterViewInit() {
-    if (this.editorRef) {
+    if (this.textareaRef) {
       this.setupEditor();
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.updateTimeout) {
+      clearTimeout(this.updateTimeout);
     }
   }
 
@@ -64,138 +75,130 @@ export class TextCssControlComponent
     this.item = item;
     this.el = item?.el;
     if (item && this.el) {
-      this.textCss = this.el.style.cssText.replace(/;/g, ';\n');
-      if (this.editorRef) {
-        this.updateEditorContent();
-      }
+      this.textCss = this.el.style.cssText.replace(/;\s*/g, ';\n');
+      this.updateHighlight();
     }
     this.cdr.detectChanges();
   }
 
   override setDisabledState(isDisabled: boolean): void {
     this.isDisabled = isDisabled;
-    if (this.editorRef) {
-      this.editorRef.nativeElement.contentEditable = isDisabled ? 'false' : 'true';
+    if (this.textareaRef) {
+      this.textareaRef.nativeElement.disabled = isDisabled;
     }
   }
 
   private setupEditor() {
-    if (!this.editorRef) return;
+    if (!this.textareaRef) return;
 
-    const editor = this.editorRef.nativeElement;
+    const textarea = this.textareaRef.nativeElement;
 
-    // Set initial content
-    this.updateEditorContent();
-
-    // Handle input
-    editor.addEventListener('input', () => {
-      this.textCss = this.getPlainText(editor);
-      this.update();
-    });
-
-    // Handle paste - remove formatting
-    editor.addEventListener('paste', (e: ClipboardEvent) => {
-      e.preventDefault();
-      const text = e.clipboardData?.getData('text/plain') || '';
-      document.execCommand('insertText', false, text);
-    });
-
-    // Handle blur
-    editor.addEventListener('blur', () => {
-      this.onTouched();
-    });
-  }
-
-  private updateEditorContent() {
-    if (!this.editorRef) return;
-
-    const editor = this.editorRef.nativeElement;
-    const cursorPosition = this.getCursorPosition(editor);
-
-    editor.innerHTML = this.highlightCSS(this.textCss);
-
-    // Restore cursor position
-    if (cursorPosition !== null) {
-      this.setCursorPosition(editor, cursorPosition);
-    }
-  }
-
-  private getPlainText(element: HTMLElement): string {
-    return element.innerText || '';
-  }
-
-  private getCursorPosition(element: HTMLElement): number | null {
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return null;
-
-    const range = selection.getRangeAt(0);
-    const preCaretRange = range.cloneRange();
-    preCaretRange.selectNodeContents(element);
-    preCaretRange.setEnd(range.endContainer, range.endOffset);
-
-    return preCaretRange.toString().length;
-  }
-
-  private setCursorPosition(element: HTMLElement, position: number) {
-    const selection = window.getSelection();
-    const range = document.createRange();
-
-    let currentPos = 0;
-    let found = false;
-
-    const traverse = (node: Node): boolean => {
-      if (node.nodeType === Node.TEXT_NODE) {
-        const textLength = node.textContent?.length || 0;
-        if (currentPos + textLength >= position) {
-          range.setStart(node, position - currentPos);
-          range.collapse(true);
-          found = true;
-          return true;
-        }
-        currentPos += textLength;
-      } else {
-        for (let i = 0; i < node.childNodes.length; i++) {
-          if (traverse(node.childNodes[i])) {
-            return true;
-          }
-        }
+    // Sync scroll between textarea and highlight
+    textarea.addEventListener('scroll', () => {
+      if (this.highlightRef) {
+        this.highlightRef.nativeElement.scrollTop = textarea.scrollTop;
+        this.highlightRef.nativeElement.scrollLeft = textarea.scrollLeft;
       }
-      return false;
-    };
+    });
 
-    traverse(element);
+    // Initial highlight
+    this.updateHighlight();
+  }
 
-    if (found && selection) {
-      selection.removeAllRanges();
-      selection.addRange(range);
+  onInput(event: Event) {
+    const textarea = event.target as HTMLTextAreaElement;
+    this.textCss = textarea.value;
+
+    // Update highlight immediately
+    this.updateHighlight();
+
+    // Debounce CSS application
+    if (this.updateTimeout) {
+      clearTimeout(this.updateTimeout);
     }
+    this.updateTimeout = setTimeout(() => {
+      this.update();
+    }, 150);
+  }
+
+  onKeyDown(event: KeyboardEvent) {
+    const textarea = event.target as HTMLTextAreaElement;
+
+    // Handle Tab key
+    if (event.key === 'Tab') {
+      event.preventDefault();
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const value = textarea.value;
+
+      // Insert 2 spaces
+      textarea.value = value.substring(0, start) + '  ' + value.substring(end);
+      textarea.selectionStart = textarea.selectionEnd = start + 2;
+
+      // Trigger input event
+      this.textCss = textarea.value;
+      this.updateHighlight();
+
+      if (this.updateTimeout) {
+        clearTimeout(this.updateTimeout);
+      }
+      this.updateTimeout = setTimeout(() => {
+        this.update();
+      }, 150);
+    }
+  }
+
+  private updateHighlight() {
+    if (!this.highlightRef) return;
+    this.highlightRef.nativeElement.innerHTML = this.highlightCSS(this.textCss);
   }
 
   private highlightCSS(css: string): string {
     if (!css) return '<span class="css-placeholder">/* Enter CSS styles here */</span>';
 
     // Escape HTML
-    css = css.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    let escaped = css.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
     // Split by lines and process each line
-    const lines = css.split('\n');
-    const highlighted = lines.map((line) => {
-      if (!line.trim()) return '';
+    const lines = escaped.split('\n');
+    const highlighted = lines.map((line, index) => {
+      // Empty line
+      if (!line.trim()) {
+        return '<br>';
+      }
 
       // Check for property: value; pattern
-      const match = line.match(/^\s*([a-z-]+)\s*:\s*([^;]*)(;?)\s*$/i);
+      const match = line.match(/^(\s*)([a-z-]+)(\s*):(\s*)([^;]*)(;?)(.*)$/i);
 
       if (match) {
-        const [, property, value, semicolon] = match;
-        const indent = line.match(/^\s*/)?.[0] || '';
+        const [
+          ,
+          leadingSpace,
+          property,
+          spaceAfterProp,
+          spaceBeforeValue,
+          value,
+          semicolon,
+          trailing,
+        ] = match;
 
         // Validate
         const isInvalid = !value.trim() || !semicolon;
         const invalidClass = isInvalid ? ' css-invalid' : '';
 
-        let highlightedValue = this.highlightValue(value.trim());
+        const highlightedValue = this.highlightValue(value);
 
-        return `${indent}<span class="css-property${invalidClass}">${property}</span><span class="css-colon">:</span> <span class="css-value${invalidClass}">${highlightedValue}</span><span class="css-semicolon">${semicolon}</span>`;
+        return (
+          `${leadingSpace}<span class="css-property${invalidClass}">${property}</span>` +
+          `${spaceAfterProp}<span class="css-colon">:</span>${spaceBeforeValue}` +
+          `<span class="css-value${invalidClass}">${highlightedValue}</span>` +
+          `<span class="css-semicolon${invalidClass}">${semicolon}</span>${trailing}`
+        );
+      }
+
+      // Comment
+      if (line.trim().startsWith('/*')) {
+        return `<span class="css-comment">${line}</span>`;
       }
 
       // If doesn't match pattern, mark as invalid
@@ -206,22 +209,25 @@ export class TextCssControlComponent
   }
 
   private highlightValue(value: string): string {
-    // Color values
-    if (/#[0-9a-fA-F]{3,8}/.test(value)) {
+    value = value.trim();
+
+    // Color values (hex)
+    if (/^#[0-9a-fA-F]{3,8}$/.test(value)) {
       return `<span class="css-color">${value}</span>`;
     }
 
-    if (/^(rgb|rgba|hsl|hsla)\(/.test(value)) {
+    // Color functions
+    if (/^(rgb|rgba|hsl|hsla)\(.+\)$/.test(value)) {
       return `<span class="css-color">${value}</span>`;
     }
 
     // Numbers with units
-    if (/^-?\d+\.?\d*(px|em|rem|%|vh|vw|vmin|vmax|deg|rad|turn|s|ms)?$/i.test(value)) {
+    if (/^-?\d+\.?\d*(px|em|rem|%|vh|vw|vmin|vmax|deg|rad|turn|s|ms|ch|ex|fr)?$/i.test(value)) {
       return `<span class="css-number">${value}</span>`;
     }
 
     // URLs
-    if (/^url\(/.test(value)) {
+    if (/^url\(.+\)$/.test(value)) {
       return `<span class="css-url">${value}</span>`;
     }
 
@@ -230,18 +236,55 @@ export class TextCssControlComponent
       return value.replace(/!important/, '<span class="css-important">!important</span>');
     }
 
-    // Keywords
-    if (/^(inherit|initial|unset|auto|none|normal|transparent|currentColor)$/i.test(value)) {
+    // Common keywords
+    const keywords = [
+      'inherit',
+      'initial',
+      'unset',
+      'revert',
+      'auto',
+      'none',
+      'normal',
+      'transparent',
+      'currentColor',
+      'solid',
+      'dashed',
+      'dotted',
+      'double',
+      'block',
+      'inline',
+      'flex',
+      'grid',
+      'absolute',
+      'relative',
+      'fixed',
+      'sticky',
+      'hidden',
+      'visible',
+      'bold',
+      'italic',
+      'center',
+      'left',
+      'right',
+      'top',
+      'bottom',
+      'middle',
+      'baseline',
+    ];
+
+    if (keywords.includes(value.toLowerCase())) {
       return `<span class="css-keyword">${value}</span>`;
     }
 
     // Multiple values (space-separated)
     if (value.includes(' ')) {
-      const parts = value.split(/(\s+)/).map((part) => {
-        if (/^\s+$/.test(part)) return part;
-        return this.highlightValue(part);
-      });
-      return parts.join('');
+      const parts = value.split(' ').map((part) => this.highlightValue(part));
+      return parts.join(' ');
+    }
+
+    // Default - could be a color name or custom value
+    if (/^[a-z]+$/i.test(value)) {
+      return `<span class="css-keyword">${value}</span>`;
     }
 
     return value;
@@ -251,8 +294,10 @@ export class TextCssControlComponent
     if (!this.el || !this.item) return;
 
     try {
-      this.renderer.setAttribute(this.el, 'style', this.textCss);
-      this.updateEditorContent();
+      // Apply styles to element
+      this.el.style.cssText = this.textCss;
+
+      // Update item
       this.item.style = mergeCssStyles(this.item.style, this.el.style.cssText);
       this.onChange(this.item);
       this.change.emit(this.item);

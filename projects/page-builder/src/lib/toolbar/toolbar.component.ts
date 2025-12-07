@@ -2,21 +2,21 @@ import {
   ChangeDetectionStrategy,
   Component,
   effect,
-  Inject,
+  inject,
   Injector,
   OnInit,
 } from '@angular/core';
 import { PageBuilderBaseComponent } from '../page-builder-base-component';
 import { FormsModule } from '@angular/forms';
-import { STORAGE_SERVICE } from '../../services/storage/token.storage';
-import { IStorageService } from '../../services/storage/IStorageService';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfigDialogComponent } from '../config-dialog/config-dialog.component';
 import { SortPageListComponent } from '../sort-page-list/sort-page-list.component';
-import { PageBuilderDto } from '../../models/PageBuilderDto';
 import { RouterModule } from '@angular/router';
-import { Notify } from '../../extensions/notify';
 import { SvgIconDirective } from '../../directives/svg-icon.directive';
+import { ImportDialogComponent } from '../import-dialog/import-dialog.component';
+import { ExportHtmlService } from '../../services/import-export/export-html.service';
+import { PageItem } from '../../models/PageItem';
+import { Notify } from '../../extensions/notify';
 
 @Component({
   selector: 'toolbar',
@@ -25,12 +25,14 @@ import { SvgIconDirective } from '../../directives/svg-icon.directive';
   standalone: true,
   imports: [FormsModule, RouterModule, SvgIconDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [ExportHtmlService],
 })
 export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit {
   pageNumber: number = 1;
   constructor(
     injector: Injector,
     private matDialog: MatDialog,
+    private exporter: ExportHtmlService,
   ) {
     super(injector);
     effect(() => {
@@ -128,6 +130,32 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
       .afterClosed()
       .subscribe((r) => {
         this.chdRef.detectChanges();
+      });
+  }
+
+  async exportHtml() {
+    this.exporter.exportHtml();
+  }
+  importHtml() {
+    const pageIndex = this.pageBuilder.currentPageIndex();
+    if (pageIndex < 0) {
+      Notify.error('Create page to import');
+      return;
+    }
+    this.matDialog
+      .open(ImportDialogComponent, {
+        panelClass: 'ngx-page-builder',
+        width: '80%',
+        minWidth: '80%',
+        maxWidth: '100%',
+      })
+      .afterClosed()
+      .subscribe(async (r?: PageItem[]) => {
+        if (r) {
+          this.pageBuilder.pageInfo.pages[pageIndex].bodyItems.push(...r);
+          r.map(async (item) => await this.pageBuilder.createBlockElement(item));
+          this.chdRef.detectChanges();
+        }
       });
   }
 }

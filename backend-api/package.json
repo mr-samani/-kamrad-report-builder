@@ -1,0 +1,19 @@
+{
+  "name": "spa-renderer-api",
+  "version": "1.0.0",
+  "description": "API for rendering SPA pages with Puppeteer",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "body-parser": "^2.2.1",
+    "cors": "^2.8.5",
+    "express": "^5.2.1",
+    "puppeteer": "^24.31.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
+}

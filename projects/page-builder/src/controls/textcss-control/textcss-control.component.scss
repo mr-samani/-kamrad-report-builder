@@ -1,217 +1,135 @@
-.css-editor-container {
-  position: relative;
+.ngx-page-builder-css-editor-container {
   width: 100%;
-  border: 1px solid #3c3c3c;
+  height: 300px;
+  border: 1px solid #ddd;
   border-radius: 4px;
   overflow: hidden;
   background: #1e1e1e;
 
-  .css-editor {
+  .css-editor-wrapper {
+    position: relative;
     width: 100%;
-    min-height: 200px;
-    max-height: 400px;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .css-highlight-layer,
+  .css-textarea-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     padding: 12px;
     margin: 0;
-    overflow: auto;
+    border: none;
     font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
     font-size: 14px;
-    line-height: 1.6;
-    color: #d4d4d4;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    outline: none;
-    caret-color: #ffffff;
+    line-height: 1.5;
+    white-space: pre;
+    word-wrap: normal;
+    overflow: auto;
+    tab-size: 2;
+  }
 
-    &:empty::before {
-      content: '/* Enter CSS styles here */';
-      color: #6a9955;
-      font-style: italic;
-    }
+  .css-highlight-layer {
+    color: transparent;
+    pointer-events: none;
+    z-index: 100;
+    overflow: hidden;
 
-    // Property names
-    ::ng-deep .css-property {
+    // Syntax highlighting colors
+    .css-property {
       color: #9cdcfe;
-
-      &.css-invalid {
-        color: #f48771;
-        text-decoration: wavy underline;
-        text-decoration-color: #f48771;
-      }
     }
 
-    // Colon
-    ::ng-deep .css-colon {
+    .css-colon {
       color: #d4d4d4;
     }
 
-    // Values
-    ::ng-deep .css-value {
+    .css-value {
       color: #ce9178;
-
-      &.css-invalid {
-        color: #f48771;
-        text-decoration: wavy underline;
-        text-decoration-color: #f48771;
-      }
     }
 
-    // Numbers
-    ::ng-deep .css-number {
+    .css-semicolon {
+      color: #d4d4d4;
+    }
+
+    .css-color {
+      color: #4ec9b0;
+    }
+
+    .css-number {
       color: #b5cea8;
     }
 
-    // Colors
-    ::ng-deep .css-color {
-      color: #ce9178;
-      font-weight: 500;
-    }
-
-    // URLs
-    ::ng-deep .css-url {
-      color: #ce9178;
-    }
-
-    // Keywords
-    ::ng-deep .css-keyword {
+    .css-keyword {
       color: #569cd6;
-      font-style: italic;
     }
 
-    // Important
-    ::ng-deep .css-important {
+    .css-url {
+      color: #ce9178;
+    }
+
+    .css-important {
       color: #c586c0;
       font-weight: bold;
     }
 
-    // Semicolons
-    ::ng-deep .css-semicolon {
-      color: #d4d4d4;
-    }
-
-    // Invalid/error
-    ::ng-deep .css-invalid {
-      color: #f48771;
-      background-color: rgba(244, 135, 113, 0.1);
-      text-decoration: wavy underline;
-      text-decoration-color: #f48771;
-    }
-
-    // Placeholder
-    ::ng-deep .css-placeholder {
+    .css-comment {
       color: #6a9955;
       font-style: italic;
     }
 
-    // Selection
-    ::selection {
-      background: rgba(38, 79, 120, 0.99);
-      color: #ffffff;
+    .css-invalid {
+      color: #f48771;
+      text-decoration: underline wavy #f48771;
     }
 
-    &[contenteditable='false'] {
-      opacity: 0.6;
+    .css-placeholder {
+      color: #6a737d;
+      font-style: italic;
+    }
+  }
+
+  .css-textarea-layer {
+    color: #d4d4d4;
+    background: transparent;
+    caret-color: #fff;
+    resize: none;
+    outline: none;
+    z-index: 2;
+
+    &::placeholder {
+      color: #6a737d;
+      font-style: italic;
+    }
+
+    &:disabled {
       cursor: not-allowed;
-      user-select: none;
+      opacity: 0.6;
     }
   }
 
   // Scrollbar styling
-  .css-editor::-webkit-scrollbar {
+  .css-highlight-layer::-webkit-scrollbar,
+  .css-textarea-layer::-webkit-scrollbar {
     width: 10px;
     height: 10px;
   }
 
-  .css-editor::-webkit-scrollbar-track {
+  .css-highlight-layer::-webkit-scrollbar-track,
+  .css-textarea-layer::-webkit-scrollbar-track {
     background: #1e1e1e;
   }
 
-  .css-editor::-webkit-scrollbar-thumb {
+  .css-highlight-layer::-webkit-scrollbar-thumb,
+  .css-textarea-layer::-webkit-scrollbar-thumb {
     background: #424242;
     border-radius: 5px;
 
     &:hover {
       background: #4e4e4e;
-    }
-  }
-}
-
-// Light theme (اگه می‌خوای)
-.css-editor-container.light-theme {
-  background: #ffffff;
-  border-color: #d0d0d0;
-
-  .css-editor {
-    background: #ffffff;
-    color: #000000;
-    caret-color: #000000;
-
-    &:empty::before {
-      color: #008000;
-    }
-
-    ::ng-deep .css-property {
-      color: #0451a5;
-
-      &.css-invalid {
-        color: #e51400;
-        text-decoration-color: #e51400;
-      }
-    }
-
-    ::ng-deep .css-colon {
-      color: #000000;
-    }
-
-    ::ng-deep .css-value {
-      color: #a31515;
-
-      &.css-invalid {
-        color: #e51400;
-        text-decoration-color: #e51400;
-      }
-    }
-
-    ::ng-deep .css-number {
-      color: #098658;
-    }
-
-    ::ng-deep .css-color {
-      color: #a31515;
-    }
-
-    ::ng-deep .css-url {
-      color: #a31515;
-    }
-
-    ::ng-deep .css-keyword {
-      color: #0000ff;
-    }
-
-    ::ng-deep .css-important {
-      color: #af00db;
-    }
-
-    ::ng-deep .css-invalid {
-      color: #e51400;
-      background-color: rgba(229, 20, 0, 0.1);
-      text-decoration-color: #e51400;
-    }
-
-    ::selection {
-      background: rgba(173, 214, 255, 0.99);
-      color: #000000;
-    }
-  }
-
-  .css-editor::-webkit-scrollbar-track {
-    background: #f1f1f1;
-  }
-
-  .css-editor::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-
-    &:hover {
-      background: #a8a8a8;
     }
   }
 }

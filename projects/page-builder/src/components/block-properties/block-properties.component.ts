@@ -18,6 +18,7 @@ import { SizeControlComponent } from '../../controls/size-control/size-control.c
 import { DynamicDataStructure } from '../../models/DynamicData';
 import { TextBindingComponent } from '../text-binding/text-binding.component';
 import { DynamicDataService } from '../../services/dynamic-data.service';
+import { ShadowControlComponent } from '../../controls/shadow-control/shadow-control.component';
 
 @Component({
   selector: 'block-properties',
@@ -29,6 +30,7 @@ import { DynamicDataService } from '../../services/dynamic-data.service';
     SpacingControlComponent,
     TypographyControlComponent,
     BackgroundControlComponent,
+    ShadowControlComponent,
     DisplayControlComponent,
     TextCssControlComponent,
     SizeControlComponent,
@@ -58,6 +60,9 @@ export class BlockPropertiesComponent extends BaseComponent implements OnInit {
   }
 
   ngOnInit() {}
+  openPanel(key: HTMLDetailsElement) {
+    this.chdRef.detectChanges();
+  }
 
   onChangeProperties() {
     if (this.item) this.pageBuilder.changedProperties(this.item);

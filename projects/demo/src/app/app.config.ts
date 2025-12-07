@@ -17,7 +17,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     providePageBuilder({
       customSources: CustomSources,
-      storageType: StorageType.JSONFile,
+      storageType: StorageType.LocalStorage,
     }),
     // {
     //   provide: STORAGE_SERVICE,

@@ -41,7 +41,12 @@
 <!-- --------------------------------------------------------------------------------- -->
 <div class="spacer"></div>
 <!-- --------------------------------------------------------------------------------- -->
-
+<button (click)="exportHtml()" title="Export all pages as Html">
+  <svg Icon="assets/icons/file-export.svg"></svg>
+</button>
+<button (click)="importHtml()" title="Import Html">
+  <svg Icon="assets/icons/download.svg"></svg>
+</button>
 <button (click)="openConfigDialog()" title="Configuration">
   <svg Icon="assets/icons/cog.svg"></svg>
 </button>

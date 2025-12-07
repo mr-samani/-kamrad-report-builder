@@ -50,9 +50,10 @@
       <label for="{{ property }}">{{ label }}:</label>
     </td>
     <td>
-      <div class="input-group">
+      <div class="pi-group">
         <input
-          id="{{ property }}"
+          [id]="property"
+          [name]="property"
           [type]="sizeValue.unit != 'auto' ? 'number' : 'text'"
           [(ngModel)]="sizeValue.value"
           (ngModelChange)="update()"
@@ -64,6 +65,7 @@
           [(ngModel)]="sizeValue.unit"
           (ngModelChange)="onChangeUnit(property)"
           [name]="'unit-' + property"
+          class="unit"
         >
           <option value="auto">{{ isMaxProperty(property) ? 'None' : 'Auto' }}</option>
           <option value="px">px</option>
@@ -73,6 +75,7 @@
           <option value="vh">vh</option>
           <option value="vw">vw</option>
         </select>
+        <button class="btn-clear" type="button" (click)="clear(sizeValue.value)">x</button>
       </div>
     </td>
   </tr>

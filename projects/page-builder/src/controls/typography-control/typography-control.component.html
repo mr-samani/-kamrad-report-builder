@@ -8,13 +8,16 @@
         <label for="font-family">Font Family:</label>
       </td>
       <td>
-        <select id="font-family" [(ngModel)]="fontFamily" (ngModelChange)="update()">
-          <option value="Arial">Arial</option>
-          <option value="Courier New">Courier New</option>
-          <option value="Georgia">Georgia</option>
-          <option value="Times New Roman">Times New Roman</option>
-          <option value="Verdana">Verdana</option>
-        </select>
+        <div class="pi-group">
+          <select id="font-family" [(ngModel)]="fontFamily" (ngModelChange)="update()">
+            <option value="Arial">Arial</option>
+            <option value="Courier New">Courier New</option>
+            <option value="Georgia">Georgia</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="Verdana">Verdana</option>
+          </select>
+          <button class="btn-clear" type="button" (click)="clear('fontFamily')">x</button>
+        </div>
       </td>
     </tr>
     <tr>
@@ -22,7 +25,10 @@
         <label for="font-size">Font Size:</label>
       </td>
       <td>
-        <input id="font-size" type="number" [(ngModel)]="fontSize" (ngModelChange)="update()" />
+        <div class="pi-group">
+          <input id="font-size" type="number" [(ngModel)]="fontSize" (ngModelChange)="update()" />
+          <button class="btn-clear" type="button" (click)="clear('fontSize')">x</button>
+        </div>
       </td>
     </tr>
 
@@ -31,7 +37,15 @@
         <label for="line-height">Line Height:</label>
       </td>
       <td>
-        <input id="line-height" type="number" [(ngModel)]="lineHeight" (ngModelChange)="update()" />
+        <div class="pi-group">
+          <input
+            id="line-height"
+            type="number"
+            [(ngModel)]="lineHeight"
+            (ngModelChange)="update()"
+          />
+          <button class="btn-clear" type="button" (click)="clear('lineHeight')">x</button>
+        </div>
       </td>
     </tr>
 
@@ -40,11 +54,14 @@
         <label for="text-decoration">Text Decoration:</label>
       </td>
       <td>
-        <select id="text-decoration" [(ngModel)]="textDecoration" (ngModelChange)="update()">
-          <option value="none">None</option>
-          <option value="underline">Underline</option>
-          <option value="line-through">Line Through</option>
-        </select>
+        <div class="pi-group">
+          <select id="text-decoration" [(ngModel)]="textDecoration" (ngModelChange)="update()">
+            <option value="none">None</option>
+            <option value="underline">Underline</option>
+            <option value="line-through">Line Through</option>
+          </select>
+          <button class="btn-clear" type="button" (click)="clear('textDecoration')">x</button>
+        </div>
       </td>
     </tr>
 
@@ -53,12 +70,15 @@
         <label for="text-transform">Text Transform:</label>
       </td>
       <td>
-        <select id="text-transform" [(ngModel)]="textTransform" (ngModelChange)="update()">
-          <option value="none">None</option>
-          <option value="uppercase">Uppercase</option>
-          <option value="lowercase">Lowercase</option>
-          <option value="capitalize">Capitalize</option>
-        </select>
+        <div class="pi-group">
+          <select id="text-transform" [(ngModel)]="textTransform" (ngModelChange)="update()">
+            <option value="none">None</option>
+            <option value="uppercase">Uppercase</option>
+            <option value="lowercase">Lowercase</option>
+            <option value="capitalize">Capitalize</option>
+          </select>
+          <button class="btn-clear" type="button" (click)="clear('textTransform')">x</button>
+        </div>
       </td>
     </tr>
 
@@ -67,12 +87,15 @@
         <label for="text-alignment">Text Alignment:</label>
       </td>
       <td>
-        <select id="text-alignment" [(ngModel)]="textAlign" (ngModelChange)="update()">
-          <option value="left">Left</option>
-          <option value="center">Center</option>
-          <option value="right">Right</option>
-          <option value="justify">Justify</option>
-        </select>
+        <div class="pi-group">
+          <select id="text-alignment" [(ngModel)]="textAlign" (ngModelChange)="update()">
+            <option value="left">Left</option>
+            <option value="center">Center</option>
+            <option value="right">Right</option>
+            <option value="justify">Justify</option>
+          </select>
+          <button class="btn-clear" type="button" (click)="clear('textAlign')">x</button>
+        </div>
       </td>
     </tr>
   </tbody>

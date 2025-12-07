@@ -16,7 +16,6 @@ import { mergeCssStyles } from '../../utiles/merge-css-styles';
 @Component({
   selector: 'typography-control',
   templateUrl: './typography-control.component.html',
-  styleUrls: ['./typography-control.component.scss'],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -69,9 +68,17 @@ export class TypographyControlComponent
   update() {
     if (!this.el || !this.item) return;
     // Update style object with formatted CSS values
-    this.renderer.setStyle(this.el, 'fontSize', this.fontSize + 'px');
+    this.renderer.setStyle(
+      this.el,
+      'fontSize',
+      this.fontSize != undefined ? this.fontSize + 'px' : '',
+    );
     this.renderer.setStyle(this.el, 'fontFamily', this.fontFamily);
-    this.renderer.setStyle(this.el, 'lineHeight', this.lineHeight + 'px');
+    this.renderer.setStyle(
+      this.el,
+      'lineHeight',
+      this.lineHeight != undefined ? this.lineHeight + 'px' : '',
+    );
     this.renderer.setStyle(this.el, 'textDecoration', this.textDecoration);
     this.renderer.setStyle(this.el, 'textTransform', this.textTransform);
     this.renderer.setStyle(this.el, 'textAlign', this.textAlign);
@@ -86,5 +93,10 @@ export class TypographyControlComponent
     this.onChange(this.item);
     this.item.style = mergeCssStyles(this.item.style, this.el.style.cssText);
     this.change.emit(this.item);
+  }
+
+  clear(property: string) {
+    (this as any)[property] = undefined;
+    this.update();
   }
 }

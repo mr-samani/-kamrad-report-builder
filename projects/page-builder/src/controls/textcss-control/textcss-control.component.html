@@ -1,9 +1,16 @@
-<div class="css-editor-container">
-  <div
-    #editorDiv
-    class="css-editor"
-    contenteditable="true"
-    spellcheck="false"
-    [attr.contenteditable]="!isDisabled"
-  ></div>
+<div class="ngx-page-builder-css-editor-container">
+  <div class="css-editor-wrapper">
+    <div #highlightDiv class="css-highlight-layer" [attr.aria-hidden]="true"></div>
+    <textarea
+      #editorTextarea
+      class="css-textarea-layer"
+      spellcheck="false"
+      [value]="textCss"
+      [disabled]="isDisabled"
+      (input)="onInput($event)"
+      (keydown)="onKeyDown($event)"
+      (blur)="onTouched()"
+      placeholder="/* Enter CSS styles here */"
+    ></textarea>
+  </div>
 </div>

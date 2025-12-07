@@ -19,10 +19,10 @@ export abstract class SpacingFormatter {
     return String(value);
   }
 
-  static formatSpacingToCSS(spacing: IPosValue): string {
+  static formatSpacingToCSS(spacing: IPosValue): string | undefined {
     // اگر spacing وجود نداشته باشه یا کامل نباشه
     if (!spacing) {
-      return '0';
+      return undefined;
     }
 
     const { top, right, bottom, left } = spacing;

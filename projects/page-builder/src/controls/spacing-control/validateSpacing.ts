@@ -2,15 +2,22 @@ import { IPosValue } from './IPosValue';
 
 export function validateSpacing(spacing: IPosValue, allowNegative: boolean): IPosValue {
   const validated: IPosValue = {};
-  const keys: (keyof IPosValue)[] = ['top', 'right', 'bottom', 'left'];
+  const keys: (keyof IPosValue)[] = ['top', 'right', 'bottom', 'left', 'unit'];
 
   for (const key of keys) {
-    if (key == 'unit') continue;
     const value = spacing[key];
+    if (key == 'unit') {
+      if (!spacing[key]) {
+        validated[key] = 'px';
+      } else {
+        validated[key] = value as any;
+      }
+      continue;
+    }
     if (value == 'auto') {
       validated[key] = 'auto';
     } else if (value === undefined || isNaN(+value)) {
-      validated[key] = 0;
+      validated[key] = undefined;
     } else if (!allowNegative && +value < 0) {
       validated[key] = 0; // No negative values for padding
     } else {

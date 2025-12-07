@@ -52,8 +52,8 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
 
   @ViewChild('tableContainer') tableContainer!: ElementRef<HTMLTableElement>;
   @ViewChild('wrapper') wrapper!: ElementRef<HTMLDivElement>;
-  @ViewChild('toolbar') toolbar!: ElementRef<HTMLDivElement>;
-  @ViewChild('selectionRange') selectionRangeEl!: ElementRef<HTMLDivElement>;
+  @ViewChild('toolbar', { static: false }) toolbar?: ElementRef<HTMLDivElement>;
+  @ViewChild('selectionRange', { static: false }) selectionRangeEl?: ElementRef<HTMLDivElement>;
 
   /**
    * if is dynamic rows and selected cell in body , can not change rows
@@ -404,21 +404,22 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
   }
 
   updateToolbarPosition() {
-    if (this.firstSelectedCell?.block?.el) {
-      const rect = this.rangeSelection
-        ? this.selectionRangeEl.nativeElement.getBoundingClientRect()
-        : this.firstSelectedCell.block.el.getBoundingClientRect();
-      const wrapperRect = this.wrapper.nativeElement.getBoundingClientRect();
-      const toolbarWidth = this.toolbar.nativeElement.offsetWidth;
-      const optX = rect.x - wrapperRect.x + (rect.width - toolbarWidth) / 2;
-      const optY = rect.y - wrapperRect.y + rect.height;
-      this.renderer.setStyle(this.toolbar.nativeElement, 'left', `${optX}px`);
-      this.renderer.setStyle(this.toolbar.nativeElement, 'top', `${optY}px`);
-    }
+    if (!this.selectionRangeEl || !this.toolbar || !this.firstSelectedCell?.block?.el) return;
+    const rect = this.rangeSelection
+      ? this.selectionRangeEl.nativeElement.getBoundingClientRect()
+      : this.firstSelectedCell.block.el.getBoundingClientRect();
+    const wrapperRect = this.wrapper.nativeElement.getBoundingClientRect();
+    const toolbarWidth = this.toolbar.nativeElement.offsetWidth;
+    const optX = rect.x - wrapperRect.x + (rect.width - toolbarWidth) / 2;
+    const optY = rect.y - wrapperRect.y + rect.height;
+    this.renderer.setStyle(this.toolbar.nativeElement, 'left', `${optX}px`);
+    this.renderer.setStyle(this.toolbar.nativeElement, 'top', `${optY}px`);
   }
 
   updateRangeSelectionPosition() {
     this.showMergeButton = false;
+    if (!this.selectionRangeEl) return;
+
     if (this.rangeSelection) {
       const startRect = this.rangeSelection.start.block?.el?.getBoundingClientRect();
       const endRect = this.rangeSelection.end.block?.el?.getBoundingClientRect();
