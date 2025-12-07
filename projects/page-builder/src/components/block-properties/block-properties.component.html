@@ -44,6 +44,12 @@
         <background-control [(ngModel)]="item" (change)="onChangeProperties()"></background-control>
       }
     </details>
+    <details name="block-properties" (toggle)="openPanel(shadow)" #shadow>
+      <summary>Shadow</summary>
+      @if (shadow.open) {
+        <shadow-control [(ngModel)]="item" (change)="onChangeProperties()"></shadow-control>
+      }
+    </details>
     <details name="block-properties" (toggle)="openPanel(advanced)" #advanced>
       <summary>Advanced</summary>
       @if (advanced.open) {

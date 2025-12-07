@@ -83,7 +83,6 @@ export class SpacingControlComponent extends BaseControl implements OnInit, Cont
   }
 
   clear(spacing: IPosValue, direction: string) {
-    debugger;
     (spacing as any)[direction] = undefined;
     this.update();
   }

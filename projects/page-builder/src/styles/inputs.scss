@@ -68,5 +68,53 @@ block-properties {
     &:hover {
       background: linear-gradient(180deg, rgba(69, 69, 69, 0.13) 0%, rgba(34, 34, 34, 0.11) 100%);
     }
+
+    svg[Icon] {
+      width: 18px;
+      max-height: 18px;
+    }
+    &:has(svg[Icon]) {
+      padding: 2px 5px;
+      line-height: 0;
+    }
   }
 }
+
+/*--------------group buttons------------------------------*/
+.pi-btn-group {
+  background-color: var(--color-bg-secondary, #383838);
+  border: 1px solid var(--color-bg-secondary, #383838);
+  border-radius: var(--radius-medium, 0.3125rem);
+  color: var(--fgColor);
+  button,
+  .button {
+    display: inline-block;
+    padding: 6px 10px;
+    line-height: 1;
+    min-width: 40px;
+    border-radius: 5px;
+
+    &:last-child {
+      border-right: none;
+    }
+    &.active {
+      background: #151515;
+      border: none;
+    }
+  }
+  input {
+    display: none;
+  }
+  label {
+    color: inherit;
+  }
+  i {
+    font-weight: 400;
+    color: inherit;
+  }
+  .btn-check:checked + .button {
+    background: #151515;
+    border: none;
+  }
+}
+/*--------------group buttons------------------------------*/
