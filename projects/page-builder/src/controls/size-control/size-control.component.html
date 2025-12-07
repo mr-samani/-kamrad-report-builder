@@ -1,9 +1,6 @@
 @if (sizes) {
   <table class="properties-table">
     <tbody>
-      <tr>
-        <th colspan="2" align="start">Width: {{ style?.width }}</th>
-      </tr>
       @for (property of widthProperties; track $index) {
         <ng-container>
           <ng-container
@@ -23,9 +20,6 @@
 
   <table class="properties-table">
     <tbody>
-      <tr>
-        <th colspan="2" align="start">Height: {{ style?.height }}</th>
-      </tr>
       @for (property of heightProperties; track $index) {
         <ng-container>
           <ng-container
@@ -75,7 +69,7 @@
           <option value="vh">vh</option>
           <option value="vw">vw</option>
         </select>
-        <button class="btn-clear" type="button" (click)="clear(sizeValue.value)">x</button>
+        <button class="btn-clear" type="button" (click)="clear(sizeValue)">x</button>
       </div>
     </td>
   </tr>

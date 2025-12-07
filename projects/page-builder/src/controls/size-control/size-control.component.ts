@@ -57,12 +57,12 @@ export class SizeControlComponent extends BaseControl implements OnInit, Control
     minHeight: ISizeValue;
     maxHeight: ISizeValue;
   } = {
-    width: { value: 'auto', unit: 'auto' },
-    minWidth: { value: 0, unit: 'px' },
-    maxWidth: { value: 'none', unit: 'auto' },
-    height: { value: 'auto', unit: 'auto' },
-    minHeight: { value: 0, unit: 'px' },
-    maxHeight: { value: 'none', unit: 'auto' },
+    width: { value: undefined, unit: 'px' },
+    minWidth: { value: undefined, unit: 'px' },
+    maxWidth: { value: undefined, unit: 'px' },
+    height: { value: undefined, unit: 'px' },
+    minHeight: { value: undefined, unit: 'px' },
+    maxHeight: { value: undefined, unit: 'px' },
   };
 
   constructor(
@@ -118,6 +118,7 @@ export class SizeControlComponent extends BaseControl implements OnInit, Control
   }
 
   formatSizeValue(sizeValue: ISizeValue): string {
+    if (sizeValue.value == undefined) return '';
     if (sizeValue.unit === 'auto') {
       return sizeValue.value === 'none' ? 'none' : 'auto';
     }
@@ -176,8 +177,9 @@ export class SizeControlComponent extends BaseControl implements OnInit, Control
     this.onChange(this.item);
     this.change.emit(this.item);
   }
-  clear(property: any) {
-    property = undefined;
+  clear(property: ISizeValue) {
+    property.value = undefined;
+    property.unit = 'px';
     this.update();
   }
 }

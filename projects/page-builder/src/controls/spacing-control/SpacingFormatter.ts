@@ -21,7 +21,13 @@ export abstract class SpacingFormatter {
 
   static formatSpacingToCSS(spacing: Spacing): string | undefined {
     // اگر spacing وجود نداشته باشه یا کامل نباشه
-    if (!spacing) {
+    if (
+      !spacing ||
+      (spacing.top.value == undefined &&
+        spacing.right.value == undefined &&
+        spacing.bottom.value == undefined &&
+        spacing.left.value == undefined)
+    ) {
       return undefined;
     }
 

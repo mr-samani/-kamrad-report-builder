@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { PageItem } from '../../models/PageItem';
-import { Spacing } from './SpacingModel';
+import { PosValue, Spacing } from './SpacingModel';
 import { SpacingFormatter } from './SpacingFormatter';
 import { parseSpacingValues, validateSpacing } from './validateSpacing';
 import { CommonModule } from '@angular/common';
@@ -83,8 +83,9 @@ export class SpacingControlComponent extends BaseControl implements OnInit, Cont
     this.change.emit(this.item);
   }
 
-  clear(spacing: Spacing, direction: string) {
-    (spacing as any)[direction] = undefined;
+  clear(spacing: PosValue) {
+    spacing.value = undefined;
+    spacing.unit = 'px';
     this.update();
   }
   returnZero() {
