@@ -1,5 +1,6 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   forwardRef,
@@ -64,7 +65,10 @@ export class SizeControlComponent extends BaseControl implements OnInit, Control
     maxHeight: { value: 'none', unit: 'auto' },
   };
 
-  constructor(injector: Injector) {
+  constructor(
+    injector: Injector,
+    private cdr: ChangeDetectorRef,
+  ) {
     super(injector);
   }
 
@@ -93,6 +97,8 @@ export class SizeControlComponent extends BaseControl implements OnInit, Control
     this.sizes.height = this.parseSizeValue(this.style.height);
     this.sizes.minHeight = this.parseSizeValue(this.style.minHeight);
     this.sizes.maxHeight = this.parseSizeValue(this.style.maxHeight);
+
+    this.cdr.detectChanges();
   }
 
   parseSizeValue(value: string | undefined): ISizeValue {

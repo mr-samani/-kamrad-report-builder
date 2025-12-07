@@ -1,5 +1,6 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   forwardRef,
@@ -9,11 +10,10 @@ import {
 } from '@angular/core';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { PageItem } from '../../models/PageItem';
-import { ISpacingModel } from './ISpacingModel';
+import { ISpacing, ISpacingModel } from './ISpacingModel';
 import { SpacingFormatter } from './SpacingFormatter';
 import { parseSpacingValues, validateSpacing } from './validateSpacing';
 import { CommonModule } from '@angular/common';
-import { IPosValue } from './IPosValue';
 import { BaseControl } from '../base-control';
 import { mergeCssStyles } from '../../utiles/merge-css-styles';
 
@@ -35,12 +35,25 @@ export class SpacingControlComponent extends BaseControl implements OnInit, Cont
   @Output() change = new EventEmitter<PageItem>();
 
   DEFAULT_SPACING: ISpacingModel = {
-    margin: { top: undefined, right: undefined, bottom: undefined, left: undefined, unit: 'px' },
-    padding: { top: undefined, right: undefined, bottom: undefined, left: undefined, unit: 'px' },
+    margin: {
+      top: { value: undefined, unit: 'px' },
+      right: { value: undefined, unit: 'px' },
+      bottom: { value: undefined, unit: 'px' },
+      left: { value: undefined, unit: 'px' },
+    },
+    padding: {
+      top: { value: undefined, unit: 'px' },
+      right: { value: undefined, unit: 'px' },
+      bottom: { value: undefined, unit: 'px' },
+      left: { value: undefined, unit: 'px' },
+    },
   };
-  spacing: ISpacingModel = { ...this.DEFAULT_SPACING };
+  spacing?: ISpacingModel = { ...this.DEFAULT_SPACING };
 
-  constructor(injector: Injector) {
+  constructor(
+    injector: Injector,
+    private cdr: ChangeDetectorRef,
+  ) {
     super(injector);
   }
 
@@ -51,17 +64,17 @@ export class SpacingControlComponent extends BaseControl implements OnInit, Cont
     this.el = item.el;
     let val = this.el.style;
     this.style = { padding: val?.padding, margin: val?.margin };
-
     // Parse margin and padding from input
     this.spacing = {
       margin: parseSpacingValues(val?.margin, this.DEFAULT_SPACING.margin),
       padding: parseSpacingValues(val?.padding, this.DEFAULT_SPACING.padding),
     };
+    this.cdr.detectChanges();
   }
 
-  onChangeUnit(spacing: IPosValue, direction: 'top' | 'right' | 'bottom' | 'left') {
-    if (spacing.unit == 'auto') {
-      spacing[direction] = 'auto';
+  onChangeUnit(spacing: ISpacing, direction: 'top' | 'right' | 'bottom' | 'left') {
+    if (spacing[direction] && spacing[direction].unit == 'auto') {
+      spacing[direction].unit = 'auto';
     }
     this.update();
   }
@@ -82,7 +95,7 @@ export class SpacingControlComponent extends BaseControl implements OnInit, Cont
     this.change.emit(this.item);
   }
 
-  clear(spacing: IPosValue, direction: string) {
+  clear(spacing: ISpacing, direction: string) {
     (spacing as any)[direction] = undefined;
     this.update();
   }

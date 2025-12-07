@@ -11,7 +11,6 @@
               spacingControl;
               context: {
                 spacing: spacing.margin,
-                unit: spacing.margin.unit,
                 key: 'margin',
                 direction: direction,
               }
@@ -34,7 +33,6 @@
               spacingControl;
               context: {
                 spacing: spacing.padding,
-                unit: spacing.padding.unit,
                 key: 'padding',
                 direction: direction,
               }
@@ -45,43 +43,39 @@
     </tbody>
   </table>
 }
-<ng-template
-  #spacingControl
-  let-spacing="spacing"
-  let-unit="unit"
-  let-key="key"
-  let-direction="direction"
->
-  <tr>
-    <td>
-      <label for="{{ key }}-{{ direction }}">{{ direction | titlecase }}:</label>
-    </td>
-    <td>
-      <div class="pi-group">
-        <input
-          id="{{ key }}-{{ direction }}"
-          name="{{ key }}-{{ direction }}"
-          [type]="unit != 'auto' ? 'number' : 'text'"
-          [(ngModel)]="spacing[direction]"
-          (ngModelChange)="update()"
-          [min]="key === 'padding' ? 0 : undefined"
-          [disabled]="spacing[unit] == 'auto'"
-          [readonly]="spacing[unit] == 'auto'"
-        />
-        <select
-          [(ngModel)]="spacing['unit']"
-          (ngModelChange)="onChangeUnit(spacing, direction)"
-          [name]="'unit-' + direction"
-          class="unit"
-        >
-          <option value="auto">Auto</option>
-          <option value="px">px</option>
-          <option value="em">em</option>
-          <option value="rem">rem</option>
-          <option value="%">%</option>
-        </select>
-        <button class="btn-clear" type="button" (click)="clear(spacing, direction)">x</button>
-      </div>
-    </td>
-  </tr>
+<ng-template #spacingControl let-spacing="spacing" let-key="key" let-direction="direction">
+  @if (spacing[direction]) {
+    <tr>
+      <td>
+        <label for="{{ key }}-{{ direction }}">{{ direction | titlecase }}:</label>
+      </td>
+      <td>
+        <div class="pi-group">
+          <input
+            id="{{ key }}-{{ direction }}"
+            name="{{ key }}-{{ direction }}"
+            [type]="spacing[direction].unit != 'auto' ? 'number' : 'text'"
+            [(ngModel)]="spacing[direction].value"
+            (ngModelChange)="update()"
+            [min]="key === 'padding' ? 0 : undefined"
+            [disabled]="spacing[direction].unit == 'auto'"
+            [readonly]="spacing[direction].unit == 'auto'"
+          />
+          <select
+            [(ngModel)]="spacing[direction].unit"
+            (ngModelChange)="onChangeUnit(spacing, direction)"
+            [attr.name]="'unit-' + direction"
+            class="unit"
+          >
+            <option value="auto">Auto</option>
+            <option value="px">px</option>
+            <option value="em">em</option>
+            <option value="rem">rem</option>
+            <option value="%">%</option>
+          </select>
+          <button class="btn-clear" type="button" (click)="clear(spacing, direction)">x</button>
+        </div>
+      </td>
+    </tr>
+  }
 </ng-template>
