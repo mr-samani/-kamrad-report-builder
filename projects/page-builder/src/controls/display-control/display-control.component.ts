@@ -14,6 +14,11 @@ import { PageItem } from '../../models/PageItem';
 import { BaseControl } from '../base-control';
 import { mergeCssStyles } from '../../utiles/merge-css-styles';
 
+interface ISelectOption {
+  value: string;
+  label: string;
+  icon: string;
+}
 export type DisplayType =
   | 'block'
   | 'inline'
@@ -32,7 +37,6 @@ export type DisplayType =
 @Component({
   selector: 'display-control',
   templateUrl: './display-control.component.html',
-  styleUrls: ['./display-control.component.scss'],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -123,7 +127,7 @@ export class DisplayControlComponent extends BaseControl implements OnInit, Cont
   emptyCells: 'show' | 'hide' = 'show';
 
   // Display Mode Options
-  displayOptions: { value: DisplayType; label: string; icon: string }[] = [
+  displayOptions: ISelectOption[] = [
     { value: 'block', label: 'Block', icon: '▭' },
     { value: 'inline', label: 'Inline', icon: '═' },
     { value: 'inline-block', label: 'Inline Block', icon: '▢' },
@@ -137,6 +141,40 @@ export class DisplayControlComponent extends BaseControl implements OnInit, Cont
     { value: 'none', label: 'None', icon: '⊗' },
     { value: 'contents', label: 'Contents', icon: '⋯' },
     { value: 'flow-root', label: 'Flow Root', icon: '↯' },
+  ];
+
+  justifyOptions: ISelectOption[] = [
+    { value: 'flex-start', label: 'Start', icon: '⫷|||' },
+    { value: 'center', label: 'Center', icon: '|⫷|⫸|' },
+    { value: 'flex-end', label: 'End', icon: '|||⫸' },
+    { value: 'space-between', label: 'Between', icon: '|⫷⫷|' },
+    { value: 'space-around', label: 'Around', icon: '⫷|⫷|⫷' },
+    { value: 'space-evenly', label: 'Evenly', icon: '⫷|⫷|⫷' },
+  ];
+
+  alignOptions: ISelectOption[] = [
+    { value: 'flex-start', label: 'Start', icon: '' },
+    { value: 'center', label: 'Center', icon: '' },
+    { value: 'flex-end', label: 'End', icon: '' },
+    { value: 'stretch', label: 'Stretch', icon: '' },
+    { value: 'baseline', label: 'Baseline', icon: '' },
+  ];
+  alignContentOptions: ISelectOption[] = [
+    { value: 'flex-start', label: 'Flex Start', icon: '' },
+    { value: 'flex-end', label: 'Flex End', icon: '' },
+    { value: 'center', label: 'Center', icon: '' },
+    { value: 'space-between', label: 'Space Between', icon: '' },
+    { value: 'space-around', label: 'Space Around', icon: '' },
+    { value: 'stretch', label: 'Stretch', icon: '' },
+  ];
+
+  alignSelfOptions: ISelectOption[] = [
+    { value: 'auto', label: 'Auto', icon: '' },
+    { value: 'flex-start', label: 'Flex Start', icon: '' },
+    { value: 'flex-end', label: 'Flex End', icon: '' },
+    { value: 'center', label: 'Center', icon: '' },
+    { value: 'baseline', label: 'Baseline', icon: '' },
+    { value: 'stretch', label: 'Stretch', icon: '' },
   ];
 
   constructor(
@@ -379,5 +417,9 @@ export class DisplayControlComponent extends BaseControl implements OnInit, Cont
         break;
     }
     this.update();
+  }
+
+  clear(property: any) {
+    property = undefined;
   }
 }
