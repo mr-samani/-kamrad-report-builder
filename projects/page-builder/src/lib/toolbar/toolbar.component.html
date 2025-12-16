@@ -41,6 +41,19 @@
 <!-- --------------------------------------------------------------------------------- -->
 <div class="spacer"></div>
 <!-- --------------------------------------------------------------------------------- -->
+@if (enableHistory) {
+  <button type="button" title="undo" (click)="undo()" [disabled]="!canUndo">
+    <svg Icon="assets/icons/rotate-left.svg"></svg>
+  </button>
+  <button type="button" title="redo" (click)="redo()" [disabled]="!canRedo">
+    <svg Icon="assets/icons/rotate-right.svg"></svg>
+  </button>
+  <button type="button" title="history" (click)="getHistory()">
+    <svg Icon="assets/icons/clock-rotate-left.svg"></svg>
+  </button>
+}
+<!-- --------------------------------------------------------------------------------- -->
+
 <button (click)="exportHtml()" title="Export all pages as Html">
   <svg Icon="assets/icons/file-export.svg"></svg>
 </button>

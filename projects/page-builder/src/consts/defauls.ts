@@ -14,9 +14,13 @@ export const LibConsts: {
    * @example backend-api folder
    */
   backendProxyImportUrl: string;
+
+  /** enable history (undo , redo) */
+  enableHistory: boolean;
 } = {
   SourceItemList: [],
   backendProxyImportUrl: 'http://localhost:3000/api/render',
+  enableHistory: false,
 };
 
 export const LOCAL_STORAGE_SAVE_KEY = 'page';

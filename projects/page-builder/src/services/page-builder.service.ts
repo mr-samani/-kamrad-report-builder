@@ -23,6 +23,7 @@ import { BlockSelectorComponent } from '../components/block-selector/block-selec
 import { STORAGE_SERVICE, IStorageService, preparePageDataForSave } from '../public-api';
 import { BlockHelper } from '../helper/BlockHelper';
 import { cloneDeep } from '../utiles/clone-deep';
+import { HistoryService } from './history.service';
 
 export interface PageItemChange {
   item: PageItem | null;
@@ -43,6 +44,7 @@ export class PageBuilderService implements OnDestroy {
   isSaving: boolean = false;
   sources: SourceItem[] = LibConsts.SourceItemList;
 
+  /** start from 0 */
   currentPageIndex = signal<number>(-1);
   activeEl = signal<PageItem | undefined>(undefined);
   pageBody: Signal<ElementRef<HTMLElement> | undefined> = signal<
@@ -77,6 +79,7 @@ export class PageBuilderService implements OnDestroy {
   constructor(
     rendererFactory: RendererFactory2,
     private dynamicElementService: DynamicElementService,
+    private history: HistoryService,
   ) {
     this.renderer = rendererFactory.createRenderer(null, null);
   }
@@ -85,6 +88,7 @@ export class PageBuilderService implements OnDestroy {
     this._changed$.complete();
     this.onPageChange$.unsubscribe();
     this.onSelectBlock$.unsubscribe();
+    this.history.clear();
   }
   updateChangeDetection(data: PageItemChange) {
     this._changed$.next(data);
@@ -124,6 +128,8 @@ export class PageBuilderService implements OnDestroy {
       event.container.data.splice(event.currentIndex, 0, source);
       this.onSelectBlock(source);
       this.updateChangeDetection({ item: source, type: 'AddBlock' });
+
+      this.history.save('add', source, `Add block'${source.id}' to '${parent?.id}'`);
     } else {
       // بررسی اجازه جابجایی در ایتم های کالکشن (لیست تکرار شونده)
       if (this.canMove(dragItem, event.container) == false) {
@@ -146,6 +152,12 @@ export class PageBuilderService implements OnDestroy {
         item: event.container.data[event.currentIndex],
         type: 'MoveBlock',
       });
+
+      this.history.save(
+        'edit',
+        dragItem,
+        `Move block '${dragItem.id}' from: '${dragItem.parent?.id}' to: '${event.container.data[event.currentIndex].parent?.id}'`,
+      );
     }
     // this.chdRef.detectChanges();
     this.onPageChange$.next(this.currentPage);
@@ -270,6 +282,22 @@ export class PageBuilderService implements OnDestroy {
     });
   }
 
+  /**
+   * update current page body blocks
+   * @param blocks body blocks
+   * @returns
+   */
+  updatePage(blocks: PageItem[]): Promise<number> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        this.currentPage.bodyItems = blocks;
+        await this.changePage(this.currentPageIndex() + 1);
+      } catch (error) {
+        console.error('Error updating page:', error);
+      }
+    });
+  }
+
   private async genElms(list: PageItem[], container: HTMLElement, index = -1) {
     for (let i = 0; i < list.length; i++) {
       list[i].el = await this.createBlockElement(list[i], container, index);
@@ -382,6 +410,8 @@ export class PageBuilderService implements OnDestroy {
     }
     this.activeEl.set(undefined);
     this.updateChangeDetection({ item: item, type: 'RemoveBlock' });
+
+    this.history.save('delete', item, `Delete block '${item.id}' from '${item.parent?.id}'`);
   }
 
   writeItemValue(data: PageItem) {
@@ -394,6 +424,8 @@ export class PageBuilderService implements OnDestroy {
       // item.style = encodeURIComponent(item.el.style.cssText);
     }
     this.updateChangeDetection({ item: item, type: 'ChangeBlockProperties' });
+
+    this.history.save('edit', item, `Change properties '${item.id}': '${item.el?.style?.cssText}'`);
   }
 
   save() {

@@ -14,6 +14,7 @@ import { NGX_PAGE_BUILDER_HTML_EDITOR } from './services/html-editor/token.html-
 import { NGX_PAGE_BUILDER_FILE_PICKER } from './public-api';
 
 export function providePageBuilder(config: PageBuilderConfiguration) {
+  LibConsts.enableHistory = config.enableHistory === true;
   let storage: any;
   switch (config.storageType) {
     case StorageType.LocalStorage:
