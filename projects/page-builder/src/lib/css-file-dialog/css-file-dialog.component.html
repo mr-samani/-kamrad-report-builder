@@ -1,35 +1,10 @@
-<div class="ngx-page-builder-css-editor-container">
-  <div class="editor-header">
-    <div class="left">
-      <button type="button" (click)="save()" [disabled]="isDisabled">Save</button>
-      <span class="hint"
-        >فرمت: <code>.class {{ '{' }} prop: value; {{ '}' }}</code></span
-      >
-    </div>
-    <div class="right">
-      <span *ngIf="errors?.length" class="error-count">{{ errors.length }} خطا</span>
-    </div>
-  </div>
-
-  <div class="css-editor-wrapper">
-    <div #highlightDiv class="css-highlight-layer" [attr.aria-hidden]="true"></div>
-    <textarea
-      #editorTextarea
-      class="css-textarea-layer"
-      spellcheck="false"
-      [placeholder]="placeholder"
-      [value]="cssText"
-      [disabled]="isDisabled"
-      (input)="onInput($event)"
-      (keydown)="onKeyDown($event)"
-      (blur)="onTouchedFn()"
-    ></textarea>
-  </div>
-
-  <div class="validation-box" *ngIf="errors?.length">
-    <div class="validation-title">خطاها</div>
-    <ul>
-      <li *ngFor="let err of errors">{{ err }}</li>
-    </ul>
-  </div>
-</div>
+<h2 mat-dialog-title>ویرایش CSS Classes</h2>
+<mat-dialog-content>
+  <css-classes-editor [formControl]="classesControl"></css-classes-editor>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">لغو</button>
+  <button mat-raised-button color="primary" (click)="onSave()" [disabled]="!classesControl.value">
+    ذخیره
+  </button>
+</mat-dialog-actions>

@@ -165,6 +165,15 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
     this.matDialog
       .open(CssFileDialogComponent, {
         panelClass: 'ngx-page-builder',
+        data: {
+          classes: {
+            btn: 'border:1px solid red;color:red;padding:10px 20px',
+            'btn-primary': 'background:blue;color:white',
+            'btn-large': 'font-size:18px;padding:15px 30px',
+          },
+        },
+        width: '80vw',
+        maxWidth: '100%',
       })
       .afterClosed()
       .subscribe((r) => {
