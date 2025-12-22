@@ -20,10 +20,10 @@ import { IDropEvent, moveItemInArray, transferArrayItem } from 'ngx-drag-drop-ki
 import { SourceItem } from '../models/SourceItem';
 import { Notify } from '../extensions/notify';
 import { BlockSelectorComponent } from '../components/block-selector/block-selector.component';
-import { STORAGE_SERVICE, IStorageService, preparePageDataForSave } from '../public-api';
 import { BlockHelper } from '../helper/BlockHelper';
 import { cloneDeep } from '../utiles/clone-deep';
 import { HistoryService } from './history.service';
+import { IStorageService } from './storage/IStorageService';
 
 export interface PageItemChange {
   item: PageItem | null;

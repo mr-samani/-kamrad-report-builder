@@ -1,7 +1,8 @@
+import { IPageBuilderDto } from '../contracts/IPageBuilderDto';
 import { Page } from './Page';
 import { PageOrientation, PageSize } from './types';
 
-export class PageBuilderDto {
+export class PageBuilderDto implements IPageBuilderDto {
   config: PageBuilderConfig = new PageBuilderConfig();
   pages: Page[] = [];
   constructor(data?: PageBuilderDto | any) {

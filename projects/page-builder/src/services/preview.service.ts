@@ -64,10 +64,10 @@ export class PreviewService {
   }
 
   private listenToPreviewMessages() {
-    const messageHandler = (event: MessageEvent) => {
+    const messageHandler = async (event: MessageEvent) => {
       if (event.data?.type === 'NGX_PAGE_PREVIEW_READY') {
         console.log('Preview window is ready');
-        const sanitized = preparePageDataForSave(this.pageBuilder.pageInfo);
+        const sanitized = await preparePageDataForSave(this.pageBuilder.pageInfo);
         this.previewWindow?.postMessage(
           {
             type: PREVIEW_CONSTS.MESSAGE_TYPES.GET_DATA,

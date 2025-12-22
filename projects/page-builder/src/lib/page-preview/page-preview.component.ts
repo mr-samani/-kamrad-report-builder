@@ -21,6 +21,7 @@ import { waitForFontsToLoad, waitForRenderComplete } from '../../utiles/renderin
 import { Notify } from '../../extensions/notify';
 import { LibConsts } from '../../consts/defauls';
 import { validateViewMode, ViewMode } from '../../consts/ViewMode';
+import { IPageBuilderDto } from '../../contracts/IPageBuilderDto';
 
 @Component({
   selector: 'ngx-page-preview',
@@ -34,7 +35,7 @@ export class NgxPagePreviewComponent implements OnInit, AfterViewInit {
   }
 
   data?: PageBuilderDto;
-  @Input('data') set setData(val: PageBuilderDto) {
+  @Input('data') set setData(val: IPageBuilderDto) {
     setTimeout(() => {
       this.initializePreview(PageBuilderDto.fromJSON(val));
     });

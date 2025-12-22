@@ -1,1 +1,7 @@
-<ngx-page-builder [dynamicData]="dynamicData" [viewMode]="'WebPage'"></ngx-page-builder>
+<button (click)="getData()">get data</button>
+<ngx-page-builder
+  #pageBuilder
+  [dynamicData]="dynamicData"
+  [viewMode]="'WebPage'"
+  [data]="data"
+></ngx-page-builder>

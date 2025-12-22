@@ -8,13 +8,19 @@ import { StorageType } from './services/storage/storage-type';
 import { SourceItem } from './models/SourceItem';
 import { SOURCE_ITEMS } from './sources/SOURCE_ITEMS';
 import { LibConsts } from './consts/defauls';
-import { PageBuilderConfiguration } from './models/PageBuilderConfiguration';
+import {
+  PageBuilderConfiguration,
+  PageBuilderToolbarConfig,
+} from './models/PageBuilderConfiguration';
 import { PAGE_BUILDER_CONFIGURATION } from './models/tokens';
 import { NGX_PAGE_BUILDER_HTML_EDITOR } from './services/html-editor/token.html-editor';
-import { NGX_PAGE_BUILDER_FILE_PICKER } from './public-api';
+import { NGX_PAGE_BUILDER_FILE_PICKER } from './services/file-picker/token.filepicker';
 
 export function providePageBuilder(config: PageBuilderConfiguration) {
   LibConsts.enableHistory = config.enableHistory === true;
+  if (config.toolbarConfig) {
+    LibConsts.toolbarConfig = { ...new PageBuilderToolbarConfig(), ...config.toolbarConfig };
+  }
   let storage: any;
   switch (config.storageType) {
     case StorageType.LocalStorage:

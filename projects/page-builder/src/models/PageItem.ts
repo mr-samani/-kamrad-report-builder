@@ -1,31 +1,10 @@
-import { Type } from '@angular/core';
 import { randomStrnig } from '../utiles/generateUUID';
 import { ISourceOptions } from './SourceItem';
 import { LibConsts } from '../consts/defauls';
 import { CustomComponent } from './CustomComponent';
 import { DataSourceSetting } from './DataSourceSetting';
 import { cloneDeep } from '../utiles/clone-deep';
-
-export interface IPageItem {
-  id?: string;
-  dataSource?: DataSourceSetting;
-  parent?: IPageItem;
-  el?: HTMLElement;
-  children?: IPageItem[];
-  tag: string;
-  canHaveChild?: boolean;
-  /** content in html editor */
-  content?: string;
-  component?: () => Promise<Type<any>>;
-  componentKey?: string;
-  options?: ISourceOptions;
-  style?: string;
-  template?: IPageItem;
-  disableMovement?: boolean;
-  lockMoveInnerChild?: boolean;
-  disableDelete?: boolean;
-  isTemplateContainer?: boolean;
-}
+import { IPageItem } from '../contracts/IPageItem';
 
 export class PageItem implements IPageItem {
   id: string = '';

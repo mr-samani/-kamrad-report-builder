@@ -31,8 +31,9 @@ import { LibConsts } from '../../consts/defauls';
 })
 export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit {
   pageNumber: number = 1;
-
   enableHistory = LibConsts.enableHistory;
+  toolbarConfig = LibConsts.toolbarConfig;
+
   constructor(
     injector: Injector,
     private matDialog: MatDialog,

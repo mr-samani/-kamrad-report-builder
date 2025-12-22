@@ -20,8 +20,14 @@ export * from './services/html-editor/IHtmlEditor';
 export * from './services/html-editor/token.html-editor';
 
 export * from './models/SourceItem';
-export * from './models/PageBuilderDto';
 
+export * from './models/PageBuilderDto';
 export * from './models/DynamicData';
 export * from './models/tokens';
 export * from './models/ComponentDataContext';
+
+/** contacts */
+export * from './contracts/IPageBuilderDto';
+export * from './contracts/IPage';
+export * from './contracts/IPageConfig';
+export * from './contracts/IPageItem';

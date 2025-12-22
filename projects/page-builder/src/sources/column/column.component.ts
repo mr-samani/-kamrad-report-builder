@@ -6,7 +6,7 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import { NgxDragDropKitModule, NgxDropListDirective } from 'ngx-drag-drop-kit';
+import { NgxDragDropKitModule } from 'ngx-drag-drop-kit';
 import { PageItem } from '../../models/PageItem';
 import { DynamicElementService } from '../../services/dynamic-element.service';
 import { PageBuilderService } from '../../services/page-builder.service';

@@ -8,7 +8,7 @@
     [disableSort]="true"
   >
     @for (item of pageBuilder.sources; track $index) {
-      <div class="tool" ngxDraggable [title]="item.title" (click)="preventDefault()">
+      <div class="tool" ngxDraggable [title]="item.title">
         <svg [Icon]="item.icon"></svg>
       </div>
     }

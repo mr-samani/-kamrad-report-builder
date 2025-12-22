@@ -1,6 +1,8 @@
+import { IPage } from '../contracts/IPage';
+import { IPageConfig } from '../contracts/IPageConfig';
 import { PageItem } from './PageItem';
 
-export class Page {
+export class Page implements IPage {
   headerItems: PageItem[] = [];
   bodyItems: PageItem[] = [];
   footerItems: PageItem[] = [];
@@ -13,7 +15,7 @@ export class Page {
       }
     }
   }
-  static fromJSON(data: Page): Page {
+  static fromJSON(data: IPage): Page {
     const p = new Page(data);
     p.headerItems = (data.headerItems || []).map(PageItem.fromJSON);
     p.bodyItems = (data.bodyItems || []).map(PageItem.fromJSON);
@@ -24,7 +26,7 @@ export class Page {
   }
 }
 
-export class PageConfig {
+export class PageConfig implements IPageConfig {
   title?: string = '';
   description?: string = '';
   constructor(data?: PageConfig | any) {
