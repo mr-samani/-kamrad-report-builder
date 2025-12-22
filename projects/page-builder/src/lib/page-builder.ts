@@ -27,11 +27,13 @@ import { PageBuilderDto } from '../models/PageBuilderDto';
 import { NgxPgNotifyModule, Notify } from '../extensions/notify';
 import { SvgIconDirective } from '../directives/svg-icon.directive';
 import { FocusContext } from '../services/shortcut.service';
+import { LibConsts } from '../consts/defauls';
+import { validateViewMode, ViewMode } from '../consts/ViewMode';
 
 @Component({
   selector: 'ngx-page-builder',
   templateUrl: './page-builder.html',
-  styleUrls: ['../styles/paper.scss', './page-builder.scss'],
+  styleUrls: ['./page-builder.scss'],
   imports: [
     NgxDragDropKitModule,
     ToolbarComponent,
@@ -47,6 +49,17 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
   @Input('dynamicData') set setDynamicData(val: DynamicDataStructure[]) {
     this.dynamicDataService.dynamicData = val ?? [];
   }
+
+  @Input({
+    alias: 'viewMode',
+    transform: validateViewMode,
+  })
+  set viewMode(val: ViewMode) {
+    LibConsts.viewMode = val;
+  }
+  get viewMode() {
+    return LibConsts.viewMode;
+  }
   blockSelector = viewChild<BlockSelectorComponent>('blockSelector');
 
   private _pageBody = viewChild<ElementRef<HTMLElement>>('PageBody');
@@ -54,6 +67,7 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
   private _pageFooter = viewChild<ElementRef<HTMLElement>>('PageFooter');
 
   subscriptions: Subscription[] = [];
+  containerClassName = '';
 
   constructor(
     injector: Injector,
@@ -78,6 +92,11 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
     this.pageBuilder.blockSelector = this.blockSelector();
     this.loadPageData();
     this.registerShortcuts();
+    if (this.viewMode == 'PrintPage') {
+      this.containerClassName = `paper ${this.pageBuilder.pageInfo.config.size} ${this.pageBuilder.pageInfo.config.orientation}`;
+    } else {
+      this.containerClassName = `web-page-view`;
+    }
   }
 
   ngOnDestroy(): void {

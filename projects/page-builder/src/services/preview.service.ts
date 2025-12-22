@@ -7,6 +7,7 @@ import { PREVIEW_CONSTS } from '../lib/page-preview/PREVIEW_CONSTS';
 import { Router } from '@angular/router';
 import { DynamicDataService } from './dynamic-data.service';
 import { Notify } from '../extensions/notify';
+import { LibConsts } from '../consts/defauls';
 
 @Injectable({ providedIn: 'root' })
 export class PreviewService {
@@ -73,6 +74,7 @@ export class PreviewService {
             payload: {
               pageInfo: JSON.stringify(sanitized),
               dynamicData: this.dynamicDataService.dynamicData,
+              viewMode: LibConsts.viewMode,
             },
           },
           '*',

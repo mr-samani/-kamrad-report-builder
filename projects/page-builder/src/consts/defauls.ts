@@ -1,12 +1,14 @@
 import { IDropEvent, NgxDraggableDirective, NgxDropListDirective } from 'ngx-drag-drop-kit';
 import { Directive, SourceItem } from '../models/SourceItem';
 import { PageItem } from '../models/PageItem';
+import { ViewMode } from './ViewMode';
 
 /** loaded from initial provider
  *
  * - merge SOURCE_ITEMS with custom sources
  */
 export const LibConsts: {
+  viewMode: ViewMode;
   SourceItemList: SourceItem[];
 
   /**
@@ -21,6 +23,7 @@ export const LibConsts: {
   SourceItemList: [],
   backendProxyImportUrl: 'http://localhost:3000/api/render',
   enableHistory: false,
+  viewMode: 'PrintPage',
 };
 
 export const LOCAL_STORAGE_SAVE_KEY = 'page';

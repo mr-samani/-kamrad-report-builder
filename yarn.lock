@@ -3764,10 +3764,10 @@ ng-packagr@^21.0.0:
   optionalDependencies:
     rollup "^4.24.0"
 
-ngx-drag-drop-kit@5.1.3-beta.1:
-  version "5.1.3-beta.1"
-  resolved "https://registry.yarnpkg.com/ngx-drag-drop-kit/-/ngx-drag-drop-kit-5.1.3-beta.1.tgz#ef56379826d41eb0cf6be39b2c5cda36400e6cb4"
-  integrity sha512-0bQ2kuU1KGvrMR/k+CPLLTc5xd09D1ICii5U3pOAytiZfPh9r0D5ld7GhlKRNmAUHNXQf1R4KSHtHRZaAlbsgg==
+ngx-drag-drop-kit@^5.2.0:
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/ngx-drag-drop-kit/-/ngx-drag-drop-kit-5.2.0.tgz#9d73afdffd3fd61f2ea279aa731799dbdad9c008"
+  integrity sha512-0jKKqhUPacQofjy8XQKJvMz4nWy8hlyt88TbDv+3DK2dSzFBmnJSk+dKke/3M8sd70VZ0QvVMpYbqVrvXCJJsg==
   dependencies:
     tslib "^2.3.0"
 
