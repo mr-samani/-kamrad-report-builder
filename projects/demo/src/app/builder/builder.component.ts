@@ -8,12 +8,13 @@ import {
 import { FilePickerService } from './file-picker.service';
 import { DynamicData } from '../dynamic-data/dynamic-data';
 import { HtmlEditorService } from './html-editor.service';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-builder',
   templateUrl: './builder.component.html',
   styleUrls: ['./builder.component.css'],
-  imports: [NgxPageBuilder],
+  imports: [NgxPageBuilder, RouterLink],
   providers: [
     { provide: NGX_PAGE_BUILDER_FILE_PICKER, useClass: FilePickerService },
     { provide: NGX_PAGE_BUILDER_HTML_EDITOR, useClass: HtmlEditorService },
@@ -102,6 +103,7 @@ export class BuilderComponent implements OnInit, AfterViewInit {
     this.pageBuilder()
       ?.getData()
       .then((data) => {
+        localStorage.setItem('page', JSON.stringify(data));
         console.log('get data:', data);
       });
   }
