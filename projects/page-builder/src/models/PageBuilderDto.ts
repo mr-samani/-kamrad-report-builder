@@ -5,6 +5,8 @@ import { PageOrientation, PageSize } from './types';
 export class PageBuilderDto implements IPageBuilderDto {
   config: PageBuilderConfig = new PageBuilderConfig();
   pages: Page[] = [];
+  classes: Record<string, string> = {};
+
   constructor(data?: PageBuilderDto | any) {
     if (data) {
       for (var property in data) {

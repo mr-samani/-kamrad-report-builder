@@ -4,4 +4,5 @@ import { PageBuilderConfig } from '../models/PageBuilderDto';
 export interface IPageBuilderDto {
   config: PageBuilderConfig;
   pages: IPage[];
+  classes?: Record<string, string>;
 }

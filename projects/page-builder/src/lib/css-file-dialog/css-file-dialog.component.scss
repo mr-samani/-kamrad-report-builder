@@ -1,0 +1,146 @@
+.ngx-page-builder-css-editor-container {
+  width: 100%;
+
+  .editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+
+    button {
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid #333;
+      background: #222;
+      color: #fff;
+      cursor: pointer;
+    }
+    .hint {
+      margin-left: 12px;
+      color: #9aa0a6;
+      font-size: 12px;
+    }
+    .error-count {
+      color: #ff8a80;
+    }
+  }
+
+  .css-editor-wrapper {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #1e1e1e;
+
+    .css-highlight-layer,
+    .css-textarea-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      padding: 12px;
+      margin: 0;
+      border: none;
+      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      white-space: pre;
+      word-wrap: normal;
+      overflow: auto;
+      tab-size: 2;
+      box-sizing: border-box;
+      color: #d4d4d4;
+    }
+
+    .css-highlight-layer {
+      color: transparent;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    .css-textarea-layer {
+      background: transparent;
+      caret-color: #fff;
+      resize: none;
+      outline: none;
+      z-index: 200;
+      color: transparent; /* hide raw text so highlight shows; caret remains because caret-color set */
+      text-shadow: 0 0 0 #d4d4d4; /* show text color via shadow */
+      &::placeholder {
+        color: #6a737d;
+        font-style: italic;
+      }
+      &:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+    }
+  }
+
+  /* highlighting classes */
+  .css-selector {
+    color: #9cdcfe;
+  }
+  .css-property {
+    color: #c586c0;
+  }
+  .css-colon {
+    color: #d4d4d4;
+  }
+  .css-value {
+    color: #ce9178;
+  }
+  .css-semicolon {
+    color: #d4d4d4;
+  }
+  .css-color {
+    color: #4ec9b0;
+  }
+  .css-number {
+    color: #b5cea8;
+  }
+  .css-keyword {
+    color: #569cd6;
+  }
+  .css-url {
+    color: #ce9178;
+  }
+  .css-important {
+    color: #c586c0;
+    font-weight: bold;
+  }
+  .css-comment {
+    color: #6a9955;
+    font-style: italic;
+  }
+  .css-invalid {
+    color: #f48771;
+    text-decoration: underline wavy #f48771;
+  }
+
+  .css-placeholder {
+    color: #6a737d;
+    font-style: italic;
+  }
+
+  .validation-box {
+    margin-top: 8px;
+    padding: 8px;
+    background: #2a2a2a;
+    color: #ffb4a2;
+    border-radius: 4px;
+    font-size: 13px;
+    ul {
+      margin: 6px 0 0 18px;
+      padding: 0;
+    }
+    .validation-title {
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #fff;
+    }
+  }
+}
