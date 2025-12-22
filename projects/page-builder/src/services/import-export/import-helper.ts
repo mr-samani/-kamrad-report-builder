@@ -1,5 +1,5 @@
 import { PageItem } from '../../models/PageItem';
-import { ISourceOptions } from '../../public-api';
+import { ISourceOptions } from '../../models/SourceItem';
 import {
   CONVERT_TAGS,
   DEFAULT_ALLOWED_ATTRIBUTES,

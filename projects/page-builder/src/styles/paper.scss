@@ -25,6 +25,14 @@
   --toolbar-sticky-offset: 0;
   --topbar-height: 28px;
 }
+
+.web-page-view {
+  min-height: 100%;
+  display: contents;
+  .page-body {
+    min-height: 95%;
+  }
+}
 .paper {
   display: flex;
   flex-direction: column;

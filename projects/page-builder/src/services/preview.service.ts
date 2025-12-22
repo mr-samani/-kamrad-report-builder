@@ -7,6 +7,7 @@ import { PREVIEW_CONSTS } from '../lib/page-preview/PREVIEW_CONSTS';
 import { Router } from '@angular/router';
 import { DynamicDataService } from './dynamic-data.service';
 import { Notify } from '../extensions/notify';
+import { LibConsts } from '../consts/defauls';
 
 @Injectable({ providedIn: 'root' })
 export class PreviewService {
@@ -63,16 +64,17 @@ export class PreviewService {
   }
 
   private listenToPreviewMessages() {
-    const messageHandler = (event: MessageEvent) => {
+    const messageHandler = async (event: MessageEvent) => {
       if (event.data?.type === 'NGX_PAGE_PREVIEW_READY') {
         console.log('Preview window is ready');
-        const sanitized = preparePageDataForSave(this.pageBuilder.pageInfo);
+        const sanitized = await preparePageDataForSave(this.pageBuilder.pageInfo);
         this.previewWindow?.postMessage(
           {
             type: PREVIEW_CONSTS.MESSAGE_TYPES.GET_DATA,
             payload: {
               pageInfo: JSON.stringify(sanitized),
               dynamicData: this.dynamicDataService.dynamicData,
+              viewMode: LibConsts.viewMode,
             },
           },
           '*',

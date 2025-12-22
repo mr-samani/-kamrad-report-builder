@@ -19,8 +19,9 @@ import { PageItem } from '../models/PageItem';
 import { DEFAULT_IMAGE_URL } from '../consts/defauls';
 import { Directive } from '../models/SourceItem';
 import { DynamicDataStructure } from '../models/DynamicData';
-import { COMPONENT_DATA, ComponentDataContext } from '../public-api';
 import { Subject } from 'rxjs';
+import { ComponentDataContext } from '../models/ComponentDataContext';
+import { COMPONENT_DATA } from '../models/tokens';
 
 @Injectable({ providedIn: 'root' })
 export class DynamicElementService {

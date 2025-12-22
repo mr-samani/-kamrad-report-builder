@@ -1,4 +1,4 @@
-import { IPosValue } from './IPosValue';
+import { Spacing } from './SpacingModel';
 
 export abstract class SpacingFormatter {
   private static unit: string = 'px'; // واحد پیش‌فرض
@@ -19,19 +19,25 @@ export abstract class SpacingFormatter {
     return String(value);
   }
 
-  static formatSpacingToCSS(spacing: IPosValue): string | undefined {
+  static formatSpacingToCSS(spacing: Spacing): string | undefined {
     // اگر spacing وجود نداشته باشه یا کامل نباشه
-    if (!spacing) {
+    if (
+      !spacing ||
+      (spacing.top.value == undefined &&
+        spacing.right.value == undefined &&
+        spacing.bottom.value == undefined &&
+        spacing.left.value == undefined)
+    ) {
       return undefined;
     }
 
     const { top, right, bottom, left } = spacing;
 
     // تبدیل مقادیر به فرمت معتبر
-    const formattedTop = this.formatValue(top);
-    const formattedRight = this.formatValue(right);
-    const formattedBottom = this.formatValue(bottom);
-    const formattedLeft = this.formatValue(left);
+    const formattedTop = this.formatValue(top?.value);
+    const formattedRight = this.formatValue(right?.value);
+    const formattedBottom = this.formatValue(bottom?.value);
+    const formattedLeft = this.formatValue(left?.value);
 
     // بررسی تساوی مقادیر برای shorthand
     if (

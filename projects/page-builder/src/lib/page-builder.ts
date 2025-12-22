@@ -23,15 +23,19 @@ import { Subscription } from 'rxjs';
 import { SideConfigComponent } from '../components/side-config/side-config.component';
 import { PAGE_BUILDER_CONFIGURATION } from '../models/tokens';
 import { PageItemChange } from '../services/page-builder.service';
-import { PageBuilderDto } from '../models/PageBuilderDto';
 import { NgxPgNotifyModule, Notify } from '../extensions/notify';
 import { SvgIconDirective } from '../directives/svg-icon.directive';
 import { FocusContext } from '../services/shortcut.service';
+import { validateViewMode, ViewMode } from '../consts/ViewMode';
+import { Page } from '../models/Page';
+import { IPage } from '../contracts/IPage';
+import { preparePageDataForSave } from '../services/storage/prepare-page-builder-data';
+import { IPageBuilderDto } from '../contracts/IPageBuilderDto';
 
 @Component({
   selector: 'ngx-page-builder',
   templateUrl: './page-builder.html',
-  styleUrls: ['../styles/paper.scss', './page-builder.scss'],
+  styleUrls: ['./page-builder.scss'],
   imports: [
     NgxDragDropKitModule,
     ToolbarComponent,
@@ -44,8 +48,24 @@ import { FocusContext } from '../services/shortcut.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, OnDestroy {
+  @Input() set data(val: IPage[]) {
+    if (!val || Array.isArray(val) == false) {
+      console.warn('NgxPageBuilder', 'Input data not valid!');
+      return;
+    }
+    const pages = val.map((m) => Page.fromJSON(m));
+    this.loadPageData(pages);
+  }
   @Input('dynamicData') set setDynamicData(val: DynamicDataStructure[]) {
     this.dynamicDataService.dynamicData = val ?? [];
+  }
+
+  @Input({
+    alias: 'viewMode',
+    transform: validateViewMode,
+  })
+  set SetViewMode(val: ViewMode) {
+    super.viewMode = val;
   }
   blockSelector = viewChild<BlockSelectorComponent>('blockSelector');
 
@@ -54,6 +74,7 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
   private _pageFooter = viewChild<ElementRef<HTMLElement>>('PageFooter');
 
   subscriptions: Subscription[] = [];
+  containerClassName = '';
 
   constructor(
     injector: Injector,
@@ -76,8 +97,12 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
 
   ngOnInit(): void {
     this.pageBuilder.blockSelector = this.blockSelector();
-    this.loadPageData();
     this.registerShortcuts();
+    if (this.viewMode == 'PrintPage') {
+      this.containerClassName = `paper ${this.pageBuilder.pageInfo.config.size} ${this.pageBuilder.pageInfo.config.orientation}`;
+    } else {
+      this.containerClassName = `web-page-view`;
+    }
   }
 
   ngOnDestroy(): void {
@@ -85,18 +110,18 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
     this.unregisterShortcuts();
   }
 
-  preventDefault() {}
-  async loadPageData() {
+  private async loadPageData(data: Page[]) {
     try {
-      let data = await this.storageService.loadData();
-      this.pageBuilder.pageInfo = PageBuilderDto.fromJSON(data);
-      console.log('load data:', data, 'converted class:', this.pageBuilder.pageInfo);
+      // let data = await this.storageService.loadData();
+      //this.pageBuilder.pageInfo = PageBuilderDto.fromJSON(data);
+      this.pageBuilder.pageInfo.pages = data;
+      //console.log('load data:', data, 'converted class:', this.pageBuilder.pageInfo);
       if (this.pageBuilder.pageInfo.pages.length == 0) {
         await this.pageBuilder.addPage();
         return;
       } else {
         await this.pageBuilder.changePage(1);
-        console.log('after load:', this.pageBuilder.pageInfo);
+        // console.log('after load:', this.pageBuilder.pageInfo);
       }
     } catch (error) {
       await this.pageBuilder.addPage();
@@ -322,5 +347,13 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
     ];
 
     shortcutIds.forEach((id) => this.shortcuts.unregister(id));
+  }
+
+  /**
+   * Get page builder data for save to DB
+   * @returns Promise JSONData
+   */
+  public getData(): Promise<IPageBuilderDto> {
+    return preparePageDataForSave(this.pageBuilder.pageInfo);
   }
 }

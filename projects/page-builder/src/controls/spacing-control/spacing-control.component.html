@@ -1,87 +1,80 @@
-@if (spacing) {
-  <table class="properties-table">
-    <tbody>
-      <tr>
-        <th colspan="2" align="start">Margin: {{ style?.margin }}</th>
-      </tr>
-      @for (direction of ['top', 'right', 'bottom', 'left']; track $index) {
-        <ng-container>
-          <ng-container
-            *ngTemplateOutlet="
-              spacingControl;
-              context: {
-                spacing: spacing.margin,
-                unit: spacing.margin.unit,
-                key: 'margin',
-                direction: direction,
-              }
-            "
-          ></ng-container>
-        </ng-container>
-      }
-    </tbody>
-  </table>
+<table class="properties-table">
+  <tbody>
+    <tr>
+      <th colspan="2" align="start">Margin: {{ style?.margin }}</th>
+    </tr>
+    @for (direction of margin | keyvalue: returnZero; track $index) {
+      <ng-container>
+        <ng-container
+          *ngTemplateOutlet="
+            spacingControl;
+            context: {
+              spacing: margin[direction.key],
+              key: 'margin',
+              direction: direction.key,
+            }
+          "
+        ></ng-container>
+      </ng-container>
+    }
+  </tbody>
+</table>
 
-  <table class="properties-table">
-    <tbody>
-      <tr>
-        <th colspan="2" align="start">Padding: {{ style?.padding }}</th>
-      </tr>
-      @for (direction of ['top', 'right', 'bottom', 'left']; track $index) {
-        <ng-container>
-          <ng-container
-            *ngTemplateOutlet="
-              spacingControl;
-              context: {
-                spacing: spacing.padding,
-                unit: spacing.padding.unit,
-                key: 'padding',
-                direction: direction,
-              }
-            "
-          ></ng-container>
-        </ng-container>
-      }
-    </tbody>
-  </table>
-}
-<ng-template
-  #spacingControl
-  let-spacing="spacing"
-  let-unit="unit"
-  let-key="key"
-  let-direction="direction"
->
-  <tr>
-    <td>
-      <label for="{{ key }}-{{ direction }}">{{ direction | titlecase }}:</label>
-    </td>
-    <td>
-      <div class="pi-group">
-        <input
-          id="{{ key }}-{{ direction }}"
-          name="{{ key }}-{{ direction }}"
-          [type]="unit != 'auto' ? 'number' : 'text'"
-          [(ngModel)]="spacing[direction]"
-          (ngModelChange)="update()"
-          [min]="key === 'padding' ? 0 : undefined"
-          [disabled]="spacing[unit] == 'auto'"
-          [readonly]="spacing[unit] == 'auto'"
-        />
-        <select
-          [(ngModel)]="spacing['unit']"
-          (ngModelChange)="onChangeUnit(spacing, direction)"
-          [name]="'unit-' + direction"
-          class="unit"
-        >
-          <option value="auto">Auto</option>
-          <option value="px">px</option>
-          <option value="em">em</option>
-          <option value="rem">rem</option>
-          <option value="%">%</option>
-        </select>
-        <button class="btn-clear" type="button" (click)="clear(spacing, direction)">x</button>
-      </div>
-    </td>
-  </tr>
+<table class="properties-table">
+  <tbody>
+    <tr>
+      <th colspan="2" align="start">Padding: {{ style?.padding }}</th>
+    </tr>
+    @for (direction of padding | keyvalue: returnZero; track $index) {
+      <ng-container>
+        <ng-container
+          *ngTemplateOutlet="
+            spacingControl;
+            context: {
+              spacing: padding[direction.key],
+              key: 'padding',
+              direction: direction.key,
+            }
+          "
+        ></ng-container>
+      </ng-container>
+    }
+  </tbody>
+</table>
+
+<ng-template #spacingControl let-spacing="spacing" let-key="key" let-direction="direction">
+  @if (spacing) {
+    <tr>
+      <td>
+        <label for="{{ key }}-{{ direction }}">{{ direction | titlecase }}:</label>
+      </td>
+      <td>
+        <div class="pi-group">
+          <input
+            id="{{ key }}-{{ direction }}"
+            name="{{ key }}-{{ direction }}"
+            [type]="spacing.unit != 'auto' ? 'number' : 'text'"
+            [(ngModel)]="spacing.value"
+            (ngModelChange)="update()"
+            [min]="key === 'padding' ? 0 : undefined"
+            [disabled]="spacing.unit == 'auto'"
+            [readonly]="spacing.unit == 'auto'"
+          />
+          <select
+            [(ngModel)]="spacing.unit"
+            (ngModelChange)="onChangeUnit(spacing, direction)"
+            [attr.name]="'unit-' + direction"
+            class="unit"
+          >
+            <option value="auto">Auto</option>
+            <option value="px">px</option>
+            <option value="em">em</option>
+            <option value="rem">rem</option>
+            <option value="%">%</option>
+          </select>
+          <button class="btn-clear" type="button" (click)="clear(spacing)">x</button>
+        </div>
+      </td>
+    </tr>
+  }
 </ng-template>

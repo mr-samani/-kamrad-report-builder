@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { IStorageService } from './IStorageService';
-import { PageBuilderDto } from '../../public-api';
 import { PageBuilderService } from '../page-builder.service';
 import { preparePageDataForSave } from './prepare-page-builder-data';
 import { downloadFile } from '../../utiles/file';
+import { PageBuilderDto } from '../../models/PageBuilderDto';
 /**
  * Error types for file selection
  */
@@ -77,7 +77,7 @@ export class JsonFileStorageService implements IStorageService {
 
   async saveData(): Promise<PageBuilderDto> {
     try {
-      const sanitized = preparePageDataForSave(this.pageBuilder.pageInfo);
+      const sanitized = await preparePageDataForSave(this.pageBuilder.pageInfo);
       const json = JSON.stringify(sanitized, null, 2);
       downloadFile(json, 'page-data.json', 'application/json');
       return new PageBuilderDto(sanitized);

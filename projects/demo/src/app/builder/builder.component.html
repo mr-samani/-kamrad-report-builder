@@ -1,1 +1,8 @@
-<ngx-page-builder [dynamicData]="dynamicData"></ngx-page-builder>
+<button (click)="getData()">get data</button>
+<a routerLink="/preview" target="_blank">preview</a>
+<ngx-page-builder
+  #pageBuilder
+  [dynamicData]="dynamicData"
+  [viewMode]="'WebPage'"
+  [data]="data"
+></ngx-page-builder>

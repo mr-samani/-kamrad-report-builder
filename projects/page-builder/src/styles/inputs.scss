@@ -8,11 +8,10 @@
 }
 .pi-group {
   display: inline-flex;
-  background: var(--input-background);
   border-radius: 4px;
   height: 22px;
   overflow: hidden;
-  width: 100%;
+  gap: 1px;
   input,
   select,
   textarea {
@@ -22,11 +21,19 @@
     flex: auto;
     padding: 0 6px 0 6px;
     line-height: 2;
-    appearance: auto;
+    max-width: 100px;
+    min-width: 100px;
     &:disabled {
       background-color: #2b3138;
       cursor: not-allowed;
     }
+  }
+  select {
+    appearance: auto;
+  }
+  .unit {
+    width: 45px;
+    min-width: 0;
   }
 
   &:has(input.color) {
@@ -35,11 +42,12 @@
   input.color {
     width: 32px;
     padding: 0;
+    min-width: 0;
   }
   .btn-clear {
     all: unset;
+    background: var(--input-background);
     border: none;
-    background: none;
     padding: 0px 10px;
     cursor: pointer;
   }

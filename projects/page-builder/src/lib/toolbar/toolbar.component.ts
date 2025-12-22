@@ -17,6 +17,8 @@ import { ImportDialogComponent } from '../import-dialog/import-dialog.component'
 import { ExportHtmlService } from '../../services/import-export/export-html.service';
 import { PageItem } from '../../models/PageItem';
 import { Notify } from '../../extensions/notify';
+import { HistoryService } from '../../services/history.service';
+import { LibConsts } from '../../consts/defauls';
 
 @Component({
   selector: 'toolbar',
@@ -29,10 +31,15 @@ import { Notify } from '../../extensions/notify';
 })
 export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit {
   pageNumber: number = 1;
+  enableHistory = LibConsts.enableHistory;
+  toolbarConfig = LibConsts.toolbarConfig;
+
   constructor(
     injector: Injector,
     private matDialog: MatDialog,
     private exporter: ExportHtmlService,
+
+    public history: HistoryService,
   ) {
     super(injector);
     effect(() => {
@@ -42,6 +49,27 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
   }
 
   ngOnInit() {}
+
+  get canUndo(): boolean {
+    return this.history.canUndo();
+  }
+  get canRedo(): boolean {
+    return this.history.canRedo();
+  }
+  undo() {
+    let blocks = this.pageBuilder.currentPage.bodyItems;
+    blocks = this.history.undo(blocks);
+    this.pageBuilder.updatePage(blocks);
+  }
+  redo() {
+    let blocks = this.pageBuilder.currentPage.bodyItems;
+    blocks = this.history.redo(blocks);
+    this.pageBuilder.updatePage(blocks);
+  }
+
+  getHistory() {
+    console.log(this.history.getHistory());
+  }
 
   changePage() {
     this.pageBuilder

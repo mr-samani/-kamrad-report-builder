@@ -1,48 +1,56 @@
 import { PageBuilderDto } from '../../models/PageBuilderDto';
 import { PageItem } from '../../models/PageItem';
-import { ISourceOptions } from '../../public-api';
+import { ISourceOptions } from '../../models/SourceItem';
 import { cloneDeep } from '../../utiles/clone-deep';
 import { sanitizeForStorage } from './sanitizeForStorage';
 
-export function preparePageDataForSave(pageInfo: PageBuilderDto): PageBuilderDto {
-  if (!pageInfo) {
-    return new PageBuilderDto();
-  }
-  const clonedData: PageBuilderDto = cloneDeep(pageInfo);
+export function preparePageDataForSave(pageInfo: PageBuilderDto): Promise<PageBuilderDto> {
+  return new Promise((resolve, reject) => {
+    try {
+      if (!pageInfo) {
+        resolve(new PageBuilderDto());
+        return;
+      }
+      const clonedData: PageBuilderDto = cloneDeep(pageInfo);
 
-  let tree = (list: PageItem[]) => {
-    for (let item of list) {
-      if (item.customComponent) {
-        delete (item.customComponent as any).component;
-        delete item.customComponent.componentSettings;
-        delete item.customComponent.providers;
-        delete item.customComponent.compInjector;
-      }
-      if (item.template) {
-        item.children = [];
+      let tree = (list: PageItem[]) => {
+        for (let item of list) {
+          if (item.customComponent) {
+            delete (item.customComponent as any).component;
+            delete item.customComponent.componentSettings;
+            delete item.customComponent.providers;
+            delete item.customComponent.compInjector;
+          }
+          if (item.template) {
+            item.children = [];
+          }
+
+          cleanAttributes(item.options);
+          delete item.options?.events;
+          delete item.options?.directives;
+          delete item.el;
+
+          if (item.children && item.children.length > 0) {
+            tree(item.children);
+          }
+          if (item.template) {
+            tree([item.template]);
+          }
+        }
+      };
+      for (let page of clonedData.pages) {
+        const list = [...page.headerItems, ...page.bodyItems, ...page.footerItems];
+        tree(list);
       }
 
-      cleanAttributes(item.options);
-      delete item.options?.events;
-      delete item.options?.directives;
+      clonedData.pages.map((m, index) => (m.order = index));
 
-      if (item.children && item.children.length > 0) {
-        tree(item.children);
-      }
-      if (item.template) {
-        tree([item.template]);
-      }
+      const sanitized = sanitizeForStorage(clonedData);
+      return resolve(sanitized);
+    } catch (error) {
+      reject(error);
     }
-  };
-  for (let page of clonedData.pages) {
-    const list = [...page.headerItems, ...page.bodyItems, ...page.footerItems];
-    tree(list);
-  }
-
-  clonedData.pages.map((m, index) => (m.order = index));
-
-  const sanitized = sanitizeForStorage(clonedData);
-  return sanitized;
+  });
 }
 
 function removeClassesFromHtml(

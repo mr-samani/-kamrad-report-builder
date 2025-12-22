@@ -11,54 +11,89 @@
 <!-- --------------------------------------------------------------------------------- -->
 <div class="spacer"></div>
 <!-- --------------------------------------------------------------------------------- -->
-<div class="page-handler">
-  <button (click)="addPage()" title="Add page">
-    <svg Icon="assets/icons/file-plus.svg"></svg>
-  </button>
-  <button (click)="removePage()" title="Remove page">
-    <svg Icon="assets/icons/trash2.svg"></svg>
-  </button>
+@if (viewMode == 'PrintPage') {
+  <div class="page-handler">
+    <button (click)="addPage()" title="Add page">
+      <svg Icon="assets/icons/file-plus.svg"></svg>
+    </button>
+    <button (click)="removePage()" title="Remove page">
+      <svg Icon="assets/icons/trash2.svg"></svg>
+    </button>
 
-  <button (click)="previousPage()" title="Previous page">
-    <svg Icon="assets/icons/chevron-left.svg"></svg>
-  </button>
-  <input
-    [min]="1"
-    [max]="pageBuilder.pageInfo.pages.length"
-    type="number"
-    [(ngModel)]="pageNumber"
-    (change)="changePage()"
-  />
-  <span>/</span>
-  <span>{{ pageBuilder.pageInfo.pages.length }}</span>
-  <button (click)="nextPage()" title="Next page">
-    <svg Icon="assets/icons/chevron-right.svg"></svg>
-  </button>
-  <button (click)="sortPages()" title="Sort pages">
-    <svg Icon="assets/icons/files.svg"></svg>
-  </button>
-</div>
+    <button (click)="previousPage()" title="Previous page">
+      <svg Icon="assets/icons/chevron-left.svg"></svg>
+    </button>
+    <input
+      [min]="1"
+      [max]="pageBuilder.pageInfo.pages.length"
+      type="number"
+      [(ngModel)]="pageNumber"
+      (change)="changePage()"
+    />
+    <span>/</span>
+    <span>{{ pageBuilder.pageInfo.pages.length }}</span>
+    <button (click)="nextPage()" title="Next page">
+      <svg Icon="assets/icons/chevron-right.svg"></svg>
+    </button>
+    <button (click)="sortPages()" title="Sort pages">
+      <svg Icon="assets/icons/files.svg"></svg>
+    </button>
+  </div>
+}
+
 <!-- --------------------------------------------------------------------------------- -->
 <div class="spacer"></div>
 <!-- --------------------------------------------------------------------------------- -->
-<button (click)="exportHtml()" title="Export all pages as Html">
-  <svg Icon="assets/icons/file-export.svg"></svg>
-</button>
-<button (click)="importHtml()" title="Import Html">
-  <svg Icon="assets/icons/download.svg"></svg>
-</button>
-<button (click)="openConfigDialog()" title="Configuration">
-  <svg Icon="assets/icons/cog.svg"></svg>
-</button>
-<button (click)="print()" title="Print">
-  <svg Icon="assets/icons/printer.svg"></svg>
-</button>
-<button (click)="preview()" title="preview">
-  <svg Icon="assets/icons/monitor.svg"></svg>
-</button>
-<button (click)="onSave()" title="Save">
-  <svg Icon="assets/icons/save.svg"></svg>
-</button>
-<button (click)="onOpen()" title="Open">
-  <svg Icon="assets/icons/folder-open.svg"></svg>
-</button>
+@if (enableHistory) {
+  <button type="button" title="undo" (click)="undo()" [disabled]="!canUndo">
+    <svg Icon="assets/icons/rotate-left.svg"></svg>
+  </button>
+  <button type="button" title="redo" (click)="redo()" [disabled]="!canRedo">
+    <svg Icon="assets/icons/rotate-right.svg"></svg>
+  </button>
+  <button type="button" title="history" (click)="getHistory()">
+    <svg Icon="assets/icons/clock-rotate-left.svg"></svg>
+  </button>
+}
+<!-- --------------------------------------------------------------------------------- -->
+@if (toolbarConfig?.showExportHtmlButton) {
+  <button (click)="exportHtml()" title="Export all pages as Html">
+    <svg Icon="assets/icons/file-export.svg"></svg>
+  </button>
+}
+
+@if (toolbarConfig?.showImportHtmlButton) {
+  <button (click)="importHtml()" title="Import Html">
+    <svg Icon="assets/icons/download.svg"></svg>
+  </button>
+}
+
+@if (toolbarConfig?.showConfigButton) {
+  <button (click)="openConfigDialog()" title="Configuration">
+    <svg Icon="assets/icons/cog.svg"></svg>
+  </button>
+}
+
+@if (toolbarConfig?.showPrintButton) {
+  <button (click)="print()" title="Print">
+    <svg Icon="assets/icons/printer.svg"></svg>
+  </button>
+}
+
+@if (toolbarConfig?.showPreviewButton) {
+  <button (click)="preview()" title="preview">
+    <svg Icon="assets/icons/monitor.svg"></svg>
+  </button>
+}
+
+@if (toolbarConfig?.showOpenButton) {
+  <button (click)="onSave()" title="Save">
+    <svg Icon="assets/icons/save.svg"></svg>
+  </button>
+}
+
+@if (toolbarConfig?.showOpenButton) {
+  <button (click)="onOpen()" title="Open">
+    <svg Icon="assets/icons/folder-open.svg"></svg>
+  </button>
+}

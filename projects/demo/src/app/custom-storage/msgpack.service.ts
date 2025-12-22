@@ -25,7 +25,7 @@ export class MessagePackStorageService implements IStorageService {
 
   async saveData(): Promise<PageBuilderDto> {
     try {
-      const sanitized = preparePageDataForSave(this.pageBuilder.pageInfo);
+      const sanitized = await preparePageDataForSave(this.pageBuilder.pageInfo);
       const encoded = encode(sanitized);
       this.downloadFile(encoded, 'page-data.msgpack', 'application/octet-stream');
       return new PageBuilderDto(sanitized);

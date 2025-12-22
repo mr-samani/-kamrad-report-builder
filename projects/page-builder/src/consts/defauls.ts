@@ -1,12 +1,15 @@
 import { IDropEvent, NgxDraggableDirective, NgxDropListDirective } from 'ngx-drag-drop-kit';
 import { Directive, SourceItem } from '../models/SourceItem';
 import { PageItem } from '../models/PageItem';
+import { ViewMode } from './ViewMode';
+import { PageBuilderToolbarConfig } from '../models/PageBuilderConfiguration';
 
 /** loaded from initial provider
  *
  * - merge SOURCE_ITEMS with custom sources
  */
 export const LibConsts: {
+  viewMode: ViewMode;
   SourceItemList: SourceItem[];
 
   /**
@@ -14,9 +17,17 @@ export const LibConsts: {
    * @example backend-api folder
    */
   backendProxyImportUrl: string;
+
+  /** enable history (undo , redo) */
+  enableHistory: boolean;
+
+  toolbarConfig?: PageBuilderToolbarConfig;
 } = {
   SourceItemList: [],
   backendProxyImportUrl: 'http://localhost:3000/api/render',
+  enableHistory: false,
+  viewMode: 'PrintPage',
+  toolbarConfig: new PageBuilderToolbarConfig(),
 };
 
 export const LOCAL_STORAGE_SAVE_KEY = 'page';

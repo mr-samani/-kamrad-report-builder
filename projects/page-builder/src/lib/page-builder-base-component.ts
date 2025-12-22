@@ -4,6 +4,8 @@ import { PageBuilderService } from '../services/page-builder.service';
 import { PreviewService } from '../services/preview.service';
 import { DynamicDataService } from '../services/dynamic-data.service';
 import { PageBuilderShortcutService } from '../services/shortcut.service';
+import { LibConsts } from '../consts/defauls';
+import { ViewMode } from '../consts/ViewMode';
 
 export abstract class PageBuilderBaseComponent {
   readonly dynamicElementService = inject(DynamicElementService);
@@ -16,4 +18,11 @@ export abstract class PageBuilderBaseComponent {
   readonly shortcuts = inject(PageBuilderShortcutService);
 
   constructor(injector: Injector) {}
+
+  set viewMode(val: ViewMode) {
+    LibConsts.viewMode = val;
+  }
+  get viewMode() {
+    return LibConsts.viewMode;
+  }
 }

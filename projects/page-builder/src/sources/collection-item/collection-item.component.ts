@@ -12,18 +12,15 @@ import {
 import { ComponentDataContext } from '../../models/ComponentDataContext';
 import { COMPONENT_DATA } from '../../models/tokens';
 import { DataSourceSetting } from '../../models/DataSourceSetting';
-import { IPageItem, PageItem } from '../../models/PageItem';
+import { PageItem } from '../../models/PageItem';
 import { debounceTime, Subscription } from 'rxjs';
 import { PageBuilderService, PageItemChange } from '../../services/page-builder.service';
 import { DynamicElementService } from '../../services/dynamic-element.service';
 import { DynamicDataStructure } from '../../models/DynamicData';
 import { DynamicDataService } from '../../services/dynamic-data.service';
 import { cloneDeep } from '../../utiles/clone-deep';
-import {
-  cloneTemplate,
-  findCellContainer,
-  itemInThisTemplate,
-} from '../../utiles/collection-helper';
+import { cloneTemplate, itemInThisTemplate } from '../../utiles/collection-helper';
+import { IPageItem } from '../../contracts/IPageItem';
 
 @Component({
   selector: 'collection-item',

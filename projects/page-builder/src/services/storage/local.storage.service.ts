@@ -26,8 +26,8 @@ export class LocalStorageService implements IStorageService {
   }
 
   saveData() {
-    return new Promise<PageBuilderDto>((resolve, reject) => {
-      const sanitized = preparePageDataForSave(this.pageBuilder.pageInfo);
+    return new Promise<PageBuilderDto>(async (resolve, reject) => {
+      const sanitized = await preparePageDataForSave(this.pageBuilder.pageInfo);
       localStorage.setItem(LOCAL_STORAGE_SAVE_KEY, JSON.stringify(sanitized));
       resolve(new PageBuilderDto(sanitized));
     });

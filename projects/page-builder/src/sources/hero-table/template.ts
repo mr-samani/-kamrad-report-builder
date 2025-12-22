@@ -1,4 +1,4 @@
-import { IPageItem } from '../../models/PageItem';
+import { IPageItem } from '../../contracts/IPageItem';
 import { cloneDeep } from '../../utiles/clone-deep';
 
 export const _th: IPageItem = {
