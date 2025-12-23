@@ -9,7 +9,6 @@ import { IPageItem } from '../contracts/IPageItem';
 export class PageItem implements IPageItem {
   id: string = '';
   dataSource?: DataSourceSetting;
-
   parent?: PageItem;
   el?: HTMLElement;
   children: PageItem[] = [];
@@ -44,6 +43,8 @@ export class PageItem implements IPageItem {
    */
   template?: PageItem;
 
+  classList: string[] = [];
+
   constructor(data?: IPageItem, parent?: PageItem) {
     if (data) {
       for (var property in data) {
@@ -59,6 +60,7 @@ export class PageItem implements IPageItem {
     }
     if (!this.id) this.id = randomStrnig(5);
     if (parent) this.parent = parent;
+    this.classList ??= [];
   }
   static fromJSON(data: IPageItem): PageItem {
     const item = new PageItem(data);

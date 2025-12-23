@@ -20,6 +20,9 @@ $activeFgColor: #fff;
   color: $fgColortab-group;
   padding: 0 10px;
   box-sizing: border-box;
+  &.dont-show-single {
+    display: none;
+  }
 }
 
 .tab-group__item {

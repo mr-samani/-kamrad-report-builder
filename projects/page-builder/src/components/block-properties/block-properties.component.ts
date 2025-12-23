@@ -16,6 +16,7 @@ import { DisplayControlComponent } from '../../controls/display-control/display-
 import { TextCssControlComponent } from '../../controls/textcss-control/textcss-control.component';
 import { SizeControlComponent } from '../../controls/size-control/size-control.component';
 import { ShadowControlComponent } from '../../controls/shadow-control/shadow-control.component';
+import { ClassSelectorComponent } from '../class-selector/class-selector.component';
 
 @Component({
   selector: 'block-properties',
@@ -31,6 +32,7 @@ import { ShadowControlComponent } from '../../controls/shadow-control/shadow-con
     DisplayControlComponent,
     TextCssControlComponent,
     SizeControlComponent,
+    ClassSelectorComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,

@@ -1,0 +1,7 @@
+@if (item) {
+  <select multiple [(ngModel)]="item.classList">
+    @for (item of cls.availableClasses; track $index) {
+      <option [value]="item">{{ item }}</option>
+    }
+  </select>
+}

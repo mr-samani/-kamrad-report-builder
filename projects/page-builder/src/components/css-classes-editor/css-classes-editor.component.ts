@@ -181,7 +181,7 @@ export class CssClassesEditorComponent
 
       // CSS property
       if (currentSelector && trimmed.includes(':')) {
-        const declarationMatch = trimmed.match(/^([a-z-]+)\s*:\s*([^;]+);?$/i);
+        const declarationMatch = trimmed.match(/^([a-z-\d]+)\s*:\s*([^;]+);?$/i);
 
         if (declarationMatch) {
           const [, property, value] = declarationMatch;
@@ -252,13 +252,6 @@ export class CssClassesEditorComponent
       if (this.highlightRef) {
         this.highlightRef.nativeElement.scrollTop = textarea.scrollTop;
         this.highlightRef.nativeElement.scrollLeft = textarea.scrollLeft;
-
-        console.log(
-          'highlightRef',
-          this.highlightRef.nativeElement.scrollTop,
-          this.highlightRef.nativeElement.scrollHeight,
-        );
-        console.log('textarea', textarea.scrollTop, textarea.scrollHeight);
       }
     });
 
@@ -369,7 +362,7 @@ export class CssClassesEditorComponent
       }
 
       // CSS property: value
-      const match = line.match(/^(\s*)([a-z-]+)(\s*):(\s*)([^;]+)(;?)(.*)$/i);
+      const match = line.match(/^(\s*)([a-z-\d]+)(\s*):(\s*)([^;]+)(;?)(.*)$/i);
       if (match) {
         const [, leadingSpace, property, spaceAfter, spaceBefore, value, semicolon, trailing] =
           match;
