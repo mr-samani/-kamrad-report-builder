@@ -1,16 +1,6 @@
 <div class="inner">
   @if (item) {
     <p>{{ item.tag }}</p>
-    <p>{{ item.id }}</p>
-    can be set content: {{ item.CanBeSetContent }}
-    @if (item.CanBeSetContent || item.isImageTag) {
-      <text-binding
-        [item]="item"
-        [parentCollection]="parentCollection"
-        [collectionDsList]="collectionDsList"
-        (change)="onChangeProperties()"
-      ></text-binding>
-    }
 
     <details name="block-properties" (toggle)="openPanel(display)" #display>
       <summary>Display</summary>
