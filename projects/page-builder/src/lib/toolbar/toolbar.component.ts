@@ -167,6 +167,7 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
         panelClass: 'ngx-page-builder',
         data: {
           classes: {
+            'a[href=""],#b.a,a~b': 'color:red;',
             button: `color: red;
             
             background-color: #eecec;

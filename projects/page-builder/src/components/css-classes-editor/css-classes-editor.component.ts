@@ -94,6 +94,14 @@ export class CssClassesEditorComponent
     return cssLines.join('\n').trim();
   }
 
+  // Check if a string is a valid CSS selector
+  private isValidSelector(selector: string): boolean {
+    // این regex همه نوع selector های CSS رو میپذیره:
+    // .class, #id, element, [attr], :pseudo, ::pseudo, combinations و ...
+    const selectorPattern = /^[a-zA-Z0-9_\-#.\[\]:*>+~\s,"'=()]+$/;
+    return selectorPattern.test(selector.trim());
+  }
+
   // Convert CSS format to Record
   private cssToRecord(css: string): {
     record: Record<string, string> | null;
@@ -110,6 +118,7 @@ export class CssClassesEditorComponent
     let currentSelector: string | null = null;
     let currentStyles: string[] = [];
     let braceCount = 0;
+
     lines.forEach((line, index) => {
       const trimmed = line.trim();
       const lineNumber = index + 1;
@@ -118,22 +127,33 @@ export class CssClassesEditorComponent
       if (!trimmed || trimmed.startsWith('/*')) {
         return;
       }
-      // Class selector
-      if (trimmed.match(/^[.#:a-zA-Z0-9_-]+\s*\{/)) {
+
+      // Selector با آکولاد باز - همه نوع selector ها
+      if (trimmed.includes('{') && !trimmed.startsWith('{')) {
         // Save previous class if exists
         if (currentSelector && currentStyles.length > 0) {
           record[currentSelector] = currentStyles.join(';');
           currentStyles = [];
         }
 
-        const match = trimmed.match(/^([.#:a-zA-Z0-9_-]+)\s*\{/);
+        // Extract selector (everything before {)
+        const match = trimmed.match(/^(.+?)\s*\{/);
         if (match) {
-          currentSelector = match[1];
-          braceCount++;
+          const selector = match[1].trim();
+
+          if (this.isValidSelector(selector)) {
+            currentSelector = selector;
+            braceCount++;
+          } else {
+            errors.push({
+              line: lineNumber,
+              message: 'Invalid selector format',
+            });
+          }
         } else {
           errors.push({
             line: lineNumber,
-            message: 'Invalid class selector format',
+            message: 'Invalid selector format',
           });
         }
         return;
@@ -232,6 +252,13 @@ export class CssClassesEditorComponent
       if (this.highlightRef) {
         this.highlightRef.nativeElement.scrollTop = textarea.scrollTop;
         this.highlightRef.nativeElement.scrollLeft = textarea.scrollLeft;
+
+        console.log(
+          'highlightRef',
+          this.highlightRef.nativeElement.scrollTop,
+          this.highlightRef.nativeElement.scrollHeight,
+        );
+        console.log('textarea', textarea.scrollTop, textarea.scrollHeight);
       }
     });
 
@@ -306,8 +333,12 @@ export class CssClassesEditorComponent
     let escaped = css.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const lines = escaped.split('\n');
 
-    const highlighted = lines.map((line) => {
-      if (!line.trim()) return '<div class="new-line"></div>';
+    const highlighted = lines.map((line, index) => {
+      // برای خطوط خالی، فقط یک newline برمیگردونیم
+      // اما اگر آخرین خط باشه و خالی باشه، div.new-line میذاریم
+      if (!line.trim()) {
+        return '<span class="new-line">&nbsp;</span>';
+      }
 
       const trimmed = line.trim();
 
@@ -315,13 +346,18 @@ export class CssClassesEditorComponent
       if (trimmed.startsWith('/*')) {
         return `<span class="css-comment">${line}</span>`;
       }
-      // Class selector
-      if (trimmed.match(/^[.#:a-zA-Z0-9_-]+\s*\{/)) {
-        const match = line.match(/^(.\s*)([\w-]+)(\s*)(\{)(.*)$/);
+
+      // Selector با آکولاد - همه نوع selector ها رو پشتیبانی میکنه
+      if (trimmed.includes('{') && !trimmed.startsWith('{')) {
+        const match = line.match(/^(\s*)(.+?)(\s*)(\{)(.*)$/);
         if (match) {
-          const [, space, dot, selector, space2, brace, rest] = match;
+          const [, leadingSpace, selector, spaceAfterSelector, brace, rest] = match;
+
+          // Highlight different parts of complex selectors
+          const highlightedSelector = this.highlightSelector(selector);
+
           return (
-            `${space}<span class="css-selector">${dot}${selector}</span>${space2}` +
+            `${leadingSpace}${highlightedSelector}${spaceAfterSelector}` +
             `<span class="css-brace">${brace}</span>${rest}`
           );
         }
@@ -355,6 +391,36 @@ export class CssClassesEditorComponent
     });
 
     return highlighted.join('\n');
+  }
+
+  // Highlight different parts of CSS selector
+  private highlightSelector(selector: string): string {
+    let result = selector;
+
+    // Class selectors
+    result = result.replace(
+      /(\.[a-zA-Z0-9_-]+)/g,
+      '<span class="css-selector css-class">$1</span>',
+    );
+
+    // ID selectors
+    result = result.replace(/(#[a-zA-Z0-9_-]+)/g, '<span class="css-selector css-id">$1</span>');
+
+    // Attribute selectors
+    result = result.replace(/(\[[^\]]+\])/g, '<span class="css-selector css-attribute">$1</span>');
+
+    // Pseudo-classes and pseudo-elements
+    result = result.replace(
+      /(::?[a-zA-Z-]+(?:\([^)]*\))?)/g,
+      '<span class="css-selector css-pseudo">$1</span>',
+    );
+
+    // اگر هیچ کدوم از بالایی‌ها نبود، احتمالا element selector هست
+    if (!result.includes('<span')) {
+      result = `<span class="css-selector css-element">${result}</span>`;
+    }
+
+    return result;
   }
 
   private highlightValue(value: string): string {

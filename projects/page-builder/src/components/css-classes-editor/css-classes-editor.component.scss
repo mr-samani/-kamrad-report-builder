@@ -7,7 +7,7 @@
   .css-editor-wrapper {
     position: relative;
     width: 100%;
-    height: 400px;
+    height: 76vh;
     border: 1px solid #ddd;
     border-radius: 4px;
     overflow: hidden;
@@ -38,7 +38,10 @@
     color: transparent;
     pointer-events: none;
     z-index: 100;
-
+    .new-line {
+      display: inline;
+      white-space: pre;
+    }
     // Syntax highlighting colors
     .css-selector {
       color: #d7ba7d;
@@ -99,6 +102,26 @@
     .css-placeholder {
       color: #6a737d;
       font-style: italic;
+    }
+    // .class
+    .css-class {
+      color: #d7ba7d;
+    }
+    // #id
+    .css-id {
+      color: #4ec9b0;
+    }
+    // [attr]
+    .css-attribute {
+      color: #9cdcfe;
+    }
+    // :hover, ::before
+    .css-pseudo {
+      color: #dcdcaa;
+    }
+    // div, span
+    .css-element {
+      color: #569cd6;
     }
   }
 
