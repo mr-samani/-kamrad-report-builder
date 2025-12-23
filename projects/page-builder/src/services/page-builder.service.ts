@@ -424,7 +424,7 @@ export class PageBuilderService implements OnDestroy {
   }
   changedProperties(item: PageItem) {
     if (item.el) {
-      item.style = item.el.style.cssText;
+      // item.style = item.el.style.cssText;
       // item.style = encodeURIComponent(item.el.style.cssText);
     }
     this.updateChangeDetection({ item: item, type: 'ChangeBlockProperties' });

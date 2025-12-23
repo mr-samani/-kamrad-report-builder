@@ -5,6 +5,7 @@ import {
   ElementRef,
   Inject,
   Injector,
+  input,
   Input,
   OnDestroy,
   OnInit,
@@ -31,6 +32,7 @@ import { Page } from '../models/Page';
 import { IPage } from '../contracts/IPage';
 import { preparePageDataForSave } from '../services/storage/prepare-page-builder-data';
 import { IPageBuilderDto } from '../contracts/IPageBuilderDto';
+import { ClassManagerService } from '../services/class-manager.service';
 
 @Component({
   selector: 'ngx-page-builder',
@@ -56,6 +58,11 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
     const pages = val.map((m) => Page.fromJSON(m));
     this.loadPageData(pages);
   }
+
+  @Input('styles') set setStyles(val: string) {
+    this.cls.addCssFile('default', val);
+  }
+
   @Input('dynamicData') set setDynamicData(val: DynamicDataStructure[]) {
     this.dynamicDataService.dynamicData = val ?? [];
   }
@@ -81,6 +88,7 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
     @Inject(PAGE_BUILDER_CONFIGURATION) private mainConfig: PageBuilderConfiguration,
     @Inject(STORAGE_SERVICE) private storageService: IStorageService,
     @Inject(DOCUMENT) private doc: Document,
+    private cls: ClassManagerService,
   ) {
     super(injector);
     this.pageBuilder.mode = 'Edit';

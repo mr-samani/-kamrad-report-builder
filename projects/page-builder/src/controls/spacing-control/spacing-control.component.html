@@ -1,7 +1,7 @@
 <table class="properties-table">
   <tbody>
     <tr>
-      <th colspan="2" align="start">Margin: {{ style?.margin }}</th>
+      <th colspan="2" align="start">Margin: {{ style.margin }}</th>
     </tr>
     @for (direction of margin | keyvalue: returnZero; track $index) {
       <ng-container>
@@ -23,7 +23,7 @@
 <table class="properties-table">
   <tbody>
     <tr>
-      <th colspan="2" align="start">Padding: {{ style?.padding }}</th>
+      <th colspan="2" align="start">Padding: {{ style.padding }}</th>
     </tr>
     @for (direction of padding | keyvalue: returnZero; track $index) {
       <ng-container>

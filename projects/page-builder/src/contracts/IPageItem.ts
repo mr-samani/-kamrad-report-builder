@@ -15,10 +15,11 @@ export interface IPageItem {
   component?: () => Promise<Type<any>>;
   componentKey?: string;
   options?: ISourceOptions;
-  style?: string;
   template?: IPageItem;
   disableMovement?: boolean;
   lockMoveInnerChild?: boolean;
   disableDelete?: boolean;
   isTemplateContainer?: boolean;
+
+  classList?: string[];
 }

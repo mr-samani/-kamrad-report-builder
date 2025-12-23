@@ -1,12 +1,10 @@
-import { Output, EventEmitter, Renderer2, Injector } from '@angular/core';
+import { Renderer2, Injector } from '@angular/core';
 import { PageItem } from '../models/PageItem';
 
 export abstract class BaseControl {
-  style?: Partial<CSSStyleDeclaration>;
-  item?: PageItem;
-  el: HTMLElement | undefined = undefined;
+  style!: Partial<CSSStyleDeclaration>;
   isDisabled: boolean = false;
-  onChange = (_: PageItem | undefined) => {};
+  onChange = (_: Partial<CSSStyleDeclaration>) => {};
   onTouched = () => {};
 
   readonly renderer: Renderer2;

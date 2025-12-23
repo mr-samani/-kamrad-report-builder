@@ -41,14 +41,15 @@ export class CollectionItemComponent implements OnInit, OnDestroy, AfterViewInit
     disableMovement: true,
     lockMoveInnerChild: true,
     disableDelete: true,
-    style: `
-        position: relative;
-        flex: auto;
-        box-shadow: 0 0px 4px rgba(0, 0, 0, 0.3);
-        padding: 10px;
-        border-radius: 5px;
-        overflow: hidden;
-    `,
+    // TODO create class for style
+    // style: `
+    //     position: relative;
+    //     flex: auto;
+    //     box-shadow: 0 0px 4px rgba(0, 0, 0, 0.3);
+    //     padding: 10px;
+    //     border-radius: 5px;
+    //     overflow: hidden;
+    // `,
     options: {
       attributes: {
         class: 'template-container',
@@ -88,7 +89,7 @@ export class CollectionItemComponent implements OnInit, OnDestroy, AfterViewInit
           data.type == 'ChangeBlockContent' ||
           data.type == 'ChangeBlockProperties'
         ) {
-          console.log('Block changed:', data.item?.id, data.type, data.item?.style);
+          // console.log('Block changed:', data.item?.id, data.type, data.item?.style);
           const found = itemInThisTemplate(data.item, this.pageItem.children);
           if (found.result) {
             console.time('updateTemplate');

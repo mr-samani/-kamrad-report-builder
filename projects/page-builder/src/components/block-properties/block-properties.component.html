@@ -2,50 +2,52 @@
   @if (item) {
     <p>{{ item.tag }}</p>
 
-    <class-selector (selectedCss)="onChangeProperties()"></class-selector>
+    <class-selector (selectedCss)="onSelectClass($event)"></class-selector>
+
+    <p>{{ css }}</p>
 
     <details name="block-properties" (toggle)="openPanel(display)" #display>
       <summary>Display</summary>
       @if (display.open) {
-        <display-control [(ngModel)]="item" (change)="onChangeProperties()"></display-control>
+        <display-control [(ngModel)]="style" (change)="onUpdateStyle()"></display-control>
       }
     </details>
 
     <details name="block-properties" (toggle)="openPanel(size)" #size>
       <summary>Size</summary>
       @if (size.open) {
-        <size-control [(ngModel)]="item" (change)="onChangeProperties()"></size-control>
+        <size-control [(ngModel)]="style" (change)="onUpdateStyle()"></size-control>
       }
     </details>
 
     <details name="block-properties" (toggle)="openPanel(spacing)" #spacing>
       <summary>Spacing</summary>
       @if (spacing.open) {
-        <spacing-control [(ngModel)]="item" (change)="onChangeProperties()"></spacing-control>
+        <spacing-control [(ngModel)]="style" (change)="onUpdateStyle()"></spacing-control>
       }
     </details>
     <details name="block-properties" (toggle)="openPanel(typography)" #typography>
       <summary>Typography</summary>
       @if (typography.open) {
-        <typography-control [(ngModel)]="item" (change)="onChangeProperties()"></typography-control>
+        <typography-control [(ngModel)]="style" (change)="onUpdateStyle()"></typography-control>
       }
     </details>
     <details name="block-properties" (toggle)="openPanel(background)" #background>
       <summary>Background</summary>
       @if (background.open) {
-        <background-control [(ngModel)]="item" (change)="onChangeProperties()"></background-control>
+        <background-control [(ngModel)]="style" (change)="onUpdateStyle()"></background-control>
       }
     </details>
     <details name="block-properties" (toggle)="openPanel(shadow)" #shadow>
       <summary>Shadow</summary>
       @if (shadow.open) {
-        <shadow-control [(ngModel)]="item" (change)="onChangeProperties()"></shadow-control>
+        <shadow-control [(ngModel)]="style" (change)="onUpdateStyle()"></shadow-control>
       }
     </details>
     <details name="block-properties" (toggle)="openPanel(advanced)" #advanced>
       <summary>Advanced</summary>
       @if (advanced.open) {
-        <textcss-control [(ngModel)]="item" (change)="onChangeProperties()"></textcss-control>
+        <textcss-control [(ngModel)]="css" (change)="onUpdateStyle()"></textcss-control>
       }
     </details>
   } @else {

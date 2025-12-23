@@ -44,7 +44,7 @@ export type SizeProperty = 'width' | 'minWidth' | 'maxWidth' | 'height' | 'minHe
   imports: [CommonModule, FormsModule],
 })
 export class SizeControlComponent extends BaseControl implements OnInit, ControlValueAccessor {
-  @Output() change = new EventEmitter<PageItem>();
+  @Output() change = new EventEmitter<Partial<CSSStyleDeclaration>>();
 
   widthProperties: SizeProperty[] = ['width', 'minWidth', 'maxWidth'];
   heightProperties: SizeProperty[] = ['height', 'minHeight', 'maxHeight'];
@@ -74,21 +74,11 @@ export class SizeControlComponent extends BaseControl implements OnInit, Control
 
   ngOnInit() {}
 
-  writeValue(item: PageItem): void {
-    this.item = item;
-    if (!item || !item.el) return;
-
-    this.el = item.el;
-    const val = this.el.style;
-
-    this.style = {
-      width: this.el.style.width || val.width,
-      minWidth: this.el.style.minWidth || val.minWidth,
-      maxWidth: this.el.style.maxWidth || val.maxWidth,
-      height: this.el.style.height || val.height,
-      minHeight: this.el.style.minHeight || val.minHeight,
-      maxHeight: this.el.style.maxHeight || val.maxHeight,
-    };
+  writeValue(style: Partial<CSSStyleDeclaration>): void {
+    if (!style) {
+      style = {};
+    }
+    this.style = style;
 
     // Parse size values
     this.sizes.width = this.parseSizeValue(this.style.width);
@@ -156,8 +146,6 @@ export class SizeControlComponent extends BaseControl implements OnInit, Control
   }
 
   update() {
-    if (!this.style || !this.el || !this.item) return;
-
     // Update style object with formatted CSS values
     this.style.width = this.formatSizeValue(this.sizes.width);
     this.style.minWidth = this.formatSizeValue(this.sizes.minWidth);
@@ -166,16 +154,8 @@ export class SizeControlComponent extends BaseControl implements OnInit, Control
     this.style.minHeight = this.formatSizeValue(this.sizes.minHeight);
     this.style.maxHeight = this.formatSizeValue(this.sizes.maxHeight);
 
-    // Apply styles to element
-    this.renderer.setStyle(this.el, 'width', this.style.width);
-    this.renderer.setStyle(this.el, 'min-width', this.style.minWidth);
-    this.renderer.setStyle(this.el, 'max-width', this.style.maxWidth);
-    this.renderer.setStyle(this.el, 'height', this.style.height);
-    this.renderer.setStyle(this.el, 'min-height', this.style.minHeight);
-    this.renderer.setStyle(this.el, 'max-height', this.style.maxHeight);
-    this.item.style = mergeCssStyles(this.item.style, this.el.style.cssText);
-    this.onChange(this.item);
-    this.change.emit(this.item);
+    this.onChange(this.style);
+    this.change.emit(this.style);
   }
   clear(property: ISizeValue) {
     property.value = undefined;

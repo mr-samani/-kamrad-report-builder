@@ -17,6 +17,7 @@ import { TextCssControlComponent } from '../../controls/textcss-control/textcss-
 import { SizeControlComponent } from '../../controls/size-control/size-control.component';
 import { ShadowControlComponent } from '../../controls/shadow-control/shadow-control.component';
 import { ClassSelectorComponent } from '../class-selector/class-selector.component';
+import { CSSStyleHelper } from '../../helper/CSSStyle';
 
 @Component({
   selector: 'block-properties',
@@ -40,6 +41,10 @@ import { ClassSelectorComponent } from '../class-selector/class-selector.compone
 export class BlockPropertiesComponent extends BaseComponent implements OnInit {
   item?: PageItem;
 
+  style: Partial<CSSStyleDeclaration> = {};
+
+  css = '';
+
   constructor(injector: Injector) {
     super(injector);
     effect(() => {
@@ -55,7 +60,13 @@ export class BlockPropertiesComponent extends BaseComponent implements OnInit {
     this.chdRef.detectChanges();
   }
 
-  onChangeProperties() {
+  onUpdateStyle() {
+    // TODO: update style in class
     if (this.item) this.pageBuilder.changedProperties(this.item);
+  }
+
+  onSelectClass(css: string) {
+    this.css = css;
+    this.style = new CSSStyleHelper(css).toStyleObject() || {};
   }
 }

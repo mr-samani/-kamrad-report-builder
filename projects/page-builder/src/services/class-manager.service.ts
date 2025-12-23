@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { DOCUMENT, Inject, Injectable, Renderer2, RendererFactory2 } from '@angular/core';
 import { parseCssToRecord } from '../utiles/css-parser';
 interface ICssFiles {
   name: string;
@@ -28,7 +28,12 @@ export class ClassManagerService {
     },
   ];
 
-  constructor() {
+  private renderer!: Renderer2;
+  constructor(
+    rendererFactory: RendererFactory2,
+    @Inject(DOCUMENT) private doc: Document,
+  ) {
+    this.renderer = rendererFactory.createRenderer(null, null);
     this.availableClasses = [];
     for (let item of this.cssFileData) {
       this.availableClasses.push(...Object.keys(item.data).filter((x) => x.startsWith('.')));
@@ -37,6 +42,7 @@ export class ClassManagerService {
 
   public async addCssFile(name: string, content: string) {
     name = this.validateName(name);
+    this.addStyleToDocument(content);
     const data = await parseCssToRecord(content);
     if (Object.entries(data).length > 0) {
       this.cssFileData.push({
@@ -62,9 +68,20 @@ export class ClassManagerService {
     return finalName;
   }
 
+  private addStyleToDocument(css: string) {
+    let finded = this.doc.querySelector('style#NgxPageBuilderClassUI');
+    if (finded) {
+      finded.remove();
+    }
+    const style = this.doc.createElement('style');
+    style.id = 'NgxPageBuilderClassUI';
+    style.innerHTML = css;
+    this.doc.head.appendChild(style);
+  }
+
   public getClassValue(selectedClass: string): string {
     for (let i = 0; i < this.cssFileData.length; i++) {
-      let found = this.cssFileData[i].data[selectedClass];
+      let found = this.cssFileData[i].data[`.${selectedClass}`];
       if (found) {
         return found;
       }

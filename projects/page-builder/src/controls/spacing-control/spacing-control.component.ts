@@ -9,14 +9,11 @@ import {
   Output,
 } from '@angular/core';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { PageItem } from '../../models/PageItem';
 import { PosValue, Spacing } from './SpacingModel';
 import { SpacingFormatter } from './SpacingFormatter';
 import { parseSpacingValues, validateSpacing } from './validateSpacing';
 import { CommonModule } from '@angular/common';
 import { BaseControl } from '../base-control';
-import { mergeCssStyles } from '../../utiles/merge-css-styles';
-import { cloneDeep } from '../../utiles/clone-deep';
 
 @Component({
   selector: 'spacing-control',
@@ -33,7 +30,7 @@ import { cloneDeep } from '../../utiles/clone-deep';
   imports: [CommonModule, FormsModule],
 })
 export class SpacingControlComponent extends BaseControl implements OnInit, ControlValueAccessor {
-  @Output() change = new EventEmitter<PageItem>();
+  @Output() change = new EventEmitter<Partial<CSSStyleDeclaration>>();
 
   padding = new Spacing();
   margin = new Spacing();
@@ -46,17 +43,15 @@ export class SpacingControlComponent extends BaseControl implements OnInit, Cont
   }
 
   ngOnInit() {}
-  writeValue(item: PageItem): void {
-    this.item = item;
-    if (!item || !item.el) return;
-    this.el = item.el;
-    let val = this.el.style;
-    this.style = { padding: val?.padding, margin: val?.margin };
-
+  writeValue(style: Partial<CSSStyleDeclaration>): void {
+    if (!style) {
+      style = {};
+    }
+    this.style = style;
     // Parse margin and padding from input
 
-    this.margin = parseSpacingValues(val.margin);
-    this.padding = parseSpacingValues(val.padding);
+    this.margin = parseSpacingValues(style.margin);
+    this.padding = parseSpacingValues(style.padding);
     this.cdr.detectChanges();
   }
 
@@ -67,8 +62,6 @@ export class SpacingControlComponent extends BaseControl implements OnInit, Cont
     this.update();
   }
   update() {
-    if (!this.style || !this.item || !this.el) return;
-
     // Validate and format spacing values
     const validatedMargin = validateSpacing(this.margin, true);
     const validatedPadding = validateSpacing(this.padding, false);
@@ -76,11 +69,9 @@ export class SpacingControlComponent extends BaseControl implements OnInit, Cont
     // Update style object with formatted CSS values
     this.style.padding = SpacingFormatter.formatSpacingToCSS(validatedPadding);
     this.style.margin = SpacingFormatter.formatSpacingToCSS(validatedMargin);
-    this.renderer.setStyle(this.el, 'padding', this.style.padding);
-    this.renderer.setStyle(this.el, 'margin', this.style.margin);
-    this.onChange(this.item);
-    this.item.style = mergeCssStyles(this.item.style, this.el.style.cssText);
-    this.change.emit(this.item);
+
+    this.onChange(this.style);
+    this.change.emit(this.style);
   }
 
   clear(spacing: PosValue) {
