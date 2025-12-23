@@ -71,8 +71,8 @@ export class CssClassesEditorComponent
 
     const cssLines: string[] = [];
 
-    Object.entries(classes).forEach(([className, styles]) => {
-      cssLines.push(`.${className} {`);
+    Object.entries(classes).forEach(([selector, styles]) => {
+      cssLines.push(`${selector} {`);
 
       // Parse and format styles
       const styleDeclarations = styles
@@ -107,10 +107,9 @@ export class CssClassesEditorComponent
     }
 
     const lines = css.split('\n');
-    let currentClass: string | null = null;
+    let currentSelector: string | null = null;
     let currentStyles: string[] = [];
     let braceCount = 0;
-
     lines.forEach((line, index) => {
       const trimmed = line.trim();
       const lineNumber = index + 1;
@@ -119,18 +118,17 @@ export class CssClassesEditorComponent
       if (!trimmed || trimmed.startsWith('/*')) {
         return;
       }
-
       // Class selector
-      if (trimmed.match(/^\.[a-zA-Z0-9_-]+\s*\{/)) {
+      if (trimmed.match(/^[.#:a-zA-Z0-9_-]+\s*\{/)) {
         // Save previous class if exists
-        if (currentClass && currentStyles.length > 0) {
-          record[currentClass] = currentStyles.join(';');
+        if (currentSelector && currentStyles.length > 0) {
+          record[currentSelector] = currentStyles.join(';');
           currentStyles = [];
         }
 
-        const match = trimmed.match(/^\.([a-zA-Z0-9_-]+)\s*\{/);
+        const match = trimmed.match(/^([.#:a-zA-Z0-9_-]+)\s*\{/);
         if (match) {
-          currentClass = match[1];
+          currentSelector = match[1];
           braceCount++;
         } else {
           errors.push({
@@ -152,17 +150,17 @@ export class CssClassesEditorComponent
           braceCount--;
 
           // Save current class
-          if (currentClass && currentStyles.length > 0) {
-            record[currentClass] = currentStyles.join(';');
+          if (currentSelector && currentStyles.length > 0) {
+            record[currentSelector] = currentStyles.join(';');
             currentStyles = [];
-            currentClass = null;
+            currentSelector = null;
           }
         }
         return;
       }
 
       // CSS property
-      if (currentClass && trimmed.includes(':')) {
+      if (currentSelector && trimmed.includes(':')) {
         const declarationMatch = trimmed.match(/^([a-z-]+)\s*:\s*([^;]+);?$/i);
 
         if (declarationMatch) {
@@ -309,7 +307,7 @@ export class CssClassesEditorComponent
     const lines = escaped.split('\n');
 
     const highlighted = lines.map((line) => {
-      if (!line.trim()) return '<br>';
+      if (!line.trim()) return '<div class="new-line"></div>';
 
       const trimmed = line.trim();
 
@@ -317,14 +315,13 @@ export class CssClassesEditorComponent
       if (trimmed.startsWith('/*')) {
         return `<span class="css-comment">${line}</span>`;
       }
-
       // Class selector
-      if (trimmed.match(/^\.[a-zA-Z0-9_-]+\s*\{/)) {
-        const match = line.match(/^(\s*)(\.)([\w-]+)(\s*)(\{)(.*)$/);
+      if (trimmed.match(/^[.#:a-zA-Z0-9_-]+\s*\{/)) {
+        const match = line.match(/^(.\s*)([\w-]+)(\s*)(\{)(.*)$/);
         if (match) {
-          const [, space, dot, className, space2, brace, rest] = match;
+          const [, space, dot, selector, space2, brace, rest] = match;
           return (
-            `${space}<span class="css-selector">${dot}${className}</span>${space2}` +
+            `${space}<span class="css-selector">${dot}${selector}</span>${space2}` +
             `<span class="css-brace">${brace}</span>${rest}`
           );
         }

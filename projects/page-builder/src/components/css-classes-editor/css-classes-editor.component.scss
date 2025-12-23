@@ -16,11 +16,12 @@
 
   .css-highlight-layer,
   .css-textarea-layer {
+    all: unset;
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    right: 0;
+    bottom: 0;
     padding: 12px;
     margin: 0;
     border: none;
@@ -117,28 +118,6 @@
     &:disabled {
       cursor: not-allowed;
       opacity: 0.6;
-    }
-  }
-
-  // Scrollbar styling
-  .css-highlight-layer::-webkit-scrollbar,
-  .css-textarea-layer::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-  }
-
-  .css-highlight-layer::-webkit-scrollbar-track,
-  .css-textarea-layer::-webkit-scrollbar-track {
-    background: #1e1e1e;
-  }
-
-  .css-highlight-layer::-webkit-scrollbar-thumb,
-  .css-textarea-layer::-webkit-scrollbar-thumb {
-    background: #424242;
-    border-radius: 5px;
-
-    &:hover {
-      background: #4e4e4e;
     }
   }
 
