@@ -28,6 +28,13 @@ export class ClassManagerService {
     },
   ];
 
+  constructor() {
+    this.availableClasses = [];
+    for (let item of this.cssFileData) {
+      this.availableClasses.push(...Object.keys(item.data).filter((x) => x.startsWith('.')));
+    }
+  }
+
   public async addCssFile(name: string, content: string) {
     name = this.validateName(name);
     const data = await parseCssToRecord(content);
@@ -53,5 +60,15 @@ export class ClassManagerService {
     }
 
     return finalName;
+  }
+
+  public getClassValue(selectedClass: string): string {
+    for (let i = 0; i < this.cssFileData.length; i++) {
+      let found = this.cssFileData[i].data[selectedClass];
+      if (found) {
+        return found;
+      }
+    }
+    return '';
   }
 }

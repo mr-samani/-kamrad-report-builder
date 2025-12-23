@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  effect,
   EventEmitter,
   forwardRef,
   Injector,
@@ -13,49 +14,68 @@ import { PageItem } from '../../models/PageItem';
 import { mergeCssStyles } from '../../utiles/merge-css-styles';
 import { BaseControl } from '../../controls/base-control';
 import { ClassManagerService } from '../../services/class-manager.service';
+import { PageBuilderService } from '../../public-api';
+import { SvgIconDirective } from '../../directives/svg-icon.directive';
+import { Notify } from '../../extensions/notify';
 
 @Component({
   selector: 'class-selector',
   templateUrl: './class-selector.component.html',
   styleUrls: ['./class-selector.component.scss'],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => ClassSelectorComponent),
-      multi: true,
-    },
-  ],
+
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, SvgIconDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ClassSelectorComponent extends BaseControl implements OnInit, ControlValueAccessor {
-  @Output() change = new EventEmitter<PageItem>();
+export class ClassSelectorComponent implements OnInit {
+  @Output() selectedCss = new EventEmitter<string>();
+  item?: PageItem;
 
+  activeClass = '';
   constructor(
-    injector: Injector,
     private cdr: ChangeDetectorRef,
     public cls: ClassManagerService,
+    private pageBuilder: PageBuilderService,
   ) {
-    super(injector);
+    effect(() => {
+      this.item = this.pageBuilder.activeEl();
+      if (this.item) {
+        this.onSelectClass(this.item.classList[0]);
+      }
+    });
   }
 
   ngOnInit() {}
 
   writeValue(item: PageItem): void {
     this.item = item;
-    this.el = item?.el;
 
     this.cdr.detectChanges();
   }
 
-  update() {
-    if (!this.el || !this.item) return;
-
+  onAddClass(ev: any) {
+    if (this.item && this.item.classList) {
+      const val = ev.currentTarget?.value;
+      this.item.classList.push(val);
+      this.onSelectClass(val);
+    }
+  }
+  onSelectClass(className: string) {
+    if (!this.item) return;
+    this.activeClass = className;
+    const css = this.cls.getClassValue(className);
     this.cdr.detectChanges();
-    this.onChange(this.item);
-    this.item.style = mergeCssStyles(this.item.style, this.el.style.cssText);
-    this.change.emit(this.item);
+    this.selectedCss.emit(css);
+  }
+
+  remove(index: number) {
+    if (this.item?.classList.length == 1) {
+      Notify.error('Can not delete all classes!');
+      return;
+    }
+    if (this.item && this.item.classList) {
+      this.item.classList.splice(index, 1);
+    }
   }
 
   clear(property: any) {

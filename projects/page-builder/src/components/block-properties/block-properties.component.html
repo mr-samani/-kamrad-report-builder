@@ -2,7 +2,7 @@
   @if (item) {
     <p>{{ item.tag }}</p>
 
-    <class-selector [(ngModel)]="item" (change)="onChangeProperties()"></class-selector>
+    <class-selector (selectedCss)="onChangeProperties()"></class-selector>
 
     <details name="block-properties" (toggle)="openPanel(display)" #display>
       <summary>Display</summary>

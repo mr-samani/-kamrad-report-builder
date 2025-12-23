@@ -1,7 +1,20 @@
 @if (item) {
-  <select multiple [(ngModel)]="item.classList">
-    @for (item of cls.availableClasses; track $index) {
-      <option [value]="item">{{ item }}</option>
+  <div class="class-chips">
+    @for (item of item.classList; track $index; let i = $index) {
+      <span class="chips" (click)="onSelectClass(item)" [class.active]="item == activeClass">
+        <button type="button" (click)="remove(i)" class="chips-remove">
+          <svg Icon="assets/icons/xmark.svg"></svg>
+        </button>
+        {{ item }}
+      </span>
     }
-  </select>
+  </div>
+
+  <div class="pi-group">
+    <select name="classlist" (change)="onAddClass($event)">
+      @for (item of cls.availableClasses; track $index) {
+        <option [value]="item">{{ item }}</option>
+      }
+    </select>
+  </div>
 }
