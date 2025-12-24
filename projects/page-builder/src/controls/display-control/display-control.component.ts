@@ -5,6 +5,7 @@ import {
   EventEmitter,
   forwardRef,
   Injector,
+  Input,
   OnInit,
   Output,
 } from '@angular/core';
@@ -47,6 +48,8 @@ export type DisplayType =
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DisplayControlComponent extends BaseControl implements OnInit, ControlValueAccessor {
+  @Input() currentClassName = '';
+
   @Output() change = new EventEmitter<Partial<CSSStyleDeclaration>>();
 
   // Display Mode Options
@@ -122,9 +125,9 @@ export class DisplayControlComponent extends BaseControl implements OnInit, Cont
   }
 
   update() {
-    this.cdr.detectChanges();
     this.onChange(this.style);
     this.change.emit(this.style);
+    this.cls.updateClass(this.currentClassName, this.style);
   }
 
   isFlex(): boolean {

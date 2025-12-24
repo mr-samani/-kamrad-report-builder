@@ -9,9 +9,13 @@
 export class CSSStyleHelper {
   private styleMap = new Map<string, string>();
 
-  constructor(cssString?: string) {
+  constructor(cssString?: string, style?: Partial<CSSStyleDeclaration>) {
     if (cssString) {
       this.parse(cssString);
+    }
+    if (style) {
+      const values = Object.entries(style).filter((x) => x[0] && x[1]);
+      this.styleMap = new Map<string, string>(values as any);
     }
   }
 

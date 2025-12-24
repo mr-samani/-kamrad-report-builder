@@ -8,13 +8,19 @@
         {{ item }}
       </span>
     }
-  </div>
 
-  <div class="pi-group">
-    <select name="classlist" (change)="onAddClass($event)">
-      @for (item of cls.availableClasses; track $index) {
-        <option [value]="item">{{ item }}</option>
-      }
-    </select>
+    @if (showAddClassBtn) {
+      <span class="chips plus" (click)="showAddClassBtn = false">
+        <svg Icon="assets/icons/plus.svg"></svg>
+      </span>
+    } @else {
+      <div class="pi-group">
+        <select name="classlist" (change)="onAddClass($event)">
+          @for (item of cls.availableClasses; track $index) {
+            <option [value]="item">{{ item }}</option>
+          }
+        </select>
+      </div>
+    }
   </div>
 }

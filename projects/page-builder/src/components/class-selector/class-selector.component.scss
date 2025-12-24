@@ -3,6 +3,9 @@
   gap: 10px;
   flex-wrap: wrap;
   padding: 10px;
+  background: color-mix(in srgb, var(--side-config-bg), #000 18%);
+  border-radius: 5px;
+  margin-bottom: 15px;
   .chips {
     position: relative;
     border: 1px solid #aeaeae;
@@ -37,6 +40,19 @@
     svg {
       width: 16px;
       height: 16px;
+    }
+    &.plus {
+      width: 28px;
+      height: 28px;
+      border-radius: 100%;
+      max-width: 28px;
+      max-height: 28px;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      svg {
+        fill: #000;
+      }
     }
   }
 }

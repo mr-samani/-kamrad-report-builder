@@ -16,7 +16,7 @@ import { DisplayControlComponent } from '../../controls/display-control/display-
 import { TextCssControlComponent } from '../../controls/textcss-control/textcss-control.component';
 import { SizeControlComponent } from '../../controls/size-control/size-control.component';
 import { ShadowControlComponent } from '../../controls/shadow-control/shadow-control.component';
-import { ClassSelectorComponent } from '../class-selector/class-selector.component';
+import { ClassSelectorComponent, IClassOutput } from '../class-selector/class-selector.component';
 import { CSSStyleHelper } from '../../helper/CSSStyle';
 
 @Component({
@@ -43,7 +43,8 @@ export class BlockPropertiesComponent extends BaseComponent implements OnInit {
 
   style: Partial<CSSStyleDeclaration> = {};
 
-  css = '';
+  currentCss = '';
+  currentClassName = '';
 
   constructor(injector: Injector) {
     super(injector);
@@ -60,13 +61,9 @@ export class BlockPropertiesComponent extends BaseComponent implements OnInit {
     this.chdRef.detectChanges();
   }
 
-  onUpdateStyle() {
-    // TODO: update style in class
-    if (this.item) this.pageBuilder.changedProperties(this.item);
-  }
-
-  onSelectClass(css: string) {
-    this.css = css;
-    this.style = new CSSStyleHelper(css).toStyleObject() || {};
+  onSelectClass(cls: IClassOutput) {
+    this.currentCss = cls.value;
+    this.currentClassName = cls.name;
+    this.style = new CSSStyleHelper(this.currentCss).toStyleObject() || {};
   }
 }

@@ -1,5 +1,6 @@
-import { Renderer2, Injector } from '@angular/core';
+import { Renderer2, Injector, inject } from '@angular/core';
 import { PageItem } from '../models/PageItem';
+import { ClassManagerService } from '../services/class-manager.service';
 
 export abstract class BaseControl {
   style!: Partial<CSSStyleDeclaration>;
@@ -8,6 +9,8 @@ export abstract class BaseControl {
   onTouched = () => {};
 
   readonly renderer: Renderer2;
+
+  cls = inject(ClassManagerService);
   constructor(injector: Injector) {
     this.renderer = injector.get(Renderer2);
   }

@@ -6,6 +6,7 @@ import {
   forwardRef,
   Inject,
   Injector,
+  Input,
   OnInit,
   Output,
 } from '@angular/core';
@@ -36,6 +37,7 @@ export class BackgroundControlComponent
   extends BaseControl
   implements OnInit, ControlValueAccessor
 {
+  @Input() currentClassName = '';
   @Output() change = new EventEmitter<Partial<CSSStyleDeclaration>>();
 
   backgroundGradient = '';
@@ -62,6 +64,10 @@ export class BackgroundControlComponent
 
     this.backgroundGradient = parsed.gradient ?? '';
     this.backgroundImage = parsed.image ?? '';
+    this.style.backgroundColor = style.backgroundColor || parsed.color;
+    if (this.style.backgroundColor == style.background) {
+      style.background = '';
+    }
 
     this.cdr.detectChanges();
   }
@@ -72,10 +78,9 @@ export class BackgroundControlComponent
     } else {
       this.style.backgroundImage = this.backgroundImage;
     }
-
-    this.cdr.detectChanges();
     this.onChange(this.style);
     this.change.emit(this.style);
+    this.cls.updateClass(this.currentClassName, this.style);
   }
 
   openImagePicker() {

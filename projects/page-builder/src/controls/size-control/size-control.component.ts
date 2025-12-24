@@ -5,6 +5,7 @@ import {
   EventEmitter,
   forwardRef,
   Injector,
+  Input,
   OnInit,
   Output,
 } from '@angular/core';
@@ -44,6 +45,8 @@ export type SizeProperty = 'width' | 'minWidth' | 'maxWidth' | 'height' | 'minHe
   imports: [CommonModule, FormsModule],
 })
 export class SizeControlComponent extends BaseControl implements OnInit, ControlValueAccessor {
+  @Input() currentClassName = '';
+
   @Output() change = new EventEmitter<Partial<CSSStyleDeclaration>>();
 
   widthProperties: SizeProperty[] = ['width', 'minWidth', 'maxWidth'];
@@ -156,6 +159,7 @@ export class SizeControlComponent extends BaseControl implements OnInit, Control
 
     this.onChange(this.style);
     this.change.emit(this.style);
+    this.cls.updateClass(this.currentClassName, this.style);
   }
   clear(property: ISizeValue) {
     property.value = undefined;

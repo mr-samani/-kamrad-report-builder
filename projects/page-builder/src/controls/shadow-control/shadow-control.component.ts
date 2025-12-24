@@ -42,6 +42,8 @@ import { SvgIconDirective } from '../../directives/svg-icon.directive';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShadowControlComponent extends BaseControl implements OnInit, AfterViewInit {
+  @Input() currentClassName = '';
+
   @Input() maxRange = 25;
 
   padRect?: DOMRect;
@@ -282,7 +284,6 @@ export class ShadowControlComponent extends BaseControl implements OnInit, After
 
     this.onChange(this.style);
     this.change.emit(this.style);
-
-    this.cd.detectChanges();
+    this.cls.updateClass(this.currentClassName, this.style);
   }
 }

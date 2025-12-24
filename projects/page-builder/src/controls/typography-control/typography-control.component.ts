@@ -4,6 +4,7 @@ import {
   EventEmitter,
   forwardRef,
   Injector,
+  Input,
   OnInit,
   Output,
 } from '@angular/core';
@@ -30,6 +31,8 @@ export class TypographyControlComponent
   extends BaseControl
   implements OnInit, ControlValueAccessor
 {
+  @Input() currentClassName = '';
+
   @Output() change = new EventEmitter<Partial<CSSStyleDeclaration>>();
 
   fontSize?: number;
@@ -76,6 +79,7 @@ export class TypographyControlComponent
     };
     this.onChange(this.style);
     this.change.emit(this.style);
+    this.cls.updateClass(this.currentClassName, this.style);
   }
 
   clear(property: string) {

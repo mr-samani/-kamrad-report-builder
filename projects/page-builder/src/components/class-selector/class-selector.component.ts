@@ -4,20 +4,20 @@ import {
   Component,
   effect,
   EventEmitter,
-  forwardRef,
-  Injector,
   OnInit,
   Output,
 } from '@angular/core';
-import { NG_VALUE_ACCESSOR, FormsModule, ControlValueAccessor } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { PageItem } from '../../models/PageItem';
-import { mergeCssStyles } from '../../utiles/merge-css-styles';
-import { BaseControl } from '../../controls/base-control';
 import { ClassManagerService } from '../../services/class-manager.service';
 import { PageBuilderService } from '../../public-api';
 import { SvgIconDirective } from '../../directives/svg-icon.directive';
 import { Notify } from '../../extensions/notify';
 
+export interface IClassOutput {
+  name: string;
+  value: string;
+}
 @Component({
   selector: 'class-selector',
   templateUrl: './class-selector.component.html',
@@ -28,10 +28,11 @@ import { Notify } from '../../extensions/notify';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ClassSelectorComponent implements OnInit {
-  @Output() selectedCss = new EventEmitter<string>();
+  @Output() selectedCss = new EventEmitter<IClassOutput>();
   item?: PageItem;
 
   activeClass = '';
+  showAddClassBtn = true;
   constructor(
     private cdr: ChangeDetectorRef,
     public cls: ClassManagerService,
@@ -56,16 +57,23 @@ export class ClassSelectorComponent implements OnInit {
   onAddClass(ev: any) {
     if (this.item && this.item.classList) {
       const val = ev.currentTarget?.value;
-      this.item.classList.push(val);
+      if (this.item.classList.indexOf(val) == -1) {
+        this.item.classList.push(val);
+      }
       this.onSelectClass(val);
+      this.showAddClassBtn = true;
     }
   }
+
   onSelectClass(className: string) {
     if (!this.item) return;
     this.activeClass = className;
     const css = this.cls.getClassValue(className);
     this.cdr.detectChanges();
-    this.selectedCss.emit(css);
+    this.selectedCss.emit({
+      name: className,
+      value: css,
+    });
   }
 
   remove(index: number) {
