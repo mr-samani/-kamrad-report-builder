@@ -121,16 +121,23 @@ export class BuilderComponent implements OnInit, AfterViewInit {
   ];
   constructor() {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    try {
+      const savedData = localStorage.getItem('page');
+      const parsed = JSON.parse(savedData || '{}');
+      this.data = parsed?.data;
+      this.styles = parsed?.style;
+    } catch (error) {}
+  }
   ngAfterViewInit(): void {
     document.querySelector('ngx-page-builder')?.scrollIntoView();
   }
   getData() {
     this.pageBuilder()
       ?.getData()
-      .then((data) => {
-        localStorage.setItem('page', JSON.stringify(data));
-        console.log('get data:', data);
+      .then((result) => {
+        localStorage.setItem('page', JSON.stringify(result));
+        console.log('get data:', result);
       });
   }
 }

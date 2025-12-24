@@ -41,7 +41,12 @@ export class ClassManagerService {
     this.renderer = rendererFactory.createRenderer(null, null);
     this.availableClasses = [];
     for (let item of this.cssFileData) {
-      this.availableClasses.push(...Object.keys(item.data).filter((x) => x.startsWith('.')));
+      // filter get only classes
+      const classes = Object.keys(item.data)
+        .filter((x) => x.startsWith('.'))
+        // remove dot from first class name
+        .map((m) => m.replace('.', ''));
+      this.availableClasses.push(...classes);
     }
   }
 
@@ -99,7 +104,15 @@ export class ClassManagerService {
     }
     return '';
   }
-
+  public getAllCss(): string {
+    let css = '';
+    for (let i = 0; i < this.cssFileData.length; i++) {
+      Object.entries(this.cssFileData[i].data).forEach((c) => {
+        css += `${c[0]} { ${c[1]} }`;
+      });
+    }
+    return css;
+  }
   /**
    * ساخت مجدد map از rules موجود
    */

@@ -33,11 +33,12 @@ import { IPage } from '../contracts/IPage';
 import { preparePageDataForSave } from '../services/storage/prepare-page-builder-data';
 import { IPageBuilderDto } from '../contracts/IPageBuilderDto';
 import { ClassManagerService } from '../services/class-manager.service';
+import { IPagebuilderOutput } from '../contracts/IPageBuilderOutput';
 
 @Component({
   selector: 'ngx-page-builder',
   templateUrl: './page-builder.html',
-  styleUrls: ['./page-builder.scss'],
+  styleUrls: ['./page-builder.scss', '../styles/paper.scss'],
   imports: [
     NgxDragDropKitModule,
     ToolbarComponent,
@@ -361,7 +362,34 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
    * Get page builder data for save to DB
    * @returns Promise JSONData
    */
-  public getData(): Promise<IPageBuilderDto> {
-    return preparePageDataForSave(this.pageBuilder.pageInfo);
+  public getData(): Promise<IPagebuilderOutput> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const data = await preparePageDataForSave(this.pageBuilder.pageInfo);
+        const style = await this.cls.getAllCss();
+        // const body = document.createElement('body');
+        // for (let p of this.pageBuilder.pageInfo.pages) {
+        //   p.headerItems.forEach((m) => {
+        //     if (m.el) body.append(m.el);
+        //   });
+        //   p.bodyItems.forEach((m) => {
+        //     if (m.el) body.append(m.el);
+        //   });
+        //   p.footerItems.forEach((m) => {
+        //     if (m.el) body.append(m.el);
+        //   });
+        // }
+        await this.pageBuilder.pageInfo.pages;
+        const script = '';
+        resolve({
+          data: data.pages,
+          html: '',
+          script,
+          style,
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
 }

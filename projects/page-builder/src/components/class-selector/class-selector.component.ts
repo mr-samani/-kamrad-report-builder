@@ -59,6 +59,7 @@ export class ClassSelectorComponent implements OnInit {
       const val = ev.currentTarget?.value;
       if (this.item.classList.indexOf(val) == -1) {
         this.item.classList.push(val);
+        this.item.el?.classList.add(val);
       }
       this.onSelectClass(val);
       this.showAddClassBtn = true;
@@ -69,11 +70,12 @@ export class ClassSelectorComponent implements OnInit {
     if (!this.item) return;
     this.activeClass = className;
     const css = this.cls.getClassValue(className);
-    this.cdr.detectChanges();
     this.selectedCss.emit({
       name: className,
       value: css,
     });
+    this.cls.updateClass(className, css);
+    this.cdr.detectChanges();
   }
 
   remove(index: number) {
