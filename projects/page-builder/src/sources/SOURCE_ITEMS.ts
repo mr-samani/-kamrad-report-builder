@@ -84,6 +84,12 @@ export const SOURCE_ITEMS: SourceItem[] = [
       },
     },
   },
+  {
+    tag: 'button',
+    title: 'Button',
+    icon: 'assets/icons/rectangle-fill.svg',
+    content: 'Button',
+  },
   new SourceItem({
     tag: 'column',
     icon: 'assets/icons/column.svg',

@@ -43,6 +43,7 @@ export class PageBuilderService implements OnDestroy {
   mode: 'Edit' | 'Preview' = 'Preview';
   isSaving: boolean = false;
   sources: SourceItem[] = LibConsts.SourceItemList;
+  innerShadowRootDom?: ShadowRoot | null;
 
   /** start from 0 */
   currentPageIndex = signal<number>(-1);

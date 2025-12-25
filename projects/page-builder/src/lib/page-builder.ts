@@ -34,12 +34,14 @@ import { preparePageDataForSave } from '../services/storage/prepare-page-builder
 import { IPageBuilderDto } from '../contracts/IPageBuilderDto';
 import { ClassManagerService } from '../services/class-manager.service';
 import { IPagebuilderOutput } from '../contracts/IPageBuilderOutput';
+import { InnerContentComponent } from './inner-content/inner-content.component';
 
 @Component({
   selector: 'ngx-page-builder',
   templateUrl: './page-builder.html',
   styleUrls: ['./page-builder.scss', '../styles/paper.scss'],
   imports: [
+    InnerContentComponent,
     NgxDragDropKitModule,
     ToolbarComponent,
     BlockSelectorComponent,
@@ -77,12 +79,7 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
   }
   blockSelector = viewChild<BlockSelectorComponent>('blockSelector');
 
-  private _pageBody = viewChild<ElementRef<HTMLElement>>('PageBody');
-  private _pageHeader = viewChild<ElementRef<HTMLElement>>('PageHeader');
-  private _pageFooter = viewChild<ElementRef<HTMLElement>>('PageFooter');
-
   subscriptions: Subscription[] = [];
-  containerClassName = '';
 
   constructor(
     injector: Injector,
@@ -94,9 +91,6 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
     super(injector);
     this.pageBuilder.mode = 'Edit';
     this.pageBuilder.storageService = this.storageService;
-    this.pageBuilder.pageBody = this._pageBody;
-    this.pageBuilder.pageHeader = this._pageHeader;
-    this.pageBuilder.pageFooter = this._pageFooter;
     this.pageBuilder.changed$.subscribe((data: PageItemChange) => {
       if (data.type == 'ChangePageConfig') {
         this.chdRef.detectChanges();
@@ -107,11 +101,6 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
   ngOnInit(): void {
     this.pageBuilder.blockSelector = this.blockSelector();
     this.registerShortcuts();
-    if (this.viewMode == 'PrintPage') {
-      this.containerClassName = `paper ${this.pageBuilder.pageInfo.config.size} ${this.pageBuilder.pageInfo.config.orientation}`;
-    } else {
-      this.containerClassName = `web-page-view`;
-    }
   }
 
   ngOnDestroy(): void {

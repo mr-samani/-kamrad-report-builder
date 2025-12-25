@@ -1,6 +1,7 @@
-import { DOCUMENT, Inject, Injectable, Renderer2, RendererFactory2 } from '@angular/core';
+import { DOCUMENT, inject, Inject, Injectable, Renderer2, RendererFactory2 } from '@angular/core';
 import { parseCssToRecord } from '../utiles/css-parser';
 import { CSSStyleHelper } from '../helper/CSSStyle';
+import { PageBuilderService } from './page-builder.service';
 interface ICssFiles {
   name: string;
   data: Record<string, string>;
@@ -34,9 +35,10 @@ export class ClassManagerService {
   private styleSheet: CSSStyleSheet | null = null;
   private rulesMap = new Map<string, number>(); // className -> ruleIndex
   private debounceTimers = new Map<string, any>();
+  doc = inject(DOCUMENT);
   constructor(
     rendererFactory: RendererFactory2,
-    @Inject(DOCUMENT) private doc: Document,
+    private pageBuilder: PageBuilderService,
   ) {
     this.renderer = rendererFactory.createRenderer(null, null);
     this.availableClasses = [];
@@ -79,13 +81,17 @@ export class ClassManagerService {
   }
 
   private addStyleToDocument(css: string) {
-    let existingStyle = this.doc.querySelector('style#NgxPageBuilderClassUI') as HTMLStyleElement;
+    if (!this.pageBuilder.innerShadowRootDom) return;
+
+    let existingStyle = this.pageBuilder.innerShadowRootDom.querySelector(
+      'style#NgxPageBuilderClassUI',
+    ) as HTMLStyleElement;
 
     if (!existingStyle) {
       existingStyle = this.doc.createElement('style');
       existingStyle.id = 'NgxPageBuilderClassUI';
       existingStyle.innerHTML = css;
-      this.doc.head.appendChild(existingStyle);
+      this.pageBuilder.innerShadowRootDom.appendChild(existingStyle);
     }
 
     this.styleElement = existingStyle;
