@@ -13,7 +13,11 @@ import { ClassManagerService } from '../../services/class-manager.service';
 import { PageBuilderService } from '../../public-api';
 import { SvgIconDirective } from '../../directives/svg-icon.directive';
 import { Notify } from '../../extensions/notify';
-
+interface IClassList {
+  name: string;
+  editMode?: boolean;
+  newName?: string;
+}
 export interface IClassOutput {
   name: string;
   value: string;
@@ -33,6 +37,8 @@ export class ClassSelectorComponent implements OnInit {
 
   activeClass = '';
   showAddClassBtn = true;
+
+  classes: IClassList[] = [];
   constructor(
     private cdr: ChangeDetectorRef,
     public cls: ClassManagerService,
@@ -41,6 +47,10 @@ export class ClassSelectorComponent implements OnInit {
     effect(() => {
       this.item = this.pageBuilder.activeEl();
       if (this.item) {
+        this.classes = [];
+        for (let c of this.item.classList) {
+          this.classes.push({ name: c });
+        }
         this.onSelectClass(this.item.classList[0]);
       }
     });
@@ -60,6 +70,7 @@ export class ClassSelectorComponent implements OnInit {
       if (this.item.classList.indexOf(val) == -1) {
         this.item.classList.push(val);
         this.item.el?.classList.add(val);
+        this.classes.push({ name: val });
       }
       this.onSelectClass(val);
       this.showAddClassBtn = true;
@@ -69,7 +80,7 @@ export class ClassSelectorComponent implements OnInit {
   onSelectClass(className: string) {
     if (!this.item) return;
     this.activeClass = className;
-    const css = this.cls.getClassValue(className);
+    const css = this.cls.getClassStyles(className) || '';
     this.selectedCss.emit({
       name: className,
       value: css,
@@ -85,10 +96,39 @@ export class ClassSelectorComponent implements OnInit {
     }
     if (this.item && this.item.classList) {
       this.item.classList.splice(index, 1);
+      this.classes.splice(index, 1);
     }
   }
 
   clear(property: any) {
     property = undefined;
+  }
+
+  editClassName(item: IClassList, chips: HTMLElement) {
+    item.newName = item.name;
+    item.editMode = true;
+    setTimeout(() => {
+      chips.querySelector('input')?.select();
+      chips.querySelector('input')?.focus();
+    });
+  }
+  onBlurEditClassName(item: IClassList) {
+    if (!item.editMode) return;
+    if (item.newName) {
+      if (this.cls.hasClass(item.newName.trim())) {
+        Notify.error(item.newName + ' is duplicated!');
+        return;
+      }
+
+      this.cls.renameClass(item.name, item.newName);
+      item.name = item.newName;
+      this.onSelectClass(item.name);
+    }
+    item.editMode = false;
+  }
+  cancelEditClassName(item: IClassList, ev: Event) {
+    ev.stopPropagation();
+    ev.preventDefault();
+    item.editMode = false;
   }
 }

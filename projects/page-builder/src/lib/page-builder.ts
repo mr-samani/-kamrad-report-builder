@@ -355,7 +355,7 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
     return new Promise(async (resolve, reject) => {
       try {
         const data = await preparePageDataForSave(this.pageBuilder.pageInfo);
-        const style = await this.cls.getAllCss();
+        const style = await this.cls.exportCSS();
         // const body = document.createElement('body');
         // for (let p of this.pageBuilder.pageInfo.pages) {
         //   p.headerItems.forEach((m) => {

@@ -101,24 +101,24 @@ export class ClassManagerService {
     this.rebuildRulesMap();
   }
 
-  public getClassValue(selectedClass: string): string {
-    for (let i = 0; i < this.cssFileData.length; i++) {
-      let found = this.cssFileData[i].data[`.${selectedClass}`];
-      if (found) {
-        return found;
-      }
-    }
-    return '';
-  }
-  public getAllCss(): string {
-    let css = '';
-    for (let i = 0; i < this.cssFileData.length; i++) {
-      Object.entries(this.cssFileData[i].data).forEach((c) => {
-        css += `${c[0]} { ${c[1]} }`;
-      });
-    }
-    return css;
-  }
+  // public getClassValue(selectedClass: string): string {
+  //   for (let i = 0; i < this.cssFileData.length; i++) {
+  //     let found = this.cssFileData[i].data[`.${selectedClass}`];
+  //     if (found) {
+  //       return found;
+  //     }
+  //   }
+  //   return '';
+  // }
+  // public getAllCss(): string {
+  //   let css = '';
+  //   for (let i = 0; i < this.cssFileData.length; i++) {
+  //     Object.entries(this.cssFileData[i].data).forEach((c) => {
+  //       css += `${c[0]} { ${c[1]} }`;
+  //     });
+  //   }
+  //   return css;
+  // }
   /**
    * ساخت مجدد map از rules موجود
    */
@@ -253,6 +253,24 @@ export class ClassManagerService {
     }
   }
 
+  renameClass(className: string, newName: string): void {
+    if (!this.styleSheet) return;
+
+    const selector =
+      className.startsWith('.') || className.startsWith('#') ? className : `.${className}`;
+
+    const index = this.rulesMap.get(selector);
+
+    if (index !== undefined) {
+      try {
+        (this.styleSheet.cssRules[index] as any).selectorText = newName;
+        this.rulesMap.delete(selector);
+        this.rulesMap.set('.' + newName, index);
+      } catch (e) {
+        console.error('Error removing CSS rule:', e);
+      }
+    }
+  }
   /**
    * گرفتن styles یک کلاس
    */

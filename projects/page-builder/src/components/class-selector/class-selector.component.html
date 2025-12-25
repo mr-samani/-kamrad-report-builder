@@ -1,11 +1,28 @@
 @if (item) {
   <div class="class-chips">
-    @for (item of item.classList; track $index; let i = $index) {
-      <span class="chips" (click)="onSelectClass(item)" [class.active]="item == activeClass">
-        <button type="button" (click)="remove(i)" class="chips-remove">
-          <svg Icon="assets/icons/xmark.svg"></svg>
-        </button>
-        {{ item }}
+    @for (item of classes; track $index; let i = $index) {
+      <span
+        class="chips"
+        (click)="onSelectClass(item.name)"
+        [class.active]="item.name == activeClass"
+        #chips
+        (dblclick)="editClassName(item, chips)"
+      >
+        @if (item.editMode) {
+          <input
+            type="text"
+            [(ngModel)]="item.newName"
+            maxlength="50"
+            (blur)="onBlurEditClassName(item)"
+            (keydown.enter)="onBlurEditClassName(item)"
+            (keydown.esc)="cancelEditClassName(item, $event)"
+          />
+        } @else {
+          <button type="button" (click)="remove(i)" class="chips-remove">
+            <svg Icon="assets/icons/xmark.svg"></svg>
+          </button>
+          {{ item.name }}
+        }
       </span>
     }
 
