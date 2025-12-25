@@ -1,88 +1,89 @@
-import { DOCUMENT, inject, Inject, Injectable, Renderer2, RendererFactory2 } from '@angular/core';
+import { DOCUMENT, inject, Injectable, Renderer2, RendererFactory2 } from '@angular/core';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { parseCssToRecord } from '../utiles/css-parser';
 import { CSSStyleHelper } from '../helper/CSSStyle';
 import { PageBuilderService } from './page-builder.service';
-interface ICssFiles {
+
+interface ICssFile {
+  id: string; // UUID یا unique ID
   name: string;
   data: Record<string, string>;
+  createdAt: Date;
+  updatedAt: Date;
 }
+
+interface IClassInfo {
+  selector: string;
+  cssText: string;
+  fileName: string;
+  fileId: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class ClassManagerService {
-  availableClasses: string[] = [];
+  // Observables برای reactive programming
+  private cssFilesSubject = new BehaviorSubject<ICssFile[]>([]);
+  public cssFiles$ = this.cssFilesSubject.asObservable();
 
-  cssFileData: ICssFiles[] = [
-    {
+  private availableClassesSubject = new BehaviorSubject<string[]>([]);
+  public availableClasses$ = this.availableClassesSubject.asObservable();
+
+  // Internal state
+  public cssFileData: ICssFile[] = [];
+  private styleElement: HTMLStyleElement | null = null;
+  private styleSheet: CSSStyleSheet | null = null;
+  private rulesMap = new Map<string, { index: number; fileId: string }>(); // selector -> {index, fileId}
+  private debounceTimers = new Map<string, any>();
+  private isInitialized = false;
+
+  doc = inject(DOCUMENT);
+
+  constructor(
+    private rendererFactory: RendererFactory2,
+    private pageBuilder: PageBuilderService,
+  ) {
+    // Initialize با فایل پیش‌فرض
+    this.initializeDefaultFile();
+  }
+
+  /**
+   * مقداردهی اولیه با فایل پیش‌فرض
+   */
+  private initializeDefaultFile(): void {
+    const defaultFile: ICssFile = {
+      id: this.generateId(),
       name: 'default',
       data: {
-        'a[href=""],#b.a,a~b': 'color:red;',
-        button: `color: red;
-            
-            background-color: #eecec;
-
-            box-shadow   :    0 0 10px     1px red;
-            `,
+        'a[href=""],#b.a,a~b': 'color:red',
+        button: 'color:red;background-color:#eecec;box-shadow:0 0 10px 1px red',
         '#btn': 'border:1px solid red;color:red;padding:10px 20px',
         '.btn-primary': 'background:blue;color:white',
         '.btn-large': 'font-size:18px;padding:15px 30px',
       },
-    },
-  ];
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
 
-  private renderer: Renderer2;
-  private styleElement: HTMLStyleElement | null = null;
-  private styleSheet: CSSStyleSheet | null = null;
-  private rulesMap = new Map<string, number>(); // className -> ruleIndex
-  private debounceTimers = new Map<string, any>();
-  doc = inject(DOCUMENT);
-  constructor(
-    rendererFactory: RendererFactory2,
-    private pageBuilder: PageBuilderService,
-  ) {
-    this.renderer = rendererFactory.createRenderer(null, null);
-    this.availableClasses = [];
-    for (let item of this.cssFileData) {
-      // filter get only classes
-      const classes = Object.keys(item.data)
-        .filter((x) => x.startsWith('.'))
-        // remove dot from first class name
-        .map((m) => m.replace('.', ''));
-      this.availableClasses.push(...classes);
-    }
+    this.cssFileData.push(defaultFile);
+    this.updateAvailableClasses();
+    this.cssFilesSubject.next(this.cssFileData);
   }
 
-  public async addCssFile(name: string, content: string) {
-    name = this.validateName(name);
-    this.addStyleToDocument(content);
-    const data = await parseCssToRecord(content);
-    if (Object.entries(data).length > 0) {
-      this.cssFileData.push({
-        name,
-        data,
-      });
-    }
-  }
+  /**
+   * Initialize کردن style element
+   * این باید بعد از اینکه pageBuilder آماده شد صدا زده بشه
+   */
+  public initialize(): void {
+    if (this.isInitialized) return;
 
-  private validateName(name: string): string {
-    // جدا کردن baseName و شماره‌ی انتهایی (اگر وجود داشت)
-    const match = name.match(/^(.*?)(?:_(\d+))?$/);
-    const baseName = match?.[1] ?? name;
-
-    let index = 0;
-    let finalName = baseName;
-
-    while (this.cssFileData.some((x) => x.name.toLowerCase() === finalName.toLowerCase())) {
-      index++;
-      finalName = `${baseName}_${index}`;
+    if (!this.pageBuilder.innerShadowRootDom) {
+      console.warn('PageBuilder shadow root not ready');
+      return;
     }
 
-    return finalName;
-  }
-
-  private addStyleToDocument(css: string) {
-    if (!this.pageBuilder.innerShadowRootDom) return;
-
+    // ساخت یا پیدا کردن style element
     let existingStyle = this.pageBuilder.innerShadowRootDom.querySelector(
       'style#NgxPageBuilderClassUI',
     ) as HTMLStyleElement;
@@ -90,88 +91,286 @@ export class ClassManagerService {
     if (!existingStyle) {
       existingStyle = this.doc.createElement('style');
       existingStyle.id = 'NgxPageBuilderClassUI';
-      existingStyle.innerHTML = css;
       this.pageBuilder.innerShadowRootDom.appendChild(existingStyle);
     }
 
     this.styleElement = existingStyle;
     this.styleSheet = existingStyle.sheet as CSSStyleSheet;
 
-    // ساخت map از rules موجود (اگر داریم)
-    this.rebuildRulesMap();
+    // Load کردن همه فایل‌های CSS
+    this.loadAllFiles();
+    this.isInitialized = true;
   }
 
-  // public getClassValue(selectedClass: string): string {
-  //   for (let i = 0; i < this.cssFileData.length; i++) {
-  //     let found = this.cssFileData[i].data[`.${selectedClass}`];
-  //     if (found) {
-  //       return found;
-  //     }
-  //   }
-  //   return '';
-  // }
-  // public getAllCss(): string {
-  //   let css = '';
-  //   for (let i = 0; i < this.cssFileData.length; i++) {
-  //     Object.entries(this.cssFileData[i].data).forEach((c) => {
-  //       css += `${c[0]} { ${c[1]} }`;
-  //     });
-  //   }
-  //   return css;
-  // }
   /**
-   * ساخت مجدد map از rules موجود
+   * Generate unique ID
    */
-  private rebuildRulesMap(): void {
-    this.rulesMap.clear();
+  private generateId(): string {
+    return `css_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
 
-    if (!this.styleSheet) return;
+  /**
+   * Validate و unique کردن نام
+   */
+  private validateName(name: string, excludeId?: string): string {
+    const match = name.match(/^(.*?)(?:_(\d+))?$/);
+    const baseName = match?.[1] ?? name;
 
-    try {
-      const rules = this.styleSheet.cssRules || this.styleSheet.rules;
-      for (let i = 0; i < rules.length; i++) {
-        const rule = rules[i] as CSSStyleRule;
-        if (rule.selectorText) {
-          this.rulesMap.set(rule.selectorText, i);
-        }
-      }
-    } catch (e) {
-      console.warn('Cannot access stylesheet rules:', e);
+    let index = 0;
+    let finalName = baseName;
+
+    while (
+      this.cssFileData.some(
+        (x) => x.name.toLowerCase() === finalName.toLowerCase() && x.id !== excludeId,
+      )
+    ) {
+      index++;
+      finalName = `${baseName}_${index}`;
+    }
+
+    return finalName;
+  }
+
+  /**
+   * اضافه کردن فایل CSS جدید
+   */
+  public async addCssFile(name: string, content: string): Promise<ICssFile> {
+    name = this.validateName(name);
+    const data = await parseCssToRecord(content);
+
+    const newFile: ICssFile = {
+      id: this.generateId(),
+      name,
+      data,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    this.cssFileData.push(newFile);
+    this.updateAvailableClasses();
+    this.cssFilesSubject.next(this.cssFileData);
+
+    // اگر initialized هست، rules رو اضافه کن
+    if (this.isInitialized) {
+      this.loadFileRules(newFile);
+    }
+
+    return newFile;
+  }
+
+  /**
+   * آپدیت فایل CSS
+   */
+  public async updateCssFile(fileId: string, content: string): Promise<void> {
+    const fileIndex = this.cssFileData.findIndex((f) => f.id === fileId);
+    if (fileIndex === -1) {
+      throw new Error(`File with id ${fileId} not found`);
+    }
+
+    const data = await parseCssToRecord(content);
+    const file = this.cssFileData[fileIndex];
+
+    // حذف rules قدیمی این فایل
+    this.removeFileRules(fileId);
+
+    // آپدیت data
+    file.data = data;
+    file.updatedAt = new Date();
+
+    this.updateAvailableClasses();
+    this.cssFilesSubject.next(this.cssFileData);
+
+    // اضافه کردن rules جدید
+    if (this.isInitialized) {
+      this.loadFileRules(file);
     }
   }
 
   /**
-   * آپدیت یا اضافه کردن یک کلاس - روش اصلی و پرفورمنس بالا
-   * این متد مستقیما با CSSOM کار میکنه (خیلی سریع!)
+   * حذف فایل CSS
    */
-  updateClass(className: string, styles: Partial<CSSStyleDeclaration> | string): void {
+  public removeCssFile(fileId: string): void {
+    const fileIndex = this.cssFileData.findIndex((f) => f.id === fileId);
+    if (fileIndex === -1) return;
+
+    // حذف rules این فایل
+    this.removeFileRules(fileId);
+
+    // حذف از لیست
+    this.cssFileData.splice(fileIndex, 1);
+    this.updateAvailableClasses();
+    this.cssFilesSubject.next(this.cssFileData);
+  }
+
+  /**
+   * تغییر نام فایل
+   */
+  public renameCssFile(fileId: string, newName: string): void {
+    const file = this.cssFileData.find((f) => f.id === fileId);
+    if (!file) return;
+
+    file.name = this.validateName(newName, fileId);
+    file.updatedAt = new Date();
+    this.cssFilesSubject.next(this.cssFileData);
+  }
+
+  /**
+   * گرفتن فایل با ID
+   */
+  public getCssFile(fileId: string): ICssFile | undefined {
+    return this.cssFileData.find((f) => f.id === fileId);
+  }
+
+  /**
+   * گرفتن همه فایل‌ها
+   */
+  public getAllCssFiles(): ICssFile[] {
+    return [...this.cssFileData];
+  }
+
+  /**
+   * Load کردن همه فایل‌ها
+   */
+  private loadAllFiles(): void {
+    if (!this.styleSheet) return;
+
+    // پاک کردن همه rules
+    this.clearAllRules();
+
+    // Load کردن هر فایل
+    this.cssFileData.forEach((file) => {
+      this.loadFileRules(file);
+    });
+  }
+
+  /**
+   * Load کردن rules یک فایل
+   */
+  private loadFileRules(file: ICssFile): void {
+    if (!this.styleSheet) return;
+
+    Object.entries(file.data).forEach(([selector, cssText]) => {
+      this.insertRule(selector, cssText, file.id);
+    });
+  }
+
+  /**
+   * حذف rules یک فایل
+   */
+  private removeFileRules(fileId: string): void {
+    if (!this.styleSheet) return;
+
+    // پیدا کردن همه rules این فایل
+    const rulesToRemove: string[] = [];
+    this.rulesMap.forEach((value, selector) => {
+      if (value.fileId === fileId) {
+        rulesToRemove.push(selector);
+      }
+    });
+
+    // حذف rules (از آخر به اول برای جلوگیری از مشکل index)
+    rulesToRemove
+      .sort((a, b) => {
+        const indexA = this.rulesMap.get(a)?.index ?? 0;
+        const indexB = this.rulesMap.get(b)?.index ?? 0;
+        return indexB - indexA;
+      })
+      .forEach((selector) => {
+        this.deleteRule(selector);
+      });
+  }
+
+  /**
+   * Insert کردن یک rule
+   */
+  private insertRule(selector: string, cssText: string, fileId: string): void {
+    if (!this.styleSheet) return;
+
+    try {
+      const ruleText = `${selector} { ${cssText} }`;
+      const index = this.styleSheet.cssRules.length;
+      this.styleSheet.insertRule(ruleText, index);
+      this.rulesMap.set(selector, { index, fileId });
+    } catch (e) {
+      console.error(`Error inserting rule ${selector}:`, e);
+    }
+  }
+
+  /**
+   * حذف یک rule
+   */
+  private deleteRule(selector: string): void {
+    if (!this.styleSheet) return;
+
+    const ruleInfo = this.rulesMap.get(selector);
+    if (!ruleInfo) return;
+
+    try {
+      this.styleSheet.deleteRule(ruleInfo.index);
+      this.rulesMap.delete(selector);
+
+      // آپدیت index های بعد از این rule
+      this.rulesMap.forEach((value, key) => {
+        if (value.index > ruleInfo.index) {
+          value.index--;
+        }
+      });
+    } catch (e) {
+      console.error(`Error deleting rule ${selector}:`, e);
+    }
+  }
+
+  /**
+   * آپدیت یا اضافه کردن یک کلاس
+   */
+  public updateClass(
+    selector: string,
+    styles: Partial<CSSStyleDeclaration> | string,
+    fileId?: string,
+  ): void {
     if (!this.styleSheet) {
-      console.error('StyleSheet not initialized');
+      console.warn('StyleSheet not initialized. Call initialize() first.');
       return;
     }
 
     // تبدیل styles به CSS string
     const cssText = typeof styles === 'string' ? styles : this.styleObjectToString(styles);
 
-    // ساخت rule کامل
-    const selector =
-      className.startsWith('.') || className.startsWith('#') ? className : `.${className}`;
+    // Normalize selector
+    const normalizedSelector = this.normalizeSelector(selector);
 
-    const ruleText = `${selector} { ${cssText} }`;
+    // پیدا کردن fileId
+    const targetFileId =
+      fileId || this.rulesMap.get(normalizedSelector)?.fileId || this.cssFileData[0]?.id;
+
+    if (!targetFileId) {
+      console.error('No file available to add class');
+      return;
+    }
+
+    const ruleText = `${normalizedSelector} { ${cssText} }`;
 
     try {
-      // چک کنیم rule وجود داره یا نه
-      const existingIndex = this.rulesMap.get(selector);
+      const existingRule = this.rulesMap.get(normalizedSelector);
 
-      if (existingIndex !== undefined) {
+      if (existingRule) {
         // آپدیت rule موجود
-        this.styleSheet.deleteRule(existingIndex);
-        this.styleSheet.insertRule(ruleText, existingIndex);
+        this.styleSheet.deleteRule(existingRule.index);
+        this.styleSheet.insertRule(ruleText, existingRule.index);
       } else {
         // اضافه کردن rule جدید
-        const newIndex = this.styleSheet.cssRules.length;
-        this.styleSheet.insertRule(ruleText, newIndex);
-        this.rulesMap.set(selector, newIndex);
+        const index = this.styleSheet.cssRules.length;
+        this.styleSheet.insertRule(ruleText, index);
+        this.rulesMap.set(normalizedSelector, { index, fileId: targetFileId });
+      }
+
+      // آپدیت در cssFileData
+      const file = this.cssFileData.find((f) => f.id === targetFileId);
+      if (file) {
+        file.data[normalizedSelector] = cssText;
+        file.updatedAt = new Date();
+        this.updateAvailableClasses();
+        this.cssFilesSubject.next(this.cssFileData);
       }
     } catch (e) {
       console.error('Error updating CSS rule:', e);
@@ -179,48 +378,54 @@ export class ClassManagerService {
   }
 
   /**
-   * آپدیت با debounce - برای تغییرات realtime مثل color picker
-   * این باعث میشه هر 16ms (60fps) یک بار آپدیت بشه نه هر بار که تغییر میکنه
+   * آپدیت با debounce
    */
-  updateClassDebounced(
-    className: string,
+  public updateClassDebounced(
+    selector: string,
     styles: Partial<CSSStyleDeclaration> | string,
-    delay: number = 16, // 16ms = 60fps
+    delay: number = 16,
+    fileId?: string,
   ): void {
+    const normalizedSelector = this.normalizeSelector(selector);
+
     // پاک کردن timer قبلی
-    const existingTimer = this.debounceTimers.get(className);
+    const existingTimer = this.debounceTimers.get(normalizedSelector);
     if (existingTimer) {
       clearTimeout(existingTimer);
     }
 
     // ست کردن timer جدید
     const timer = setTimeout(() => {
-      this.updateClass(className, styles);
-      this.debounceTimers.delete(className);
+      this.updateClass(normalizedSelector, styles, fileId);
+      this.debounceTimers.delete(normalizedSelector);
     }, delay);
 
-    this.debounceTimers.set(className, timer);
+    this.debounceTimers.set(normalizedSelector, timer);
   }
 
   /**
-   * آپدیت فوری بدون debounce (برای استفاده در requestAnimationFrame)
-   * این بهترین روش برای smooth animations هست
+   * آپدیت فوری با requestAnimationFrame
    */
-  updateClassImmediate(className: string, styles: Partial<CSSStyleDeclaration> | string): void {
+  public updateClassImmediate(
+    selector: string,
+    styles: Partial<CSSStyleDeclaration> | string,
+    fileId?: string,
+  ): void {
     requestAnimationFrame(() => {
-      this.updateClass(className, styles);
+      this.updateClass(selector, styles, fileId);
     });
   }
 
   /**
-   * Batch update - آپدیت چند کلاس به صورت همزمان
-   * این خیلی بهتر از آپدیت تک تک هست
+   * Batch update
    */
-  updateClasses(classes: Record<string, Partial<CSSStyleDeclaration> | string>): void {
-    // استفاده از requestAnimationFrame برای بهینه سازی
+  public updateClasses(
+    classes: Record<string, Partial<CSSStyleDeclaration> | string>,
+    fileId?: string,
+  ): void {
     requestAnimationFrame(() => {
-      Object.entries(classes).forEach(([className, styles]) => {
-        this.updateClass(className, styles);
+      Object.entries(classes).forEach(([selector, styles]) => {
+        this.updateClass(selector, styles, fileId);
       });
     });
   }
@@ -228,76 +433,112 @@ export class ClassManagerService {
   /**
    * حذف یک کلاس
    */
-  removeClass(className: string): void {
-    if (!this.styleSheet) return;
+  public removeClass(selector: string): void {
+    const normalizedSelector = this.normalizeSelector(selector);
+    const ruleInfo = this.rulesMap.get(normalizedSelector);
 
-    const selector =
-      className.startsWith('.') || className.startsWith('#') ? className : `.${className}`;
+    if (!ruleInfo) return;
 
-    const index = this.rulesMap.get(selector);
+    // حذف از stylesheet
+    this.deleteRule(normalizedSelector);
 
-    if (index !== undefined) {
-      try {
-        this.styleSheet.deleteRule(index);
-        this.rulesMap.delete(selector);
-
-        // آپدیت index های بعد از این rule
-        this.rulesMap.forEach((value, key) => {
-          if (value > index) {
-            this.rulesMap.set(key, value - 1);
-          }
-        });
-      } catch (e) {
-        console.error('Error removing CSS rule:', e);
-      }
+    // حذف از cssFileData
+    const file = this.cssFileData.find((f) => f.id === ruleInfo.fileId);
+    if (file) {
+      delete file.data[normalizedSelector];
+      file.updatedAt = new Date();
+      this.updateAvailableClasses();
+      this.cssFilesSubject.next(this.cssFileData);
     }
   }
 
-  renameClass(className: string, newName: string): void {
-    if (!this.styleSheet) return;
+  /**
+   * تغییر نام کلاس - روش صحیح
+   */
+  public renameClass(oldSelector: string, newSelector: string): void {
+    const normalizedOldSelector = this.normalizeSelector(oldSelector);
+    const normalizedNewSelector = this.normalizeSelector(newSelector);
 
-    const selector =
-      className.startsWith('.') || className.startsWith('#') ? className : `.${className}`;
+    if (normalizedOldSelector === normalizedNewSelector) return;
 
-    const index = this.rulesMap.get(selector);
+    const ruleInfo = this.rulesMap.get(normalizedOldSelector);
+    if (!ruleInfo) return;
 
-    if (index !== undefined) {
-      try {
-        (this.styleSheet.cssRules[index] as any).selectorText = newName;
-        this.rulesMap.delete(selector);
-        this.rulesMap.set('.' + newName, index);
-      } catch (e) {
-        console.error('Error removing CSS rule:', e);
-      }
+    // گرفتن cssText فعلی
+    const cssText = this.getClassStyles(normalizedOldSelector);
+    if (!cssText) return;
+
+    // حذف rule قدیمی
+    this.deleteRule(normalizedOldSelector);
+
+    // اضافه کردن rule جدید
+    this.insertRule(normalizedNewSelector, cssText, ruleInfo.fileId);
+
+    // آپدیت در cssFileData
+    const file = this.cssFileData.find((f) => f.id === ruleInfo.fileId);
+    if (file) {
+      delete file.data[normalizedOldSelector];
+      file.data[normalizedNewSelector] = cssText;
+      file.updatedAt = new Date();
+      this.updateAvailableClasses();
+      this.cssFilesSubject.next(this.cssFileData);
     }
   }
+
   /**
    * گرفتن styles یک کلاس
    */
-  getClassStyles(className: string): string | null {
+  public getClassStyles(selector: string): string | null {
     if (!this.styleSheet) return null;
 
-    const selector =
-      className.startsWith('.') || className.startsWith('#') ? className : `.${className}`;
+    const normalizedSelector = this.normalizeSelector(selector);
+    const ruleInfo = this.rulesMap.get(normalizedSelector);
 
-    const index = this.rulesMap.get(selector);
+    if (!ruleInfo) return null;
 
-    if (index !== undefined) {
-      try {
-        const rule = this.styleSheet.cssRules[index] as CSSStyleRule;
-        return rule.style.cssText;
-      } catch (e) {
-        console.error('Error getting CSS rule:', e);
-      }
+    try {
+      const rule = this.styleSheet.cssRules[ruleInfo.index] as CSSStyleRule;
+      return rule.style.cssText;
+    } catch (e) {
+      console.error('Error getting CSS rule:', e);
+      return null;
     }
+  }
 
-    return null;
+  /**
+   * گرفتن اطلاعات کامل یک کلاس
+   */
+  public getClassInfo(selector: string): IClassInfo | null {
+    const normalizedSelector = this.normalizeSelector(selector);
+    const ruleInfo = this.rulesMap.get(normalizedSelector);
+
+    if (!ruleInfo) return null;
+
+    const cssText = this.getClassStyles(normalizedSelector);
+    if (!cssText) return null;
+
+    const file = this.cssFileData.find((f) => f.id === ruleInfo.fileId);
+
+    return {
+      selector: normalizedSelector,
+      cssText,
+      fileName: file?.name || 'unknown',
+      fileId: ruleInfo.fileId,
+    };
+  }
+
+  /**
+   * بررسی وجود کلاس
+   */
+  public hasClass(selector: string): boolean {
+    const normalizedSelector = this.normalizeSelector(selector);
+    return this.rulesMap.has(normalizedSelector);
   }
 
   /**
    * پاک کردن همه rules
    */
-  clearAll(): void {
+  private clearAllRules(): void {
     if (!this.styleSheet) return;
 
     try {
@@ -311,25 +552,24 @@ export class ClassManagerService {
   }
 
   /**
-   * Load کردن CSS از string (برای بارگذاری اولیه)
+   * Export کردن یک فایل به CSS string
    */
-  loadCSS(css: string): void {
-    this.clearAll();
+  public exportFileCSS(fileId: string): string {
+    const file = this.cssFileData.find((f) => f.id === fileId);
+    if (!file) return '';
 
-    if (!this.styleSheet) return;
-
-    // Parse CSS و اضافه کردن rules
-    const rules = this.parseCSSString(css);
-
-    rules.forEach(({ selector, styles }) => {
-      this.updateClass(selector, styles);
+    const rules: string[] = [];
+    Object.entries(file.data).forEach(([selector, cssText]) => {
+      rules.push(`${selector} { ${cssText} }`);
     });
+
+    return rules.join('\n\n');
   }
 
   /**
-   * Export کردن همه CSS به string
+   * Export کردن همه CSS
    */
-  exportCSS(): string {
+  public exportAllCSS(): string {
     if (!this.styleSheet) return '';
 
     try {
@@ -339,6 +579,49 @@ export class ClassManagerService {
       console.error('Error exporting CSS:', e);
       return '';
     }
+  }
+
+  /**
+   * آپدیت لیست کلاس‌های available
+   */
+  private updateAvailableClasses(): void {
+    const classes = new Set<string>();
+
+    this.cssFileData.forEach((file) => {
+      Object.keys(file.data).forEach((selector) => {
+        // فقط class selectors (که با . شروع میشن)
+        if (selector.startsWith('.')) {
+          // حذف . از اول و split کردن اگه multiple selector باشه
+          const classNames = selector
+            .split(',')
+            .map((s) => s.trim())
+            .filter((s) => s.startsWith('.'))
+            .map((s) =>
+              s
+                .substring(1)
+                .split(/[\s:>\+~\[]/)[0]
+                .trim(),
+            )
+            .filter((s) => s);
+
+          classNames.forEach((c) => classes.add(c));
+        }
+      });
+    });
+
+    const availableClasses = Array.from(classes).sort();
+    this.availableClassesSubject.next(availableClasses);
+  }
+
+  /**
+   * Normalize کردن selector
+   */
+  private normalizeSelector(selector: string): string {
+    // اگه با . یا # شروع نمیشه، . اضافه کن
+    if (!selector.startsWith('.') && !selector.startsWith('#') && !selector.includes('[')) {
+      return `.${selector}`;
+    }
+    return selector;
   }
 
   /**
@@ -357,49 +640,20 @@ export class ClassManagerService {
       declarations.push(`${kebabProperty}: ${value}`);
     });
 
-    return declarations.join('; ') + ';';
+    return declarations.join('; ') + (declarations.length > 0 ? ';' : '');
   }
 
   /**
-   * Parse کردن CSS string به rules
+   * گرفتن تعداد rules
    */
-  private parseCSSString(css: string): Array<{ selector: string; styles: string }> {
-    const rules: Array<{ selector: string; styles: string }> = [];
-
-    // Regex برای پیدا کردن rules
-    const ruleRegex = /([^{]+)\{([^}]+)\}/g;
-    let match;
-
-    while ((match = ruleRegex.exec(css)) !== null) {
-      const selector = match[1].trim();
-      const styles = match[2].trim();
-      rules.push({ selector, styles });
-    }
-
-    return rules;
-  }
-
-  /**
-   * بررسی وجود یک کلاس
-   */
-  hasClass(className: string): boolean {
-    const selector =
-      className.startsWith('.') || className.startsWith('#') ? className : `.${className}`;
-
-    return this.rulesMap.has(selector);
-  }
-
-  /**
-   * گرفتن تعداد کل rules
-   */
-  get rulesCount(): number {
+  public get rulesCount(): number {
     return this.rulesMap.size;
   }
 
   /**
-   * Destroy - پاکسازی
+   * Destroy
    */
-  destroy(): void {
+  public destroy(): void {
     // پاک کردن همه timers
     this.debounceTimers.forEach((timer) => clearTimeout(timer));
     this.debounceTimers.clear();
@@ -412,5 +666,94 @@ export class ClassManagerService {
     this.styleElement = null;
     this.styleSheet = null;
     this.rulesMap.clear();
+    this.cssFileData = [];
+    this.isInitialized = false;
+
+    this.cssFilesSubject.next([]);
+    this.availableClassesSubject.next([]);
   }
 }
+
+// ==============================================
+// مثال استفاده:
+// ==============================================
+
+/*
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ClassManagerService } from './class-manager.service';
+import { Subject, takeUntil } from 'rxjs';
+
+@Component({
+  selector: 'app-style-manager',
+  template: `
+    <div>
+      <h3>CSS Files</h3>
+      <ul>
+        <li *ngFor="let file of cssFiles">
+          {{ file.name }} ({{ Object.keys(file.data).length }} rules)
+          <button (click)="editFile(file.id)">Edit</button>
+          <button (click)="deleteFile(file.id)">Delete</button>
+        </li>
+      </ul>
+
+      <button (click)="addNewFile()">Add File</button>
+
+      <h3>Available Classes</h3>
+      <div *ngFor="let className of availableClasses">
+        .{{ className }}
+      </div>
+    </div>
+  `
+})
+export class StyleManagerComponent implements OnInit, OnDestroy {
+  cssFiles: any[] = [];
+  availableClasses: string[] = [];
+  private destroy$ = new Subject<void>();
+
+  constructor(private classManager: ClassManagerService) {}
+
+  ngOnInit() {
+    // Initialize
+    this.classManager.initialize();
+
+    // Subscribe به تغییرات
+    this.classManager.cssFiles$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(files => {
+        this.cssFiles = files;
+      });
+
+    this.classManager.availableClasses$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(classes => {
+        this.availableClasses = classes;
+      });
+  }
+
+  async addNewFile() {
+    const css = `.new-class { color: blue; }`;
+    await this.classManager.addCssFile('my-styles', css);
+  }
+
+  editFile(fileId: string) {
+    const newCss = `.edited-class { color: red; }`;
+    this.classManager.updateCssFile(fileId, newCss);
+  }
+
+  deleteFile(fileId: string) {
+    this.classManager.removeCssFile(fileId);
+  }
+
+  // استفاده از debounced update برای color picker
+  onColorChange(color: string) {
+    this.classManager.updateClassDebounced('.my-button', {
+      backgroundColor: color
+    }, 16);
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+}
+*/

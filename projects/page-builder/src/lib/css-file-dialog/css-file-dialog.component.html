@@ -2,7 +2,7 @@
 <mat-dialog-content>
   <tab-group>
     @for (item of cls.cssFileData; track $index) {
-      <tab-item [title]="item.name" [active]="true">
+      <tab-item [title]="item.name" [active]="$index == 0">
         <css-classes-editor [(ngModel)]="item.data"></css-classes-editor>
       </tab-item>
     }

@@ -39,6 +39,7 @@ export class ClassSelectorComponent implements OnInit {
   showAddClassBtn = true;
 
   classes: IClassList[] = [];
+  availableClasses: string[] = [];
   constructor(
     private cdr: ChangeDetectorRef,
     public cls: ClassManagerService,
@@ -53,6 +54,10 @@ export class ClassSelectorComponent implements OnInit {
         }
         this.onSelectClass(this.item.classList[0]);
       }
+    });
+
+    cls.availableClasses$.subscribe((c) => {
+      this.availableClasses = c;
     });
   }
 
@@ -113,7 +118,7 @@ export class ClassSelectorComponent implements OnInit {
     });
   }
   onBlurEditClassName(item: IClassList) {
-    if (!item.editMode) return;
+    if (!item.editMode || !this.item) return;
     if (item.newName) {
       if (this.cls.hasClass(item.newName.trim())) {
         Notify.error(item.newName + ' is duplicated!');
@@ -121,6 +126,8 @@ export class ClassSelectorComponent implements OnInit {
       }
 
       this.cls.renameClass(item.name, item.newName);
+      let i = this.item.classList.findIndex((x) => x == item.name);
+      this.item.classList[i] = item.newName;
       item.name = item.newName;
       this.onSelectClass(item.name);
     }

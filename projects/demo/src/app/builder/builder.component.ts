@@ -126,7 +126,9 @@ export class BuilderComponent implements OnInit, AfterViewInit {
       const savedData = localStorage.getItem('page');
       const parsed = JSON.parse(savedData || '{}');
       this.data = parsed?.data;
+
       this.styles = parsed?.style;
+      debugger;
     } catch (error) {}
   }
   ngAfterViewInit(): void {

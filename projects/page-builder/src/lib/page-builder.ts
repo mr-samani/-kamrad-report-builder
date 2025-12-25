@@ -100,6 +100,7 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
 
   ngOnInit(): void {
     this.pageBuilder.blockSelector = this.blockSelector();
+    this.cls.initialize();
     this.registerShortcuts();
   }
 
@@ -355,7 +356,7 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
     return new Promise(async (resolve, reject) => {
       try {
         const data = await preparePageDataForSave(this.pageBuilder.pageInfo);
-        const style = await this.cls.exportCSS();
+        const style = await this.cls.exportAllCSS();
         // const body = document.createElement('body');
         // for (let p of this.pageBuilder.pageInfo.pages) {
         //   p.headerItems.forEach((m) => {
