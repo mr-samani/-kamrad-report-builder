@@ -1,4 +1,4 @@
-import { Injectable, PLATFORM_ID } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Inject } from '@angular/core';
 import { PageBuilderService } from './page-builder.service';
@@ -17,7 +17,6 @@ export class PreviewService {
     private pageBuilder: PageBuilderService,
     private dynamicDataService: DynamicDataService,
     @Inject(PLATFORM_ID) private platformId: Object,
-    private router: Router,
   ) {}
 
   async openPreview(print = false) {
@@ -49,9 +48,10 @@ export class PreviewService {
     // const baseUrl = window.location.origin;
     // const currentPath = window.location.pathname != '/' ? window.location.pathname : '';
     // const url = `${baseUrl}${currentPath}/ngx-page-preview?preview-builder=true&timestamp=${Date.now()}`;
+    const router = inject(Router);
 
-    const url = this.router.serializeUrl(
-      this.router.createUrlTree(['/ngx-page-preview'], {
+    const url = router.serializeUrl(
+      router.createUrlTree(['/ngx-page-preview'], {
         queryParams: {
           'preview-builder': true,
           timestamp: Date.now(),

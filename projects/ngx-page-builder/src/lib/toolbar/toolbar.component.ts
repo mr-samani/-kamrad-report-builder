@@ -1,17 +1,9 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  effect,
-  inject,
-  Injector,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, Injector, OnInit } from '@angular/core';
 import { PageBuilderBaseComponent } from '../page-builder-base-component';
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfigDialogComponent } from '../config-dialog/config-dialog.component';
 import { SortPageListComponent } from '../sort-page-list/sort-page-list.component';
-import { RouterModule } from '@angular/router';
 import { SvgIconDirective } from '../../directives/svg-icon.directive';
 import { ImportDialogComponent } from '../import-dialog/import-dialog.component';
 import { ExportHtmlService } from '../../services/import-export/export-html.service';
@@ -26,7 +18,7 @@ import { CssFileDialogComponent } from '../css-file-dialog/css-file-dialog.compo
   templateUrl: './toolbar.component.html',
   styleUrls: ['./toolbar.component.scss'],
   standalone: true,
-  imports: [FormsModule, RouterModule, SvgIconDirective],
+  imports: [FormsModule, SvgIconDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [ExportHtmlService],
 })

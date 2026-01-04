@@ -1,5 +1,4 @@
 import { DOCUMENT, Inject, Injectable } from '@angular/core';
-import { Router } from '@angular/router';
 import { Notify } from '../../extensions/notify';
 import { PageBuilderService } from '../page-builder.service';
 import { DynamicDataService } from '../dynamic-data.service';
@@ -10,7 +9,6 @@ import { PageItem } from '../../models/PageItem';
 @Injectable()
 export class ExportHtmlService {
   constructor(
-    private router: Router,
     private pageBuilder: PageBuilderService,
     private dynamicDataService: DynamicDataService,
     private dynamicElementService: DynamicElementService,

@@ -33,7 +33,7 @@ Once the project is built, you can publish your library by following these steps
 1. Navigate to the `dist` directory:
 
    ```bash
-   cd dist/page-builder
+   cd dist/ngx-page-builder
    ```
 
 2. Run the `npm publish` command to publish your library to the npm registry:

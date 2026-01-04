@@ -1,5 +1,4 @@
-import { makeEnvironmentProviders, inject, provideEnvironmentInitializer } from '@angular/core';
-import { Router } from '@angular/router';
+import { inject, makeEnvironmentProviders, provideEnvironmentInitializer } from '@angular/core';
 import { STORAGE_SERVICE } from './services/storage/token.storage';
 import { LocalStorageService } from './services/storage/local.storage.service';
 import { HttpStorageService } from './services/storage/http.storage.service';
@@ -15,8 +14,10 @@ import {
 import { PAGE_BUILDER_CONFIGURATION } from './models/tokens';
 import { NGX_PAGE_BUILDER_HTML_EDITOR } from './services/html-editor/token.html-editor';
 import { NGX_PAGE_BUILDER_FILE_PICKER } from './services/file-picker/token.filepicker';
+import { Router } from '@angular/router';
 
 export function providePageBuilder(config: PageBuilderConfiguration) {
+  debugger;
   LibConsts.enableHistory = config.enableHistory === true;
   LibConsts.enableAddCssFile = config.enableAddCssFile === true;
   if (config.toolbarConfig) {
@@ -78,7 +79,19 @@ export function providePageBuilder(config: PageBuilderConfiguration) {
       provide: NGX_PAGE_BUILDER_FILE_PICKER,
       useValue: '',
     },
-
+    // {
+    //   provide: ROUTES,
+    //   multi: true,
+    //   useValue: [
+    //     {
+    //       path: 'ngx-page-preview',
+    //       loadComponent: () =>
+    //         import('./lib/page-preview/page-preview.component').then(
+    //           (m) => m.NgxPagePreviewComponent,
+    //         ),
+    //     },
+    //   ],
+    // },
     // 🧩 اضافه کردن route به router در زمان bootstrap
     provideDynamicRoute(),
   ]);

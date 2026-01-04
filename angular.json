@@ -3,28 +3,30 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "page-builder": {
+    "ngx-page-builder": {
       "projectType": "library",
-      "root": "projects/page-builder",
-      "sourceRoot": "projects/page-builder/src",
+      "root": "projects/ngx-page-builder",
+      "sourceRoot": "projects/ngx-page-builder/src",
       "prefix": "lib",
+
       "architect": {
         "build": {
           "builder": "@angular/build:ng-packagr",
           "configurations": {
             "production": {
-              "tsConfig": "projects/page-builder/tsconfig.lib.prod.json"
+              "tsConfig": "projects/ngx-page-builder/tsconfig.lib.prod.json"
             },
             "development": {
-              "tsConfig": "projects/page-builder/tsconfig.lib.json"
+              "tsConfig": "projects/ngx-page-builder/tsconfig.lib.json"
             }
           },
-          "defaultConfiguration": "production"
+          "defaultConfiguration": "production",
+          "options": {}
         },
         "test": {
           "builder": "@angular/build:karma",
           "options": {
-            "tsConfig": "projects/page-builder/tsconfig.spec.json"
+            "tsConfig": "projects/ngx-page-builder/tsconfig.spec.json"
           }
         }
       }
@@ -53,7 +55,7 @@
               },
               {
                 "glob": "**/*",
-                "input": "./projects/page-builder/src/assets/",
+                "input": "./projects/ngx-page-builder/src/assets/",
                 "output": "/assets/"
               },
               {

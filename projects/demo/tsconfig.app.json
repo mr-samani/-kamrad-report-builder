@@ -6,7 +6,7 @@
     "outDir": "../../out-tsc/app",
     "types": [],
     "paths": {
-      "@ngx-page-builder": ["../page-builder/src/public-api.ts"]
+      "@ngx-page-builder": ["../ngx-page-builder/src/public-api.ts"]
     }
   },
   "include": ["src/**/*.ts"],

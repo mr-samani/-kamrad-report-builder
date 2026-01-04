@@ -1,11 +1,8 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  DOCUMENT,
-  ElementRef,
   Inject,
   Injector,
-  input,
   Input,
   OnDestroy,
   OnInit,
@@ -18,11 +15,9 @@ import { ToolbarComponent } from './toolbar/toolbar.component';
 import { PageBuilderBaseComponent } from './page-builder-base-component';
 import { IStorageService } from '../services/storage/IStorageService';
 import { STORAGE_SERVICE } from '../services/storage/token.storage';
-import { PageBuilderConfiguration } from '../models/PageBuilderConfiguration';
 import { DynamicDataStructure } from '../models/DynamicData';
 import { Subscription } from 'rxjs';
 import { SideConfigComponent } from '../components/side-config/side-config.component';
-import { PAGE_BUILDER_CONFIGURATION } from '../models/tokens';
 import { PageItemChange } from '../services/page-builder.service';
 import { NgxPgNotifyModule, Notify } from '../extensions/notify';
 import { SvgIconDirective } from '../directives/svg-icon.directive';
@@ -31,7 +26,6 @@ import { validateViewMode, ViewMode } from '../consts/ViewMode';
 import { Page } from '../models/Page';
 import { IPage } from '../contracts/IPage';
 import { preparePageDataForSave } from '../services/storage/prepare-page-builder-data';
-import { IPageBuilderDto } from '../contracts/IPageBuilderDto';
 import { ClassManagerService } from '../services/class-manager.service';
 import { IPagebuilderOutput } from '../contracts/IPageBuilderOutput';
 import { InnerContentComponent } from './inner-content/inner-content.component';
@@ -83,12 +77,11 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
 
   constructor(
     injector: Injector,
-    @Inject(PAGE_BUILDER_CONFIGURATION) private mainConfig: PageBuilderConfiguration,
     @Inject(STORAGE_SERVICE) private storageService: IStorageService,
-    @Inject(DOCUMENT) private doc: Document,
     private cls: ClassManagerService,
   ) {
     super(injector);
+    debugger
     this.pageBuilder.mode = 'Edit';
     this.pageBuilder.storageService = this.storageService;
     this.pageBuilder.changed$.subscribe((data: PageItemChange) => {

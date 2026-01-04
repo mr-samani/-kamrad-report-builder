@@ -1,7 +1,6 @@
-import { DOCUMENT, inject, Injectable, Renderer2, RendererFactory2 } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { DOCUMENT, inject, Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 import { parseCssToRecord } from '../utiles/css-parser';
-import { CSSStyleHelper } from '../helper/CSSStyle';
 import { PageBuilderService } from './page-builder.service';
 
 interface ICssFile {
@@ -40,10 +39,7 @@ export class ClassManagerService {
 
   doc = inject(DOCUMENT);
 
-  constructor(
-    private rendererFactory: RendererFactory2,
-    private pageBuilder: PageBuilderService,
-  ) {
+  constructor(private pageBuilder: PageBuilderService) {
     // Initialize با فایل پیش‌فرض
     this.initializeDefaultFile();
   }

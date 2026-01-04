@@ -1,10 +1,11 @@
 {
-  "name": "page-builder",
+  "name": "ngx-page-builder",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --port=4321 -o",
     "build": "ng build --project=demo",
+    "build:lib": "ng build --project=ngx-page-builder",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "format": "prettier --write \".//projects//**//*.{ts,html,css,scss}\" ",

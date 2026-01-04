@@ -12,7 +12,7 @@
     "isolatedModules": true,
     "experimentalDecorators": true,
     "paths": {
-      "page-builder": ["./dist/page-builder"]
+      "ngx-page-builder": ["./dist/ngx-page-builder"]
     },
     "importHelpers": true,
     "target": "ES2022",
@@ -28,10 +28,10 @@
   "files": [],
   "references": [
     {
-      "path": "./projects/page-builder/tsconfig.lib.json"
+      "path": "./projects/ngx-page-builder/tsconfig.lib.json"
     },
     {
-      "path": "./projects/page-builder/tsconfig.spec.json"
+      "path": "./projects/ngx-page-builder/tsconfig.spec.json"
     },
     {
       "path": "./projects/demo/tsconfig.app.json"
