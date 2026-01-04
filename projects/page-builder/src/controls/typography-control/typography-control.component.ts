@@ -4,6 +4,7 @@ import {
   EventEmitter,
   forwardRef,
   Injector,
+  Input,
   OnInit,
   Output,
 } from '@angular/core';
@@ -30,7 +31,9 @@ export class TypographyControlComponent
   extends BaseControl
   implements OnInit, ControlValueAccessor
 {
-  @Output() change = new EventEmitter<PageItem>();
+  @Input() currentClassName = '';
+
+  @Output() change = new EventEmitter<Partial<CSSStyleDeclaration>>();
 
   fontSize?: number;
   fontFamily: string = '';
@@ -43,17 +46,17 @@ export class TypographyControlComponent
   }
 
   ngOnInit() {}
-  writeValue(item: PageItem): void {
-    this.item = item;
-    if (!item || !item.el) return;
-    this.el = item.el;
-    let val = item.el.style;
-    this.fontSize = parseFloat(val?.fontSize);
-    this.fontFamily = val?.fontFamily;
-    this.lineHeight = parseFloat(val?.lineHeight);
-    this.textDecoration = val?.textDecoration;
-    this.textTransform = val?.textTransform;
-    this.textAlign = val?.textAlign;
+  writeValue(style: Partial<CSSStyleDeclaration>): void {
+    if (!style) {
+      style = {};
+    }
+    this.style = style;
+    this.fontSize = parseFloat(style.fontSize || '');
+    this.fontFamily = style.fontFamily || '';
+    this.lineHeight = parseFloat(style.lineHeight || '');
+    this.textDecoration = style.textDecoration || '';
+    this.textTransform = style.textTransform || '';
+    this.textAlign = style.textAlign || '';
 
     this.style = {
       fontSize: this.fontSize + 'px',
@@ -66,22 +69,6 @@ export class TypographyControlComponent
   }
 
   update() {
-    if (!this.el || !this.item) return;
-    // Update style object with formatted CSS values
-    this.renderer.setStyle(
-      this.el,
-      'fontSize',
-      this.fontSize != undefined ? this.fontSize + 'px' : '',
-    );
-    this.renderer.setStyle(this.el, 'fontFamily', this.fontFamily);
-    this.renderer.setStyle(
-      this.el,
-      'lineHeight',
-      this.lineHeight != undefined ? this.lineHeight + 'px' : '',
-    );
-    this.renderer.setStyle(this.el, 'textDecoration', this.textDecoration);
-    this.renderer.setStyle(this.el, 'textTransform', this.textTransform);
-    this.renderer.setStyle(this.el, 'textAlign', this.textAlign);
     this.style = {
       fontSize: this.fontSize + 'px',
       fontFamily: this.fontFamily,
@@ -90,9 +77,9 @@ export class TypographyControlComponent
       textTransform: this.textTransform,
       textAlign: this.textAlign,
     };
-    this.onChange(this.item);
-    this.item.style = mergeCssStyles(this.item.style, this.el.style.cssText);
-    this.change.emit(this.item);
+    this.onChange(this.style);
+    this.change.emit(this.style);
+    this.cls.updateClass(this.currentClassName, this.style);
   }
 
   clear(property: string) {

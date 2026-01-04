@@ -23,7 +23,6 @@ import {
 } from './box-shadow-parser';
 import { getOffsetPosition } from './get-offset-position';
 import { NgxInputColorModule } from 'ngx-input-color';
-import { PageItem } from '../../models/PageItem';
 import { BaseControl } from '../base-control';
 import { SvgIconDirective } from '../../directives/svg-icon.directive';
 
@@ -43,6 +42,8 @@ import { SvgIconDirective } from '../../directives/svg-icon.directive';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShadowControlComponent extends BaseControl implements OnInit, AfterViewInit {
+  @Input() currentClassName = '';
+
   @Input() maxRange = 25;
 
   padRect?: DOMRect;
@@ -54,7 +55,7 @@ export class ShadowControlComponent extends BaseControl implements OnInit, After
   selectedShadow?: BoxShadow;
   selectedIndex = 0;
 
-  @Output() change = new EventEmitter<PageItem>();
+  @Output() change = new EventEmitter<Partial<CSSStyleDeclaration>>();
   shadows: BoxShadow[] = [];
   popupPosition = { x: 0, y: 0 };
   showPopup = false;
@@ -74,12 +75,13 @@ export class ShadowControlComponent extends BaseControl implements OnInit, After
   }
   ngOnInit() {}
   ngAfterViewInit() {}
-  writeValue(item: PageItem): void {
-    this.item = item;
-    if (!item || !item.el) return;
+  writeValue(style: Partial<CSSStyleDeclaration>): void {
+    if (!style) {
+      style = {};
+    }
+    this.style = style;
 
-    this.el = item.el;
-    const val = this.el.style.boxShadow;
+    const val = this.style.boxShadow;
     if (!val) {
       this.shadows = [];
       this.result = '';
@@ -275,16 +277,13 @@ export class ShadowControlComponent extends BaseControl implements OnInit, After
   }
 
   private update() {
-    if (!this.el || !this.item) return;
-
     this.result = formatBoxShadowToCSS(this.shadows);
     this.shadows.forEach((m) => (m.cssValue = formatBoxShadowToCSS([m])));
 
-    this.renderer.setStyle(this.el, 'box-shadow', this.result);
+    this.style.boxShadow = this.result;
 
-    this.onChange(this.item);
-    this.change.emit(this.item);
-
-    this.cd.detectChanges();
+    this.onChange(this.style);
+    this.change.emit(this.style);
+    this.cls.updateClass(this.currentClassName, this.style);
   }
 }

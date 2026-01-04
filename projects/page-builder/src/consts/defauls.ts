@@ -9,6 +9,7 @@ import { PageBuilderToolbarConfig } from '../models/PageBuilderConfiguration';
  * - merge SOURCE_ITEMS with custom sources
  */
 export const LibConsts: {
+  enableAddCssFile: boolean;
   viewMode: ViewMode;
   SourceItemList: SourceItem[];
 
@@ -26,6 +27,7 @@ export const LibConsts: {
   SourceItemList: [],
   backendProxyImportUrl: 'http://localhost:3000/api/render',
   enableHistory: false,
+  enableAddCssFile: false,
   viewMode: 'PrintPage',
   toolbarConfig: new PageBuilderToolbarConfig(),
 };

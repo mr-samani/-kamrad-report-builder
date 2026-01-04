@@ -1,1 +1,24 @@
-/* custom styles text-binding */
+.text {
+  border: 1px solid #8d8d8d63;
+  min-height: 30px;
+  border-radius: 5px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+  .content {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: calc(100% - 25px);
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: auto-phrase;
+    display: -webkit-box !important;
+  }
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}

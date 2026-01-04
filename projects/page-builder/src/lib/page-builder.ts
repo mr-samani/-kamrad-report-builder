@@ -5,6 +5,7 @@ import {
   ElementRef,
   Inject,
   Injector,
+  input,
   Input,
   OnDestroy,
   OnInit,
@@ -31,12 +32,16 @@ import { Page } from '../models/Page';
 import { IPage } from '../contracts/IPage';
 import { preparePageDataForSave } from '../services/storage/prepare-page-builder-data';
 import { IPageBuilderDto } from '../contracts/IPageBuilderDto';
+import { ClassManagerService } from '../services/class-manager.service';
+import { IPagebuilderOutput } from '../contracts/IPageBuilderOutput';
+import { InnerContentComponent } from './inner-content/inner-content.component';
 
 @Component({
   selector: 'ngx-page-builder',
   templateUrl: './page-builder.html',
-  styleUrls: ['./page-builder.scss'],
+  styleUrls: ['./page-builder.scss', '../styles/paper.scss'],
   imports: [
+    InnerContentComponent,
     NgxDragDropKitModule,
     ToolbarComponent,
     BlockSelectorComponent,
@@ -56,6 +61,11 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
     const pages = val.map((m) => Page.fromJSON(m));
     this.loadPageData(pages);
   }
+
+  @Input('styles') set setStyles(val: string) {
+    this.cls.addCssFile('default', val);
+  }
+
   @Input('dynamicData') set setDynamicData(val: DynamicDataStructure[]) {
     this.dynamicDataService.dynamicData = val ?? [];
   }
@@ -69,25 +79,18 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
   }
   blockSelector = viewChild<BlockSelectorComponent>('blockSelector');
 
-  private _pageBody = viewChild<ElementRef<HTMLElement>>('PageBody');
-  private _pageHeader = viewChild<ElementRef<HTMLElement>>('PageHeader');
-  private _pageFooter = viewChild<ElementRef<HTMLElement>>('PageFooter');
-
   subscriptions: Subscription[] = [];
-  containerClassName = '';
 
   constructor(
     injector: Injector,
     @Inject(PAGE_BUILDER_CONFIGURATION) private mainConfig: PageBuilderConfiguration,
     @Inject(STORAGE_SERVICE) private storageService: IStorageService,
     @Inject(DOCUMENT) private doc: Document,
+    private cls: ClassManagerService,
   ) {
     super(injector);
     this.pageBuilder.mode = 'Edit';
     this.pageBuilder.storageService = this.storageService;
-    this.pageBuilder.pageBody = this._pageBody;
-    this.pageBuilder.pageHeader = this._pageHeader;
-    this.pageBuilder.pageFooter = this._pageFooter;
     this.pageBuilder.changed$.subscribe((data: PageItemChange) => {
       if (data.type == 'ChangePageConfig') {
         this.chdRef.detectChanges();
@@ -97,12 +100,8 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
 
   ngOnInit(): void {
     this.pageBuilder.blockSelector = this.blockSelector();
+    this.cls.initialize();
     this.registerShortcuts();
-    if (this.viewMode == 'PrintPage') {
-      this.containerClassName = `paper ${this.pageBuilder.pageInfo.config.size} ${this.pageBuilder.pageInfo.config.orientation}`;
-    } else {
-      this.containerClassName = `web-page-view`;
-    }
   }
 
   ngOnDestroy(): void {
@@ -353,7 +352,34 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
    * Get page builder data for save to DB
    * @returns Promise JSONData
    */
-  public getData(): Promise<IPageBuilderDto> {
-    return preparePageDataForSave(this.pageBuilder.pageInfo);
+  public getData(): Promise<IPagebuilderOutput> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const data = await preparePageDataForSave(this.pageBuilder.pageInfo);
+        const style = await this.cls.exportAllCSS();
+        // const body = document.createElement('body');
+        // for (let p of this.pageBuilder.pageInfo.pages) {
+        //   p.headerItems.forEach((m) => {
+        //     if (m.el) body.append(m.el);
+        //   });
+        //   p.bodyItems.forEach((m) => {
+        //     if (m.el) body.append(m.el);
+        //   });
+        //   p.footerItems.forEach((m) => {
+        //     if (m.el) body.append(m.el);
+        //   });
+        // }
+        await this.pageBuilder.pageInfo.pages;
+        const script = '';
+        resolve({
+          data: data.pages,
+          html: '',
+          script,
+          style,
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
 }

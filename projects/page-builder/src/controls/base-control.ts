@@ -1,15 +1,16 @@
-import { Output, EventEmitter, Renderer2, Injector } from '@angular/core';
+import { Renderer2, Injector, inject } from '@angular/core';
 import { PageItem } from '../models/PageItem';
+import { ClassManagerService } from '../services/class-manager.service';
 
 export abstract class BaseControl {
-  style?: Partial<CSSStyleDeclaration>;
-  item?: PageItem;
-  el: HTMLElement | undefined = undefined;
+  style!: Partial<CSSStyleDeclaration>;
   isDisabled: boolean = false;
-  onChange = (_: PageItem | undefined) => {};
+  onChange = (_: Partial<CSSStyleDeclaration>) => {};
   onTouched = () => {};
 
   readonly renderer: Renderer2;
+
+  cls = inject(ClassManagerService);
   constructor(injector: Injector) {
     this.renderer = injector.get(Renderer2);
   }

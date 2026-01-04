@@ -18,6 +18,7 @@ import { NGX_PAGE_BUILDER_FILE_PICKER } from './services/file-picker/token.filep
 
 export function providePageBuilder(config: PageBuilderConfiguration) {
   LibConsts.enableHistory = config.enableHistory === true;
+  LibConsts.enableAddCssFile = config.enableAddCssFile === true;
   if (config.toolbarConfig) {
     LibConsts.toolbarConfig = { ...new PageBuilderToolbarConfig(), ...config.toolbarConfig };
   }

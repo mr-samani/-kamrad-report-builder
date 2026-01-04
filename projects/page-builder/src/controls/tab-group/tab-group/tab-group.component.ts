@@ -18,6 +18,7 @@ import { TabItemComponent } from '../tab-item/tab-item.component';
 })
 export class TabGroupComponent implements AfterContentInit {
   @Input() showPlusButton = false;
+  @Input() dontShowSingleTab = true;
   @Output() onAddTab = new EventEmitter();
   @Output() selectedIndex = new EventEmitter<number>();
   @ContentChildren(TabItemComponent) tabs?: QueryList<TabItemComponent>;

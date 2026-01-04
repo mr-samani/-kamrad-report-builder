@@ -1,5 +1,5 @@
 <div class="tab-group-container">
-  <div class="tab-group">
+  <div class="tab-group" [class.dont-show-single]="dontShowSingleTab && tabs?.length === 1">
     @for (tab of tabs; track $index; let tabIndex = $index) {
       <div
         class="tab-group__item"

@@ -42,7 +42,7 @@ export class TextCssControlComponent
   extends BaseControl
   implements OnInit, AfterViewInit, ControlValueAccessor, OnDestroy
 {
-  @Output() change = new EventEmitter<PageItem>();
+  @Output() change = new EventEmitter<string>();
   @ViewChild('editorTextarea', { static: false }) textareaRef?: ElementRef<HTMLTextAreaElement>;
   @ViewChild('highlightDiv', { static: false }) highlightRef?: ElementRef<HTMLDivElement>;
 
@@ -71,13 +71,12 @@ export class TextCssControlComponent
     }
   }
 
-  writeValue(item: PageItem): void {
-    this.item = item;
-    this.el = item?.el;
-    if (item && this.el) {
-      this.textCss = this.el.style.cssText.replace(/;\s*/g, ';\n');
-      this.updateHighlight();
+  writeValue(css: string): void {
+    if (!css || typeof css !== 'string') {
+      css = '';
     }
+    this.textCss = css; // this.el.style.cssText.replace(/;\s*/g, ';\n');
+    this.updateHighlight();
     this.cdr.detectChanges();
   }
 
@@ -291,16 +290,13 @@ export class TextCssControlComponent
   }
 
   update() {
-    if (!this.el || !this.item) return;
-
     try {
       // Apply styles to element
-      this.el.style.cssText = this.textCss;
+      this.style.cssText = this.textCss;
 
       // Update item
-      this.item.style = mergeCssStyles(this.item.style, this.el.style.cssText);
-      this.onChange(this.item);
-      this.change.emit(this.item);
+      this.onChange(this.style);
+      this.change.emit(this.textCss);
     } catch (error) {
       console.error('Invalid CSS:', error);
     }

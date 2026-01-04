@@ -56,6 +56,10 @@
   </button>
 }
 <!-- --------------------------------------------------------------------------------- -->
+<button (click)="openCssFileDialog()" title="Css file">
+  <svg Icon="assets/icons/file-signature.svg"></svg>
+</button>
+
 @if (toolbarConfig?.showExportHtmlButton) {
   <button (click)="exportHtml()" title="Export all pages as Html">
     <svg Icon="assets/icons/file-export.svg"></svg>

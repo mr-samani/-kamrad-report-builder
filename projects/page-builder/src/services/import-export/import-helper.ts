@@ -223,7 +223,8 @@ export abstract class HtmlImporter {
     pageItem.options = this.extractOptions(element, options);
 
     // استخراج استایل‌ها (با پشتیبانی از computed styles در iframe)
-    pageItem.style = await StyleHelper.extractStyles(element, options);
+    // TODO: Import style to class
+    // pageItem.style = await StyleHelper.extractStyles(element, options);
 
     // پردازش فرزندان
     if (pageItem.canHaveChild && element.children.length > 0) {

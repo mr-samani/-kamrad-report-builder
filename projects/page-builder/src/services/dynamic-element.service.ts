@@ -219,8 +219,12 @@ export class DynamicElementService {
     // if (this.isContentEditable(tag)) {
     //   element.contentEditable = 'true';
     // }
-    if (item.style) {
-      element.style.cssText = item.style;
+    // if (item.style) {
+    //   element.style.cssText = item.style;
+    // }
+
+    if (item.classList) {
+      element.classList = item.classList.join(' ');
     }
 
     return element;

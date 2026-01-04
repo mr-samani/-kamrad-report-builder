@@ -127,7 +127,7 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
           data.type == 'ChangeBlockContent' ||
           data.type == 'ChangeBlockProperties'
         ) {
-          console.log('Block changed:', data.item?.id, data.type, data.item?.style);
+          // console.log('Block changed:', data.item?.id, data.type, data.item?.style);
           const found = itemInThisTemplate(data.item, this.pageItem.children);
           if (found.result) {
             console.time('updateTemplate');

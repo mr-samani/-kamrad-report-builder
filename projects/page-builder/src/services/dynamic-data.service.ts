@@ -9,7 +9,7 @@ import { PageItem } from '../models/PageItem';
 export class DynamicDataService {
   private _dynamicData: DynamicDataStructure[] = [];
 
-  private _valueDictionary: { [key: string]: string | undefined } = {};
+  private _valueDictionary: Record<string, string | undefined> = {};
 
   private map = new Map<string, DynamicDataStructure>();
   private nearestCache = new Map<string, string | null>(); // itemId -> nearest datasource id

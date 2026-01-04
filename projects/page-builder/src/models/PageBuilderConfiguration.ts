@@ -8,6 +8,7 @@ export class PageBuilderConfiguration {
   enableHistory?: boolean = false;
 
   toolbarConfig?: PageBuilderToolbarConfig;
+  enableAddCssFile?: boolean = false;
 }
 
 export class PageBuilderToolbarConfig {

@@ -15,10 +15,9 @@ import { BackgroundControlComponent } from '../../controls/beckground-control/ba
 import { DisplayControlComponent } from '../../controls/display-control/display-control.component';
 import { TextCssControlComponent } from '../../controls/textcss-control/textcss-control.component';
 import { SizeControlComponent } from '../../controls/size-control/size-control.component';
-import { DynamicDataStructure } from '../../models/DynamicData';
-import { TextBindingComponent } from '../text-binding/text-binding.component';
-import { DynamicDataService } from '../../services/dynamic-data.service';
 import { ShadowControlComponent } from '../../controls/shadow-control/shadow-control.component';
+import { ClassSelectorComponent, IClassOutput } from '../class-selector/class-selector.component';
+import { CSSStyleHelper } from '../../helper/CSSStyle';
 
 @Component({
   selector: 'block-properties',
@@ -34,7 +33,7 @@ import { ShadowControlComponent } from '../../controls/shadow-control/shadow-con
     DisplayControlComponent,
     TextCssControlComponent,
     SizeControlComponent,
-    TextBindingComponent,
+    ClassSelectorComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
@@ -42,18 +41,16 @@ import { ShadowControlComponent } from '../../controls/shadow-control/shadow-con
 export class BlockPropertiesComponent extends BaseComponent implements OnInit {
   item?: PageItem;
 
-  parentCollection?: PageItem;
-  collectionDsList: DynamicDataStructure[] = [];
+  style: Partial<CSSStyleDeclaration> = {};
 
-  constructor(
-    injector: Injector,
-    private dynamicDataService: DynamicDataService,
-  ) {
+  currentCss = '';
+  currentClassName = '';
+
+  constructor(injector: Injector) {
     super(injector);
     effect(() => {
       this.item = this.pageBuilder.activeEl();
       // console.log('updated properties', this.item);
-      this.checkParentIsCollection();
 
       this.chdRef.detectChanges();
     });
@@ -64,28 +61,9 @@ export class BlockPropertiesComponent extends BaseComponent implements OnInit {
     this.chdRef.detectChanges();
   }
 
-  onChangeProperties() {
-    if (this.item) this.pageBuilder.changedProperties(this.item);
-  }
-
-  checkParentIsCollection() {
-    this.parentCollection = this.parentCollectionItem(this.item);
-    if (this.parentCollection) {
-      const { id, skipCount, maxResultCount } = this.parentCollection.dataSource!;
-      let dsList = this.dynamicDataService.getCollectionData(id, skipCount, maxResultCount);
-      this.collectionDsList = dsList.length > 0 ? dsList[0] : [];
-    }
-  }
-
-  parentCollectionItem(item?: PageItem): PageItem | undefined {
-    if (!item) return undefined;
-    if (item.dataSource?.id) {
-      // if (item.template || item.customComponent?.componentKey == 'NgxPgHeroTable') {
-      return item;
-    }
-    if (item.parent) {
-      return this.parentCollectionItem(item.parent);
-    }
-    return undefined;
+  onSelectClass(cls: IClassOutput) {
+    this.currentCss = cls.value;
+    this.currentClassName = cls.name;
+    this.style = new CSSStyleHelper(this.currentCss).toStyleObject() || {};
   }
 }

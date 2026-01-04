@@ -16,7 +16,7 @@
               readonly
               ngxInputColor
               [simpleMode]="true"
-              [(ngModel)]="color"
+              [(ngModel)]="style.color"
               (ngModelChange)="update()"
             />
             <button class="btn-clear" type="button" (click)="clear('color')">x</button>
@@ -34,7 +34,7 @@
               class="color"
               ngxInputColor
               [simpleMode]="true"
-              [(ngModel)]="backgroundColor"
+              [(ngModel)]="style.backgroundColor"
               (ngModelChange)="update()"
             />
             <button class="btn-clear" type="button" (click)="clear('backgroundColor')">x</button>
@@ -83,7 +83,11 @@
           <td><label for="background-size">Size:</label></td>
           <td>
             <div class="pi-group">
-              <select id="background-size" [(ngModel)]="backgroundSize" (ngModelChange)="update()">
+              <select
+                id="background-size"
+                [(ngModel)]="style.backgroundSize"
+                (ngModelChange)="update()"
+              >
                 <option value="auto">Auto</option>
                 <option value="cover">Cover</option>
                 <option value="contain">Contain</option>
@@ -98,7 +102,7 @@
             <div class="pi-group">
               <select
                 id="background-position"
-                [(ngModel)]="backgroundPosition"
+                [(ngModel)]="style.backgroundPosition"
                 (ngModelChange)="update()"
               >
                 <option value="left top">Left Top</option>
@@ -117,7 +121,7 @@
             <div class="pi-group">
               <select
                 id="background-repeat"
-                [(ngModel)]="backgroundRepeat"
+                [(ngModel)]="style.backgroundRepeat"
                 (ngModelChange)="update()"
               >
                 <option value="no-repeat">No Repeat</option>

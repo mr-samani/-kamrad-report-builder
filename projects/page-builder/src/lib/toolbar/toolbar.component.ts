@@ -19,6 +19,7 @@ import { PageItem } from '../../models/PageItem';
 import { Notify } from '../../extensions/notify';
 import { HistoryService } from '../../services/history.service';
 import { LibConsts } from '../../consts/defauls';
+import { CssFileDialogComponent } from '../css-file-dialog/css-file-dialog.component';
 
 @Component({
   selector: 'toolbar',
@@ -160,7 +161,21 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
         this.chdRef.detectChanges();
       });
   }
-
+  openCssFileDialog() {
+    this.matDialog
+      .open(CssFileDialogComponent, {
+        panelClass: 'ngx-page-builder',
+        data: {
+          classes: {},
+        },
+        width: '80vw',
+        maxWidth: '100%',
+      })
+      .afterClosed()
+      .subscribe((r) => {
+        this.chdRef.detectChanges();
+      });
+  }
   async exportHtml() {
     this.exporter.exportHtml();
   }

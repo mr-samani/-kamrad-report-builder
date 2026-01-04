@@ -13,7 +13,7 @@ export function parseBackground(background: string): {
   for (const g of gradientTypes) {
     const idx = src.indexOf(g + '(');
     if (idx !== -1) {
-      let i = idx + g.length + 1; // موقعیت بعد از '('
+      let i = idx + g.length + 1; // بعد از '('
       let depth = 1;
       while (i < src.length && depth > 0) {
         const ch = src[i];
@@ -21,40 +21,108 @@ export function parseBackground(background: string): {
         else if (ch === ')') depth--;
         i++;
       }
-      // i الان به اولین کاراکتر بعد از پرانتز بسته رسیده
       if (depth === 0) {
         result.gradient = src.substring(idx, i).trim();
         break;
       } else {
-        // اگر پرانتزها بسته نشده بودند، fallback به regex ساده
         const fallback = src.match(new RegExp(`${g}\\([^)]*\\)`));
         if (fallback) result.gradient = fallback[0];
       }
     }
   }
 
-  // 2) پیدا کردن image (url(...)) — مشابهاً handle quotes داخل url
+  // 2) پیدا کردن image (url(...))
   const urlMatch = src.match(/url\(\s*(['"]?)[^)]+?\1\s*\)/);
   if (urlMatch) {
     result.image = urlMatch[0];
   }
 
-  // 3) پیدا کردن رنگ صریح (hex, rgb(a), hsl(a))
-  //    از اولین occurrence که خارج از gradient/url باشه استفاده می‌کنیم
-  const colorRegex = /(?:(rgba?|hsla?)\([^)]+\)|#[0-9a-fA-F]{3,8})/g;
+  // ---- ADDITION: CSS named colors ----
+  const namedColors = [
+    'black',
+    'silver',
+    'gray',
+    'white',
+    'maroon',
+    'red',
+    'purple',
+    'fuchsia',
+    'green',
+    'lime',
+    'olive',
+    'yellow',
+    'navy',
+    'blue',
+    'teal',
+    'aqua',
+    'orange',
+    'aliceblue',
+    'antiquewhite',
+    'aquamarine',
+    'azure',
+    'beige',
+    'bisque',
+    'brown',
+    'chocolate',
+    'coral',
+    'cornflowerblue',
+    'crimson',
+    'cyan',
+    'darkblue',
+    'darkcyan',
+    'darkgray',
+    'darkgreen',
+    'darkmagenta',
+    'darkorange',
+    'darkred',
+    'deeppink',
+    'dodgerblue',
+    'gold',
+    'goldenrod',
+    'hotpink',
+    'indigo',
+    'khaki',
+    'lightblue',
+    'lightgray',
+    'lightgreen',
+    'magenta',
+    'mediumblue',
+    'mediumseagreen',
+    'mediumvioletred',
+    'orangered',
+    'pink',
+    'plum',
+    'rebeccapurple',
+    'salmon',
+    'seagreen',
+    'skyblue',
+    'slateblue',
+    'steelblue',
+    'tomato',
+    'turquoise',
+    'violet',
+  ];
+
+  // 3) پیدا کردن رنگ (hex / rgb(a) / hsl(a) / named colors)
+  const colorRegex = new RegExp(
+    `(?:(rgba?|hsla?)\\([^)]+\\)|#[0-9a-fA-F]{3,8}|\\b(${namedColors.join('|')})\\b)`,
+    'gi',
+  );
+
   let colorMatch;
   while ((colorMatch = colorRegex.exec(src)) !== null) {
     const found = colorMatch[0];
-    // اگر داخل gradient قرار نگرفته باشد (وگرنه قبلاً gradient استخراج شده)
+
+    // اگر داخل gradient است، رد کن
     if (
       result.gradient &&
       src.indexOf(result.gradient) <= src.indexOf(found) &&
       src.indexOf(found) < src.indexOf(result.gradient) + result.gradient.length
     ) {
-      // این رنگ در داخل gradient است — نادیده بگیر
       continue;
     }
-    // همچنین اگر داخل url باشه نادیده بگیر
+
+    // اگر داخل url است، رد کن
     if (
       result.image &&
       src.indexOf(result.image) <= src.indexOf(found) &&
@@ -62,6 +130,7 @@ export function parseBackground(background: string): {
     ) {
       continue;
     }
+
     result.color = found;
     break;
   }

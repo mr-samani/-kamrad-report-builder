@@ -1,0 +1,32 @@
+<div class="ngx-page-builder-css-editor-container">
+  <div class="css-editor-wrapper">
+    <div #highlightDiv class="css-highlight-layer" [attr.aria-hidden]="true"></div>
+    <textarea
+      #editorTextarea
+      id="css-textarea-layer"
+      name="css-textarea-layer"
+      class="css-textarea-layer"
+      spellcheck="false"
+      [value]="textCss"
+      [disabled]="isDisabled"
+      (input)="onInput($event)"
+      (keydown)="onKeyDown($event)"
+      (blur)="onTouched()"
+    ></textarea>
+  </div>
+
+  @if (hasErrors) {
+    <div class="css-editor-errors">
+      <div class="error-header">
+        <span class="error-icon">⚠</span>
+        <span class="error-title">Validation Errors:</span>
+      </div>
+      @for (error of validationErrors; track error.line) {
+        <div class="error-item">
+          <span class="error-line">Line {{ error.line }}:</span>
+          <span class="error-message">{{ error.message }}</span>
+        </div>
+      }
+    </div>
+  }
+</div>

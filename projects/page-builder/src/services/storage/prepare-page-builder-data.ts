@@ -1,10 +1,11 @@
+import { IPageBuilderDto } from '../../contracts/IPageBuilderDto';
 import { PageBuilderDto } from '../../models/PageBuilderDto';
 import { PageItem } from '../../models/PageItem';
 import { ISourceOptions } from '../../models/SourceItem';
 import { cloneDeep } from '../../utiles/clone-deep';
 import { sanitizeForStorage } from './sanitizeForStorage';
 
-export function preparePageDataForSave(pageInfo: PageBuilderDto): Promise<PageBuilderDto> {
+export function preparePageDataForSave(pageInfo: PageBuilderDto): Promise<IPageBuilderDto> {
   return new Promise((resolve, reject) => {
     try {
       if (!pageInfo) {
@@ -20,7 +21,15 @@ export function preparePageDataForSave(pageInfo: PageBuilderDto): Promise<PageBu
             delete item.customComponent.componentSettings;
             delete item.customComponent.providers;
             delete item.customComponent.compInjector;
+            delete item.customComponent;
           }
+
+          delete item.dataSource;
+          delete item.disableDelete;
+          delete item.disableMovement;
+          delete item.isTemplateContainer;
+          delete item.lockMoveInnerChild;
+
           if (item.template) {
             item.children = [];
           }
