@@ -128,7 +128,6 @@ export class BuilderComponent implements OnInit, AfterViewInit {
       this.data = parsed?.data;
 
       this.styles = parsed?.style;
-      debugger;
     } catch (error) {}
   }
   ngAfterViewInit(): void {

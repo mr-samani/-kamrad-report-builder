@@ -17,7 +17,6 @@ import { NGX_PAGE_BUILDER_FILE_PICKER } from './services/file-picker/token.filep
 import { Router } from '@angular/router';
 
 export function providePageBuilder(config: PageBuilderConfiguration) {
-  debugger;
   LibConsts.enableHistory = config.enableHistory === true;
   LibConsts.enableAddCssFile = config.enableAddCssFile === true;
   if (config.toolbarConfig) {

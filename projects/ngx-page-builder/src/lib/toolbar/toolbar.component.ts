@@ -41,7 +41,9 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
     });
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+    console.log('LibConsts', LibConsts);
+  }
 
   get canUndo(): boolean {
     return this.history.canUndo();

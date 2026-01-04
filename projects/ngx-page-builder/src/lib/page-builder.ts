@@ -81,7 +81,6 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
     private cls: ClassManagerService,
   ) {
     super(injector);
-    debugger
     this.pageBuilder.mode = 'Edit';
     this.pageBuilder.storageService = this.storageService;
     this.pageBuilder.changed$.subscribe((data: PageItemChange) => {
