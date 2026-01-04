@@ -9,20 +9,30 @@ import {
   FileSelectionException,
   FileSelector,
 } from '../../helper/FileSelector';
+import { IPagebuilderOutput } from '../../contracts/IPageBuilderOutput';
+import { ClassManagerService } from '../class-manager.service';
 
 @Injectable()
 export class JsonFileStorageService implements IStorageService {
-  constructor(private pageBuilder: PageBuilderService) {}
+  constructor(
+    private pageBuilder: PageBuilderService,
+    private cls: ClassManagerService,
+  ) {}
 
-  async loadData(): Promise<PageBuilderDto> {
-    return new Promise<PageBuilderDto>(async (resolve, reject) => {
+  async loadData(): Promise<IPagebuilderOutput> {
+    return new Promise<IPagebuilderOutput>(async (resolve, reject) => {
       try {
         const file = await FileSelector.selectFile({
           accept: ['application/json', '.json'],
         });
         const text = await file.text();
-        const parsed = JSON.parse(text);
-        resolve(new PageBuilderDto(parsed));
+        const parsed: PageBuilderDto = new PageBuilderDto(JSON.parse(text));
+        const css = await this.cls.exportAllCSS();
+        resolve({
+          config: parsed.config,
+          data: parsed.pages,
+          style: css,
+        });
       } catch (error) {
         if (error instanceof FileSelectionException) {
           switch (error.code) {
@@ -43,12 +53,12 @@ export class JsonFileStorageService implements IStorageService {
     });
   }
 
-  async saveData(): Promise<PageBuilderDto> {
+  async saveData(): Promise<boolean> {
     try {
-      const sanitized = await preparePageDataForSave(this.pageBuilder.pageInfo);
+      const sanitized = await preparePageDataForSave(this.pageBuilder);
       const json = JSON.stringify(sanitized, null, 2);
       downloadFile(json, 'page-data.json', 'application/json');
-      return new PageBuilderDto(sanitized);
+      return true;
     } catch (error) {
       console.error('Error saving JSON file:', error);
       throw error;

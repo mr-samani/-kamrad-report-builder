@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import {
+  IPagebuilderOutput,
   IStorageService,
-  PageBuilderDto,
+  PageBuilderConfig,
   PageBuilderService,
   preparePageDataForSave,
 } from '@ngx-page-builder';
@@ -11,24 +12,28 @@ import { encode, decode } from 'msgpack-lite';
 export class MessagePackStorageService implements IStorageService {
   constructor(private pageBuilder: PageBuilderService) {}
 
-  async loadData(): Promise<PageBuilderDto> {
+  async loadData(): Promise<IPagebuilderOutput> {
     try {
       const file = await this.selectFile(['.msgpack']);
       const buffer = await file.arrayBuffer();
       const parsed = decode(new Uint8Array(buffer));
-      return new PageBuilderDto(parsed);
+      return parsed;
     } catch (error) {
       console.error('Error loading MessagePack file:', error);
-      return new PageBuilderDto();
+      return {
+        config: new PageBuilderConfig(),
+        data: [],
+        style: '',
+      };
     }
   }
 
-  async saveData(): Promise<PageBuilderDto> {
+  async saveData(): Promise<boolean> {
     try {
-      const sanitized = await preparePageDataForSave(this.pageBuilder.pageInfo);
+      const sanitized = await preparePageDataForSave(this.pageBuilder);
       const encoded = encode(sanitized);
       this.downloadFile(encoded, 'page-data.msgpack', 'application/octet-stream');
-      return new PageBuilderDto(sanitized);
+      return true;
     } catch (error) {
       console.error('Error saving MessagePack file:', error);
       throw error;

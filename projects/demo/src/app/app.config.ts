@@ -20,7 +20,7 @@ export const appConfig: ApplicationConfig = {
       storageType: StorageType.LocalStorage,
     }),
     // {
-    //   provide: STORAGE_SERVICE,
+    //   provide: NGX_PAGE_BUILDER_STORAGE_SERVICE,
     //   useClass: MessagePackStorageService,
     // },
     provideHighcharts({

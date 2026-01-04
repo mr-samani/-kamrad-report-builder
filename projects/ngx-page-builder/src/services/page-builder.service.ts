@@ -24,6 +24,7 @@ import { BlockHelper } from '../helper/BlockHelper';
 import { cloneDeep } from '../utiles/clone-deep';
 import { HistoryService } from './history.service';
 import { IStorageService } from './storage/IStorageService';
+import { ClassManagerService } from './class-manager.service';
 
 export interface PageItemChange {
   item: PageItem | null;
@@ -81,6 +82,7 @@ export class PageBuilderService implements OnDestroy {
     rendererFactory: RendererFactory2,
     private dynamicElementService: DynamicElementService,
     private history: HistoryService,
+    public cls: ClassManagerService,
   ) {
     this.renderer = rendererFactory.createRenderer(null, null);
   }

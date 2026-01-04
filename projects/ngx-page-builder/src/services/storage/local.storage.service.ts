@@ -2,22 +2,36 @@ import { Injectable } from '@angular/core';
 import { PageBuilderService } from '../page-builder.service';
 import { LOCAL_STORAGE_SAVE_KEY } from '../../consts/defauls';
 import { IStorageService } from './IStorageService';
-import { PageBuilderDto } from '../../models/PageBuilderDto';
+import { PageBuilderConfig, PageBuilderDto } from '../../models/PageBuilderDto';
 import { preparePageDataForSave } from './prepare-page-builder-data';
+import { ClassManagerService } from '../class-manager.service';
+import { IPagebuilderOutput } from '../../contracts/IPageBuilderOutput';
 
 @Injectable()
 export class LocalStorageService implements IStorageService {
-  constructor(private pageBuilder: PageBuilderService) {}
+  constructor(
+    private pageBuilder: PageBuilderService,
+    private cls: ClassManagerService,
+  ) {}
   loadData() {
-    return new Promise<PageBuilderDto>((resolve, reject) => {
+    return new Promise<IPagebuilderOutput>(async (resolve, reject) => {
       try {
         const pageDto = localStorage.getItem(LOCAL_STORAGE_SAVE_KEY) || '';
         if (pageDto == '') {
-          resolve(new PageBuilderDto());
+          resolve({
+            config: new PageBuilderConfig(),
+            data: [],
+            style: '',
+          });
           return;
         }
-        const parsed = JSON.parse(pageDto);
-        resolve(new PageBuilderDto(parsed));
+        const parsed: PageBuilderDto = new PageBuilderDto(JSON.parse(pageDto));
+        const css = await this.cls.exportAllCSS();
+        resolve({
+          config: parsed.config,
+          data: parsed.pages,
+          style: css,
+        });
       } catch (error) {
         console.error('Error loading page data:', error);
         reject(error);
@@ -26,10 +40,10 @@ export class LocalStorageService implements IStorageService {
   }
 
   saveData() {
-    return new Promise<PageBuilderDto>(async (resolve, reject) => {
-      const sanitized = await preparePageDataForSave(this.pageBuilder.pageInfo);
+    return new Promise<boolean>(async (resolve, reject) => {
+      const sanitized = await preparePageDataForSave(this.pageBuilder);
       localStorage.setItem(LOCAL_STORAGE_SAVE_KEY, JSON.stringify(sanitized));
-      resolve(new PageBuilderDto(sanitized));
+      resolve(true);
     });
   }
 }

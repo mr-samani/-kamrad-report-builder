@@ -1,6 +1,6 @@
-import { IPageBuilderDto } from '../../contracts/IPageBuilderDto';
+import { IPagebuilderOutput } from '../../contracts/IPageBuilderOutput';
 
 export interface IStorageService {
-  loadData(): Promise<IPageBuilderDto>;
-  saveData(): Promise<IPageBuilderDto>;
+  loadData(): Promise<IPagebuilderOutput>;
+  saveData(): Promise<boolean>;
 }

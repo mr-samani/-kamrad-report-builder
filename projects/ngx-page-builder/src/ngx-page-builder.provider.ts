@@ -1,5 +1,5 @@
 import { inject, makeEnvironmentProviders, provideEnvironmentInitializer } from '@angular/core';
-import { STORAGE_SERVICE } from './services/storage/token.storage';
+import { NGX_PAGE_BUILDER_STORAGE_SERVICE } from './services/storage/token.storage';
 import { LocalStorageService } from './services/storage/local.storage.service';
 import { HttpStorageService } from './services/storage/http.storage.service';
 import { JsonFileStorageService } from './services/storage/jsonfile.storage.service';
@@ -24,6 +24,8 @@ export function providePageBuilder(config: PageBuilderConfiguration) {
   }
   let storage: any;
   switch (config.storageType) {
+    case StorageType.Custom:
+      break;
     case StorageType.LocalStorage:
       storage = LocalStorageService;
       break;
@@ -63,7 +65,7 @@ export function providePageBuilder(config: PageBuilderConfiguration) {
 
   return makeEnvironmentProviders([
     {
-      provide: STORAGE_SERVICE,
+      provide: NGX_PAGE_BUILDER_STORAGE_SERVICE,
       useClass: storage,
     },
     {

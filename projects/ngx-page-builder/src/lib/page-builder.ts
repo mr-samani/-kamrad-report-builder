@@ -14,7 +14,7 @@ import { BlockSelectorComponent } from '../components/block-selector/block-selec
 import { ToolbarComponent } from './toolbar/toolbar.component';
 import { PageBuilderBaseComponent } from './page-builder-base-component';
 import { IStorageService } from '../services/storage/IStorageService';
-import { STORAGE_SERVICE } from '../services/storage/token.storage';
+import { NGX_PAGE_BUILDER_STORAGE_SERVICE } from '../services/storage/token.storage';
 import { DynamicDataStructure } from '../models/DynamicData';
 import { Subscription } from 'rxjs';
 import { SideConfigComponent } from '../components/side-config/side-config.component';
@@ -77,7 +77,7 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
 
   constructor(
     injector: Injector,
-    @Inject(STORAGE_SERVICE) private storageService: IStorageService,
+    @Inject(NGX_PAGE_BUILDER_STORAGE_SERVICE) private storageService: IStorageService,
     private cls: ClassManagerService,
   ) {
     super(injector);
@@ -347,8 +347,7 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
   public getData(): Promise<IPagebuilderOutput> {
     return new Promise(async (resolve, reject) => {
       try {
-        const data = await preparePageDataForSave(this.pageBuilder.pageInfo);
-        const style = await this.cls.exportAllCSS();
+        const data = await preparePageDataForSave(this.pageBuilder);
         // const body = document.createElement('body');
         // for (let p of this.pageBuilder.pageInfo.pages) {
         //   p.headerItems.forEach((m) => {
@@ -361,14 +360,7 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
         //     if (m.el) body.append(m.el);
         //   });
         // }
-        await this.pageBuilder.pageInfo.pages;
-        const script = '';
-        resolve({
-          data: data.pages,
-          html: '',
-          script,
-          style,
-        });
+        resolve(data);
       } catch (error) {
         reject(error);
       }

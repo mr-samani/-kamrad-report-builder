@@ -24,7 +24,7 @@ export class InnerContentComponent extends PageBuilderBaseComponent implements O
   private _pageFooter = viewChild<ElementRef<HTMLElement>>('PageFooter');
   constructor(
     injector: Injector,
-    private el: ElementRef,
+    private el: ElementRef<HTMLElement>,
   ) {
     super(injector);
 
@@ -32,6 +32,7 @@ export class InnerContentComponent extends PageBuilderBaseComponent implements O
     this.pageBuilder.pageHeader = this._pageHeader;
     this.pageBuilder.pageFooter = this._pageFooter;
     this.pageBuilder.innerShadowRootDom = el.nativeElement.shadowRoot;
+    this.pageBuilder.cls.innerShadowRootDom = el.nativeElement.shadowRoot;
   }
 
   ngOnInit() {

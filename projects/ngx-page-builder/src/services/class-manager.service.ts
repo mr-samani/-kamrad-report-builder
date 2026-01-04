@@ -38,8 +38,9 @@ export class ClassManagerService {
   private isInitialized = false;
 
   doc = inject(DOCUMENT);
+  innerShadowRootDom?: ShadowRoot | null;
 
-  constructor(private pageBuilder: PageBuilderService) {
+  constructor() {
     // Initialize با فایل پیش‌فرض
     this.initializeDefaultFile();
   }
@@ -74,20 +75,20 @@ export class ClassManagerService {
   public initialize(): void {
     if (this.isInitialized) return;
 
-    if (!this.pageBuilder.innerShadowRootDom) {
+    if (!this.innerShadowRootDom) {
       console.warn('PageBuilder shadow root not ready');
       return;
     }
 
     // ساخت یا پیدا کردن style element
-    let existingStyle = this.pageBuilder.innerShadowRootDom.querySelector(
+    let existingStyle = this.innerShadowRootDom.querySelector(
       'style#NgxPageBuilderClassUI',
     ) as HTMLStyleElement;
 
     if (!existingStyle) {
       existingStyle = this.doc.createElement('style');
       existingStyle.id = 'NgxPageBuilderClassUI';
-      this.pageBuilder.innerShadowRootDom.appendChild(existingStyle);
+      this.innerShadowRootDom.appendChild(existingStyle);
     }
 
     this.styleElement = existingStyle;

@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 import { IStorageService } from './IStorageService';
-import { PageBuilderDto } from '../../models/PageBuilderDto';
+import { IPagebuilderOutput } from '../../contracts/IPageBuilderOutput';
 
 @Injectable()
 export class HttpStorageService implements IStorageService {
-  loadData(): Promise<PageBuilderDto> {
+  loadData(): Promise<IPagebuilderOutput> {
     throw new Error('Method not implemented.');
   }
-  saveData(): Promise<PageBuilderDto> {
+  saveData(): Promise<boolean> {
     throw new Error('Method not implemented.');
   }
 }

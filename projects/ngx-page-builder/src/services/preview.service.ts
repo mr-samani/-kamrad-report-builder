@@ -51,7 +51,7 @@ export class PreviewService {
     // const url = `${baseUrl}${currentPath}/ngx-page-preview?preview-builder=true&timestamp=${Date.now()}`;
 
     const url = this.router.serializeUrl(
-      this.router.createUrlTree(['/ngx-page-preview'], {
+      this.router.createUrlTree(['ngx-page-preview'], {
         queryParams: {
           'preview-builder': true,
           timestamp: Date.now(),
@@ -67,7 +67,7 @@ export class PreviewService {
     const messageHandler = async (event: MessageEvent) => {
       if (event.data?.type === 'NGX_PAGE_PREVIEW_READY') {
         console.log('Preview window is ready');
-        const sanitized = await preparePageDataForSave(this.pageBuilder.pageInfo);
+        const sanitized = await preparePageDataForSave(this.pageBuilder);
         this.previewWindow?.postMessage(
           {
             type: PREVIEW_CONSTS.MESSAGE_TYPES.GET_DATA,

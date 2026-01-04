@@ -1,15 +1,27 @@
-import { IPageBuilderDto } from '../../contracts/IPageBuilderDto';
-import { PageBuilderDto } from '../../models/PageBuilderDto';
+import { IPagebuilderOutput } from '../../contracts/IPageBuilderOutput';
+import { PageBuilderConfig, PageBuilderDto } from '../../models/PageBuilderDto';
 import { PageItem } from '../../models/PageItem';
 import { ISourceOptions } from '../../models/SourceItem';
+import { IPageBuilderDto, PageBuilderService } from '../../public-api';
 import { cloneDeep } from '../../utiles/clone-deep';
+import { ClassManagerService } from '../class-manager.service';
 import { sanitizeForStorage } from './sanitizeForStorage';
 
-export function preparePageDataForSave(pageInfo: PageBuilderDto): Promise<IPageBuilderDto> {
-  return new Promise((resolve, reject) => {
+export function preparePageDataForSave(
+  pageBuilder: PageBuilderService,
+): Promise<IPagebuilderOutput> {
+  const pageInfo: PageBuilderDto = pageBuilder.pageInfo;
+  const cls: ClassManagerService = pageBuilder.cls;
+  return new Promise(async (resolve, reject) => {
     try {
       if (!pageInfo) {
-        resolve(new PageBuilderDto());
+        resolve({
+          config: new PageBuilderConfig(),
+          data: [],
+          style: '',
+          html: '',
+          script: '',
+        });
         return;
       }
       const clonedData: PageBuilderDto = cloneDeep(pageInfo);
@@ -54,8 +66,13 @@ export function preparePageDataForSave(pageInfo: PageBuilderDto): Promise<IPageB
 
       clonedData.pages.map((m, index) => (m.order = index));
 
-      const sanitized = sanitizeForStorage(clonedData);
-      return resolve(sanitized);
+      const sanitized: IPageBuilderDto = sanitizeForStorage(clonedData);
+      const css = await cls.exportAllCSS();
+      return resolve({
+        config: sanitized.config,
+        data: sanitized.pages,
+        style: css,
+      });
     } catch (error) {
       reject(error);
     }
