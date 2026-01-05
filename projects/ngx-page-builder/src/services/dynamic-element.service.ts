@@ -22,6 +22,7 @@ import { DynamicDataStructure } from '../models/DynamicData';
 import { Subject } from 'rxjs';
 import { ComponentDataContext } from '../models/ComponentDataContext';
 import { COMPONENT_DATA } from '../models/tokens';
+import { IPageItem } from '../contracts/IPageItem';
 
 @Injectable({ providedIn: 'root' })
 export class DynamicElementService {
@@ -340,7 +341,7 @@ export class DynamicElementService {
   /**
    * ⚠️ Destroy element
    */
-  public destroy(item: PageItem) {
+  public destroy(item: IPageItem) {
     if (!item.el) return;
 
     if (item.children && item.children.length > 0) {

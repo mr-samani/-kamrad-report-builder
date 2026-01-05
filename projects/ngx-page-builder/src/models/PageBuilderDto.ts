@@ -13,7 +13,7 @@ export class PageBuilderDto implements IPageBuilderDto {
       }
     }
   }
-  static fromJSON(data: any): PageBuilderDto {
+  static fromJSON(data: IPageBuilderDto): PageBuilderDto {
     const p = new PageBuilderDto(data);
     if (!data) {
       return p;

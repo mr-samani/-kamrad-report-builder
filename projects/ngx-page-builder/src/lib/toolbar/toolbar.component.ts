@@ -12,6 +12,8 @@ import { Notify } from '../../extensions/notify';
 import { HistoryService } from '../../services/history.service';
 import { LibConsts } from '../../consts/defauls';
 import { CssFileDialogComponent } from '../css-file-dialog/css-file-dialog.component';
+import { NgxPagePreviewService } from '../../services/ngx-page-preview.service';
+import { PageBuilderDto, preparePageDataForSave } from '../../public-api';
 
 @Component({
   selector: 'toolbar',
@@ -33,6 +35,7 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
     private exporter: ExportHtmlService,
 
     public history: HistoryService,
+    private previewService: NgxPagePreviewService,
   ) {
     super(injector);
     effect(() => {
@@ -125,11 +128,13 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
     this.pageBuilder.deSelectBlock();
   }
 
-  print() {
-    this.previewService.openPreview(true);
+  async print() {
+    const data = await preparePageDataForSave(this.pageBuilder);
+    this.previewService.openPreview(data, true);
   }
-  preview() {
-    this.previewService.openPreview();
+  async preview() {
+    const data = await preparePageDataForSave(this.pageBuilder);
+    this.previewService.openPreview(data, false);
   }
 
   previewPage() {

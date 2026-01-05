@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { DynamicDataStructure } from '../models/DynamicData';
 import { Page } from '../models/Page';
 import { PageItem } from '../models/PageItem';
+import { IPage } from '../contracts/IPage';
 
 @Injectable({
   providedIn: 'root',
@@ -56,7 +57,7 @@ export class DynamicDataService {
     }
   }
 
-  public replaceValues(pages: Page[]) {
+  public replaceValues(pages: IPage[]) {
     setTimeout(() => {
       // console.log('Replacing values...', pages, this._valueDictionary);
       let replace = (item?: HTMLElement) => {

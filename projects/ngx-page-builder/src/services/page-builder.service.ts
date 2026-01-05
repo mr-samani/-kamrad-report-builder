@@ -453,7 +453,7 @@ export class PageBuilderService implements OnDestroy {
         .loadData()
         .then(async (data) => {
           await this.removeAllPages();
-          this.pageInfo = PageBuilderDto.fromJSON(data);
+          this.pageInfo = PageBuilderDto.fromJSON({ config: data.config, pages: data.data });
           console.log(this.pageInfo.pages.length);
           if (this.pageInfo.pages.length == 0) {
             this.addPage();

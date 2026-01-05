@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { IPageBuilderDto, NgxPagePreviewComponent } from '@ngx-page-builder';
+import { IPagebuilderOutput, NgxPagePreviewComponent } from '@ngx-page-builder';
 import { DynamicData } from '../dynamic-data/dynamic-data';
 import { FormsModule } from '@angular/forms';
 
@@ -12,9 +12,10 @@ import { FormsModule } from '@angular/forms';
 export class PreviewComponent implements OnInit {
   dynamicData = DynamicData;
 
-  data: IPageBuilderDto;
+  data: IPagebuilderOutput;
   constructor() {
     this.data = JSON.parse(localStorage.getItem('page') || '{}');
+    console.log('preview data', this.data);
   }
 
   ngOnInit() {}
