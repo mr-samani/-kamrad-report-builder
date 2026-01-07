@@ -1,5 +1,9 @@
 import { randomNumber } from '../utiles/randomNumber';
 import { SourceItem } from '../models/SourceItem';
+import { CollectionItemSource } from './collection-item/definition';
+import { HeroTableSource } from './hero-table/definition';
+import { PageBreakSource } from './page-break/definition';
+import { ColumnSource } from './column/definition';
 
 export const SOURCE_ITEMS: SourceItem[] = [
   {
@@ -90,58 +94,8 @@ export const SOURCE_ITEMS: SourceItem[] = [
     icon: 'assets/icons/rectangle-fill.svg',
     content: 'Button',
   },
-  new SourceItem({
-    tag: 'column',
-    icon: 'assets/icons/column.svg',
-    title: 'Column',
-    options: {
-      inputs: {},
-    },
-    customComponent: {
-      componentKey: 'NgxPg',
-      component: () => import('./column/column.component').then((c) => c.ColumnComponent),
-    },
-  }),
-  new SourceItem({
-    tag: 'page-break',
-    icon: 'assets/icons/page-break.svg',
-    title: 'Page Break',
-    disableMovement: true,
-    customComponent: {
-      componentKey: 'NgxPgPageBreak',
-      component: () =>
-        import('./page-break/page-break.component').then((c) => c.PageBreakComponent),
-    },
-  }),
-  new SourceItem({
-    tag: 'collection',
-    icon: 'assets/icons/collection.svg',
-    title: 'Collection Item',
-    css: './collection-item/public-style.css',
-    customComponent: {
-      componentKey: 'NgxPgCollectionItem',
-      component: () =>
-        import('./collection-item/collection-item.component').then(
-          (c) => c.CollectionItemComponent,
-        ),
-      componentSettings: () =>
-        import('./collection-item/collection-settings/collection-settings.component').then(
-          (c) => c.DataSourceSettingsComponent,
-        ),
-    },
-  }),
-  new SourceItem({
-    tag: 'hero-table',
-    icon: 'assets/icons/table.svg',
-    title: 'Hero Table',
-    customComponent: {
-      componentKey: 'NgxPgHeroTable',
-      component: () =>
-        import('./hero-table/hero-table.component').then((c) => c.HeroTableComponent),
-      componentSettings: () =>
-        import('./hero-table/table-settings/table-settings.component').then(
-          (c) => c.HeroTableSettingsComponent,
-        ),
-    },
-  }),
+  ColumnSource,
+  PageBreakSource,
+  CollectionItemSource,
+  HeroTableSource,
 ];

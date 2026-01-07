@@ -1,6 +1,5 @@
 import { Type } from '@angular/core';
 import { CustomComponent } from './CustomComponent';
-
 export class Directive {
   directive!: Type<any>;
   inputs?: Record<string, any> | undefined;
