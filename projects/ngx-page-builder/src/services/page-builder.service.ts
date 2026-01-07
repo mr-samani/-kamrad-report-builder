@@ -328,6 +328,11 @@ export class PageBuilderService implements OnDestroy {
       item.options.events ??= {};
       item.options.events['click'] = (ev: PointerEvent) => this.onSelectBlock(item, ev);
     }
+
+    if (item.css) {
+      this.cls.addBlockCss(item);
+    }
+
     let el = await this.dynamicElementService.createBlockElement(container, index, item);
     if (item.children && item.children.length > 0 && el) {
       for (const child of item.children) {

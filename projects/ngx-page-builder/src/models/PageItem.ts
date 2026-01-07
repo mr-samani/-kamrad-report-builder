@@ -43,6 +43,7 @@ export class PageItem implements IPageItem {
   template?: PageItem;
 
   classList: string[] = [];
+  css?: string;
 
   constructor(data?: IPageItem, parent?: PageItem) {
     if (data) {

@@ -5,7 +5,6 @@ import { PageItem } from '../../models/PageItem';
 import { Page } from '../../models/Page';
 import { SvgIconDirective } from '../../directives/svg-icon.directive';
 import { debounceTime, distinctUntilChanged, filter, Subscription } from 'rxjs';
-import { PageItemChange } from '../../services/page-builder.service';
 
 @Component({
   selector: 'block-layouts',
@@ -42,7 +41,7 @@ export class BlockLayoutsComponent extends BaseComponent implements OnInit, OnDe
       )
       .subscribe((data) => {
         const page = this.pageBuilder.currentPage;
-        this.reloadLayout(page);
+        this.reloadLayout(page, true);
       });
   }
 
@@ -52,11 +51,13 @@ export class BlockLayoutsComponent extends BaseComponent implements OnInit, OnDe
     this.pagebuiderChangeSubscription.unsubscribe();
   }
 
-  reloadLayout(page?: Page) {
+  reloadLayout(page?: Page, update = false) {
     this.currentPageBodyItems = page ? [...page.bodyItems] : [];
     this.currentPageHeaderItems = page ? [...page.headerItems] : [];
     this.currentPageFooterItems = page ? [...page.footerItems] : [];
-    this.chdRef.detectChanges();
+    if (update) {
+      this.chdRef.detectChanges();
+    }
     // console.log('Layout reloaded:', {
     //   header: this.currentPageHeaderItems,
     //   body: this.currentPageBodyItems,

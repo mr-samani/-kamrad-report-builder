@@ -81,6 +81,7 @@ export class SourceItem {
   customComponent?: CustomComponent;
 
   css?: string;
+  classList?: string[];
   constructor(data?: SourceItem) {
     if (data) {
       for (var property in data) {

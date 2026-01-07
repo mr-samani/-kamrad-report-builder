@@ -2,6 +2,7 @@ import { DOCUMENT, inject, Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { parseCssToRecord } from '../utiles/css-parser';
 import { PageBuilderService } from './page-builder.service';
+import { PageItem } from '../models/PageItem';
 
 interface ICssFile {
   id: string; // UUID یا unique ID
@@ -126,6 +127,141 @@ export class ClassManagerService {
     }
 
     return finalName;
+  }
+
+  /**
+   * افزودن css به فایل اصلی
+   * @param item block
+   */
+  public async addBlockCss(item: PageItem): Promise<void> {
+    if (!item || !item.css) return;
+
+    try {
+      // Parse کردن CSS string
+      const parsedCss = await parseCssToRecord(item.css);
+
+      // اگه چیزی parse نشد، return
+      if (Object.keys(parsedCss).length === 0) return;
+
+      // فایل پیش‌فرض (اولین فایل)
+      const defaultFileId = this.cssFileData[0]?.id;
+      if (!defaultFileId) {
+        console.error('No CSS file available');
+        return;
+      }
+
+      // برای هر selector و cssText
+      for (const [selector, cssText] of Object.entries(parsedCss)) {
+        const normalizedSelector = this.normalizeSelector(selector);
+
+        // چک کنیم آیا این selector وجود داره
+        const existingCssText = this.getClassStyles(normalizedSelector);
+
+        if (existingCssText) {
+          // selector وجود داره، چک کنیم محتواش یکیه یا نه
+          const normalizedExisting = this.normalizeCssText(existingCssText);
+          const normalizedNew = this.normalizeCssText(cssText);
+
+          if (normalizedExisting === normalizedNew) {
+            // دقیقاً همین محتوا وجود داره، کاری نکن
+            continue;
+          } else {
+            // محتوا فرق داره، یه اسم جدید بساز
+            const newSelector = this.generateUniqueSelector(normalizedSelector);
+
+            // کلاس جدید رو اضافه کن
+            this.updateClass(newSelector, cssText, defaultFileId);
+
+            // classList رو آپدیت کن (فقط اگه class selector باشه)
+            this.updateItemClassList(item, normalizedSelector, newSelector);
+          }
+        } else {
+          // selector وجود نداره، اضافه کن
+          this.updateClass(normalizedSelector, cssText, defaultFileId);
+        }
+      }
+    } catch (error) {
+      console.error('Error adding block CSS:', error);
+    }
+  }
+
+  /**
+   * Normalize کردن CSS text برای مقایسه
+   * حذف فضاهای اضافی و semicolon های آخر
+   */
+  private normalizeCssText(cssText: string): string {
+    return cssText
+      .replace(/\s+/g, ' ') // فضاهای متوالی رو به یه فضا تبدیل کن
+      .replace(/;\s*$/, '') // semicolon آخر رو حذف کن
+      .replace(/\s*:\s*/g, ':') // فضا دور : رو حذف کن
+      .replace(/\s*;\s*/g, ';') // فضا دور ; رو حذف کن
+      .toLowerCase() // همه رو lowercase کن
+      .trim();
+  }
+
+  /**
+   * Generate کردن selector منحصر به فرد
+   * مثلاً اگه .btn وجود داشت، .btn-1 رو بر می‌گردونه
+   */
+  private generateUniqueSelector(baseSelector: string): string {
+    // اگه با . یا # شروع نمیشه، return همون
+    if (!baseSelector.startsWith('.') && !baseSelector.startsWith('#')) {
+      return baseSelector;
+    }
+
+    const prefix = baseSelector.charAt(0); // . یا #
+    const baseName = baseSelector.substring(1);
+
+    // اگه قبلاً شماره داشت، جداش کن
+    const match = baseName.match(/^(.*?)(-(\d+))?$/);
+    const cleanName = match?.[1] ?? baseName;
+
+    let counter = 1;
+    let newSelector = baseSelector;
+
+    // تا وقتی که selector تکراری باشه، شماره رو زیاد کن
+    while (this.hasClass(newSelector)) {
+      newSelector = `${prefix}${cleanName}-${counter}`;
+      counter++;
+    }
+
+    return newSelector;
+  }
+
+  /**
+   * آپدیت کردن classList آیتم
+   * اگه کلاس قدیمی داخل classList بود، با کلاس جدید جایگزین میشه
+   */
+  private updateItemClassList(item: PageItem, oldSelector: string, newSelector: string): void {
+    if (!item.classList || !Array.isArray(item.classList)) return;
+
+    // حذف prefix (. یا #) از selectors
+    const oldClassName =
+      oldSelector.startsWith('.') || oldSelector.startsWith('#')
+        ? oldSelector.substring(1)
+        : oldSelector;
+
+    const newClassName =
+      newSelector.startsWith('.') || newSelector.startsWith('#')
+        ? newSelector.substring(1)
+        : newSelector;
+
+    // پیدا کردن index کلاس قدیمی
+    const index = item.classList.indexOf(oldClassName);
+
+    if (index !== -1) {
+      // جایگزینی کلاس قدیمی با جدید
+      item.classList[index] = newClassName;
+    }
+    if (item.children) {
+      for (let child of item.children) {
+        this.updateItemClassList(child, oldSelector, newSelector);
+      }
+    }
+    //todo: template in custom source maybe added by self and here maybe is null
+    if (item.template) {
+      this.updateItemClassList(item.template, oldSelector, newSelector);
+    }
   }
 
   /**

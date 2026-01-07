@@ -348,18 +348,6 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
     return new Promise(async (resolve, reject) => {
       try {
         const data = await preparePageDataForSave(this.pageBuilder);
-        // const body = document.createElement('body');
-        // for (let p of this.pageBuilder.pageInfo.pages) {
-        //   p.headerItems.forEach((m) => {
-        //     if (m.el) body.append(m.el);
-        //   });
-        //   p.bodyItems.forEach((m) => {
-        //     if (m.el) body.append(m.el);
-        //   });
-        //   p.footerItems.forEach((m) => {
-        //     if (m.el) body.append(m.el);
-        //   });
-        // }
         resolve(data);
       } catch (error) {
         reject(error);
