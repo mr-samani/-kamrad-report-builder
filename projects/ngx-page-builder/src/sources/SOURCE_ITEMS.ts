@@ -117,6 +117,7 @@ export const SOURCE_ITEMS: SourceItem[] = [
     tag: 'collection',
     icon: 'assets/icons/collection.svg',
     title: 'Collection Item',
+    css: './collection-item/public-style.css',
     customComponent: {
       componentKey: 'NgxPgCollectionItem',
       component: () =>

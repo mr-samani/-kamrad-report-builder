@@ -341,46 +341,49 @@ export class DynamicElementService {
   /**
    * ⚠️ Destroy element
    */
-  public destroy(item: IPageItem) {
-    if (!item.el) return;
+  public destroy(item: IPageItem): Promise<boolean> {
+    return new Promise<boolean>(async (resolve, reject) => {
+      if (!item.el) return;
 
-    if (item.children && item.children.length > 0) {
-      for (let child of item.children) {
-        this.destroy(child);
-      }
-    }
-
-    // Manual cleanup قبل از حذف
-    // component
-    const compRef = (item.el as any).__componentRef__;
-    if (compRef) {
-      this.appRef.detachView(compRef.hostView);
-      compRef.destroy();
-      delete (item.el as any).__componentRef__;
-    }
-    // directive
-    const directiveInstances = (item.el as any).__ngDirectives__;
-    if (Array.isArray(directiveInstances)) {
-      for (const d of directiveInstances) {
-        if (d && typeof d.ngOnDestroy === 'function') {
-          d.ngOnDestroy?.();
+      if (item.children && item.children.length > 0) {
+        for (let child of item.children) {
+          await this.destroy(child);
         }
       }
-      delete (item.el as any).__ngDirectives__;
-      if (item.options && item.options.directives && item.options.directives.length > 0) {
-        item.options.directives = [];
-      }
-    }
 
-    // حذف از DOM
-    if (item.el.parentNode) {
-      this.renderer.removeChild(item.el.parentNode, item.el);
-    }
+      // Manual cleanup قبل از حذف
+      // component
+      const compRef = (item.el as any).__componentRef__;
+      if (compRef) {
+        this.appRef.detachView(compRef.hostView);
+        compRef.destroy();
+        delete (item.el as any).__componentRef__;
+      }
+      // directive
+      const directiveInstances = (item.el as any).__ngDirectives__;
+      if (Array.isArray(directiveInstances)) {
+        for (const d of directiveInstances) {
+          if (d && typeof d.ngOnDestroy === 'function') {
+            d.ngOnDestroy?.();
+          }
+        }
+        delete (item.el as any).__ngDirectives__;
+        if (item.options && item.options.directives && item.options.directives.length > 0) {
+          item.options.directives = [];
+        }
+      }
+
+      // حذف از DOM
+      if (item.el.parentNode) {
+        this.renderer.removeChild(item.el.parentNode, item.el);
+      }
+      resolve(true);
+    });
   }
 
-  destroyBatch(items: PageItem[]) {
+  async destroyBatch(items: PageItem[]) {
     for (let item of items) {
-      this.destroy(item);
+      await this.destroy(item);
     }
   }
 

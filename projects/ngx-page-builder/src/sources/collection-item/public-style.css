@@ -1,0 +1,8 @@
+.card-collection {
+  position: relative;
+  flex: auto;
+  box-shadow: 0 0px 4px rgba(0, 0, 0, 0.3);
+  padding: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+}

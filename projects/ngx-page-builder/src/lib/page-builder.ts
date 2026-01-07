@@ -132,10 +132,10 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
       key: 'Delete',
       contexts: [FocusContext.CANVAS], // 👈 فقط وقتی focus روی canvas است
       description: 'Delete selected block',
-      action: () => {
+      action: async () => {
         const currentBlock = this.pageBuilder.activeEl();
         if (currentBlock) {
-          this.pageBuilder.removeBlock(currentBlock);
+          await this.pageBuilder.removeBlock(currentBlock);
         }
       },
     });
@@ -145,10 +145,10 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
       key: 'Backspace',
       contexts: [FocusContext.CANVAS],
       description: 'Delete selected block',
-      action: () => {
+      action: async () => {
         const currentBlock = this.pageBuilder.activeEl();
         if (currentBlock) {
-          this.pageBuilder.removeBlock(currentBlock);
+          await this.pageBuilder.removeBlock(currentBlock);
         }
       },
     });

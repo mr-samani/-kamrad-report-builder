@@ -102,6 +102,7 @@ export abstract class BlockHelper {
       }
       return undefined;
     };
-    return treeSearch(list);
+    let finded = treeSearch(list);
+    return finded;
   }
 }

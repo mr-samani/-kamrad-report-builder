@@ -80,6 +80,8 @@ export class SourceItem {
   disableMovement?: boolean = false;
 
   customComponent?: CustomComponent;
+
+  css?: string;
   constructor(data?: SourceItem) {
     if (data) {
       for (var property in data) {

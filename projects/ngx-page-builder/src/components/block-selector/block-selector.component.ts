@@ -116,9 +116,9 @@ export class BlockSelectorComponent extends BaseComponent implements OnDestroy {
     this.chdRef.detectChanges();
   }
 
-  deleteBlock() {
+  async deleteBlock() {
     if (this.item && !this.item.disableDelete) {
-      this.pageBuilder.removeBlock(this.item);
+      await this.pageBuilder.removeBlock(this.item);
     }
   }
 

@@ -41,20 +41,7 @@ export class CollectionItemComponent implements OnInit, OnDestroy, AfterViewInit
     disableMovement: true,
     lockMoveInnerChild: true,
     disableDelete: true,
-    // TODO create class for style
-    // style: `
-    //     position: relative;
-    //     flex: auto;
-    //     box-shadow: 0 0px 4px rgba(0, 0, 0, 0.3);
-    //     padding: 10px;
-    //     border-radius: 5px;
-    //     overflow: hidden;
-    // `,
-    options: {
-      attributes: {
-        class: 'template-container',
-      },
-    },
+    classList: ['card-collection'],
     children: [],
   };
 

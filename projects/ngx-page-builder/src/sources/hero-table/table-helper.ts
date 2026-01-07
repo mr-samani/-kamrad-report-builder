@@ -53,7 +53,7 @@ export abstract class TableHelper {
 
     if (rowIndex < 0 || rowIndex >= theadOrTbody.children.length) return;
     const row = theadOrTbody.children[rowIndex];
-    dynamicElementService.destroy(row);
+    await dynamicElementService.destroy(row);
     theadOrTbody.children.splice(rowIndex, 1);
     pageBuilder.deSelectBlock();
   }
@@ -241,14 +241,14 @@ export abstract class TableHelper {
     }
 
     // حذف در هر ردیف: حذف از بزرگ به کوچک تا اندیس‌ها تغییر نکند
-    toRemoveByParent.forEach((indices, parentRow) => {
+    toRemoveByParent.forEach(async (indices, parentRow) => {
       indices.sort((a, b) => b - a);
       for (const idx of indices) {
         // destroy element if exists
         const cell = parentRow.children[idx] as PageItem | undefined;
         if (cell) {
           try {
-            dynamicElementService.destroy(cell);
+            await dynamicElementService.destroy(cell);
           } catch (err) {
             // ignore
           }

@@ -118,26 +118,26 @@ export class NgxPagePreviewService {
     return URL.createObjectURL(blob);
   }
 
-  private cleanCanvas() {
+  private async cleanCanvas() {
     if (!this.data || !this.pageContainer) return;
     const pages = this.data.data;
     for (let page of pages) {
       if (!page) continue;
       for (let item of page.bodyItems) {
         if (item.el) {
-          this.dynamicElementService.destroy(item);
+          await this.dynamicElementService.destroy(item);
           this.renderer.removeChild(this.renderer.parentNode(item.el), item.el);
         }
       }
       for (let item of page.headerItems) {
         if (item.el) {
-          this.dynamicElementService.destroy(item);
+          await this.dynamicElementService.destroy(item);
           this.renderer.removeChild(this.renderer.parentNode(item.el), item.el);
         }
       }
       for (let item of page.footerItems) {
         if (item.el) {
-          this.dynamicElementService.destroy(item);
+          await this.dynamicElementService.destroy(item);
           this.renderer.removeChild(this.renderer.parentNode(item.el), item.el);
         }
       }

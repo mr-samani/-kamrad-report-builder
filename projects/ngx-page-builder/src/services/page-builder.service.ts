@@ -16,6 +16,7 @@ import { ClassManagerService } from './class-manager.service';
 
 export interface PageItemChange {
   item: PageItem | null;
+  parent?: PageItem[];
   type:
     | 'ChangePageConfig'
     | 'AddBlock'
@@ -113,7 +114,7 @@ export class PageBuilderService implements OnDestroy {
       await this.createBlockElement(source, containerEl, event.currentIndex);
       event.container.data.splice(event.currentIndex, 0, source);
       this.onSelectBlock(source);
-      this.updateChangeDetection({ item: source, type: 'AddBlock' });
+      this.updateChangeDetection({ item: source, parent: event.container.data, type: 'AddBlock' });
 
       this.history.save('add', source, `Add block'${source.id}' to '${parent?.id}'`);
     } else {
@@ -123,19 +124,14 @@ export class PageBuilderService implements OnDestroy {
         return;
       }
 
-      let container = BlockHelper.findItemByHtml(
-        containerEl,
-        this.pageInfo.pages[this.currentPageIndex()],
-      );
-      this.removeBlock(dragItem);
+      await this.removeBlock(dragItem);
+      dragItem.parent = parent;
       await this.createBlockElement(dragItem, containerEl, event.currentIndex);
-      if (container) {
-        dragItem.parent = container;
-        container.children.splice(event.currentIndex, 0, dragItem);
-      }
+      event.container.data.splice(event.currentIndex, 0, dragItem);
 
       this.updateChangeDetection({
         item: event.container.data[event.currentIndex],
+        parent: event.container.data,
         type: 'MoveBlock',
       });
 
@@ -311,7 +307,9 @@ export class PageBuilderService implements OnDestroy {
       if (item.options.directives.length > 0) {
         console.log('Directives already present', item.tag, item.options.directives);
       }
-      let directives = await getDefaultBlockDirective(item, this.onDrop.bind(this));
+      let directives = await getDefaultBlockDirective(item, (ev: IDropEvent<PageItem[]>) => {
+        this.onDrop(ev, item);
+      });
 
       for (let d of directives) {
         if (item.options.directives.findIndex((x) => x.directive == d.directive) === -1) {
@@ -377,12 +375,12 @@ export class PageBuilderService implements OnDestroy {
    */
   findRootParentItem(item: PageItem) {
     const page = this.pageInfo.pages[this.currentPageIndex()];
-    for (let p of page.headerItems) if (p == item) return page.headerItems;
-    for (let p of page.bodyItems) if (p == item) return page.bodyItems;
-    for (let p of page.footerItems) if (p == item) return page.footerItems;
+    for (let p of page.headerItems) if (p.id == item.id) return page.headerItems;
+    for (let p of page.bodyItems) if (p.id == item.id) return page.bodyItems;
+    for (let p of page.footerItems) if (p.id == item.id) return page.footerItems;
     return undefined;
   }
-  removeBlock(item: PageItem) {
+  async removeBlock(item: PageItem) {
     if (!item || item.disableDelete) return;
 
     let parentChildren = item.parent?.children;
@@ -396,10 +394,10 @@ export class PageBuilderService implements OnDestroy {
     const index = parentChildren.findIndex((i) => i.id === item.id);
     if (index !== -1 && item.el) {
       parentChildren.splice(index, 1);
-      this.dynamicElementService.destroy(item);
+      await this.dynamicElementService.destroy(item);
     }
     this.activeEl.set(undefined);
-    this.updateChangeDetection({ item: item, type: 'RemoveBlock' });
+    this.updateChangeDetection({ item: item, parent: parentChildren, type: 'RemoveBlock' });
 
     this.history.save('delete', item, `Delete block '${item.id}' from '${item.parent?.id}'`);
   }

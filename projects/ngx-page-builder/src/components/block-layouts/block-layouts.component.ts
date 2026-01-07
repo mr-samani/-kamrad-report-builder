@@ -1,9 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, Injector, OnInit } from '@angular/core';
+import { Component, effect, Injector, OnDestroy, OnInit } from '@angular/core';
 import { BaseComponent } from '../BaseComponent';
 import { PageItem } from '../../models/PageItem';
 import { Page } from '../../models/Page';
 import { SvgIconDirective } from '../../directives/svg-icon.directive';
+import { debounceTime, distinctUntilChanged, filter, Subscription } from 'rxjs';
+import { PageItemChange } from '../../services/page-builder.service';
 
 @Component({
   selector: 'block-layouts',
@@ -12,10 +14,11 @@ import { SvgIconDirective } from '../../directives/svg-icon.directive';
   standalone: true,
   imports: [CommonModule, SvgIconDirective],
 })
-export class BlockLayoutsComponent extends BaseComponent implements OnInit {
+export class BlockLayoutsComponent extends BaseComponent implements OnInit, OnDestroy {
   currentPageHeaderItems: PageItem[] = [];
   currentPageFooterItems: PageItem[] = [];
   currentPageBodyItems: PageItem[] = [];
+  pagebuiderChangeSubscription: Subscription;
   constructor(injector: Injector) {
     super(injector);
     effect(() => {
@@ -25,18 +28,40 @@ export class BlockLayoutsComponent extends BaseComponent implements OnInit {
     this.pageBuilder.onPageChange$.subscribe((page) => {
       this.reloadLayout(page);
     });
+
+    this.pagebuiderChangeSubscription = this.pageBuilder.changed$
+      .pipe(
+        debounceTime(300),
+        filter(
+          (data) =>
+            data.type == 'AddBlock' || data.type == 'RemoveBlock' || data.type == 'MoveBlock',
+        ),
+        distinctUntilChanged((prv, cur) => {
+          return prv.item?.id == cur.item?.id && prv.type == cur.type;
+        }),
+      )
+      .subscribe((data) => {
+        const page = this.pageBuilder.currentPage;
+        this.reloadLayout(page);
+      });
   }
 
   ngOnInit() {}
+
+  ngOnDestroy(): void {
+    this.pagebuiderChangeSubscription.unsubscribe();
+  }
+
   reloadLayout(page?: Page) {
     this.currentPageBodyItems = page ? [...page.bodyItems] : [];
     this.currentPageHeaderItems = page ? [...page.headerItems] : [];
     this.currentPageFooterItems = page ? [...page.footerItems] : [];
-    console.log('Layout reloaded:', {
-      header: this.currentPageHeaderItems,
-      body: this.currentPageBodyItems,
-      footer: this.currentPageFooterItems,
-    });
+    this.chdRef.detectChanges();
+    // console.log('Layout reloaded:', {
+    //   header: this.currentPageHeaderItems,
+    //   body: this.currentPageBodyItems,
+    //   footer: this.currentPageFooterItems,
+    // });
   }
 
   onSelectBlock(ev: PointerEvent, item: PageItem) {
