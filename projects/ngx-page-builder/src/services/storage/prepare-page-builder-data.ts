@@ -33,10 +33,12 @@ export function preparePageDataForSave(
             delete item.customComponent.componentSettings;
             delete item.customComponent.providers;
             delete item.customComponent.compInjector;
-            delete item.customComponent;
+            // dont delete customComponent
+            // delete item.customComponent;
           }
 
-          delete item.dataSource;
+          // dont delete dataSource
+          // delete item.dataSource;
           delete item.disableDelete;
           delete item.disableMovement;
           delete item.isTemplateContainer;

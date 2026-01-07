@@ -15,12 +15,22 @@ import { Notify } from '../extensions/notify';
 import { PageItem } from '../models/PageItem';
 import { IPagebuilderOutput } from '../contracts/IPageBuilderOutput';
 import { IPageItem } from '../contracts/IPageItem';
+import { Page } from '../models/Page';
 
 @Injectable({ providedIn: 'root' })
 export class NgxPagePreviewService {
   containerClassName = '';
   pageContainer?: HTMLElement;
-  data?: IPagebuilderOutput;
+  _data?: IPagebuilderOutput;
+  set data(val: IPagebuilderOutput) {
+    if (val && val.data) {
+      val.data = val.data.map((m) => Page.fromJSON(m));
+    }
+    this._data = val;
+  }
+  get data(): IPagebuilderOutput | undefined {
+    return this._data;
+  }
   private previewWindow?: Window | null;
   private renderer!: Renderer2;
   constructor(
