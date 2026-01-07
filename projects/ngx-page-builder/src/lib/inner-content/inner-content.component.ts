@@ -12,7 +12,10 @@ import { NgxDragDropKitModule } from 'ngx-drag-drop-kit';
 @Component({
   selector: 'inner-content',
   templateUrl: './inner-content.component.html',
-  styleUrls: ['./inner-content.component.scss'],
+  styleUrls: [
+    './inner-content.component.scss',
+    '../../../../../node_modules/ngx-drag-drop-kit//assets/styles.css',
+  ],
   encapsulation: ViewEncapsulation.ShadowDom,
   imports: [NgxDragDropKitModule],
 })

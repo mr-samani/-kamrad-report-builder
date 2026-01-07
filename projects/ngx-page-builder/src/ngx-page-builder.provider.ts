@@ -1,4 +1,4 @@
-import { inject, makeEnvironmentProviders, provideEnvironmentInitializer } from '@angular/core';
+import { makeEnvironmentProviders } from '@angular/core';
 import { NGX_PAGE_BUILDER_STORAGE_SERVICE } from './services/storage/token.storage';
 import { LocalStorageService } from './services/storage/local.storage.service';
 import { HttpStorageService } from './services/storage/http.storage.service';
@@ -14,7 +14,6 @@ import {
 import { PAGE_BUILDER_CONFIGURATION } from './models/tokens';
 import { NGX_PAGE_BUILDER_HTML_EDITOR } from './services/html-editor/token.html-editor';
 import { NGX_PAGE_BUILDER_FILE_PICKER } from './services/file-picker/token.filepicker';
-import { Router } from '@angular/router';
 
 export function providePageBuilder(config: PageBuilderConfiguration) {
   LibConsts.enableHistory = config.enableHistory === true;
@@ -24,8 +23,6 @@ export function providePageBuilder(config: PageBuilderConfiguration) {
   }
   let storage: any;
   switch (config.storageType) {
-    case StorageType.Custom:
-      break;
     case StorageType.LocalStorage:
       storage = LocalStorageService;
       break;
@@ -35,6 +32,7 @@ export function providePageBuilder(config: PageBuilderConfiguration) {
     case StorageType.JSONFile:
       storage = JsonFileStorageService;
       break;
+    case StorageType.Custom:
     case undefined:
       storage = LocalStorageService;
       break;
@@ -80,38 +78,5 @@ export function providePageBuilder(config: PageBuilderConfiguration) {
       provide: NGX_PAGE_BUILDER_FILE_PICKER,
       useValue: '',
     },
-    // {
-    //   provide: ROUTES,
-    //   multi: true,
-    //   useValue: [
-    //     {
-    //       path: 'ngx-page-preview',
-    //       loadComponent: () =>
-    //         import('./lib/page-preview/page-preview.component').then(
-    //           (m) => m.NgxPagePreviewComponent,
-    //         ),
-    //     },
-    //   ],
-    // },
-    // 🧩 اضافه کردن route به router در زمان bootstrap
-    provideDynamicRoute(),
   ]);
 }
-
-export const provideDynamicRoute = () =>
-  provideEnvironmentInitializer(() => {
-    const router = inject(Router);
-    const existing = router.config.some((r) => r.path === 'ngx-page-preview');
-    if (!existing) {
-      router.resetConfig([
-        ...router.config,
-        {
-          path: 'ngx-page-preview',
-          loadComponent: () =>
-            import('./lib/page-preview/page-preview.component').then(
-              (m) => m.NgxPagePreviewComponent,
-            ),
-        },
-      ]);
-    }
-  });

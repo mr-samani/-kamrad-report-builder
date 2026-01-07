@@ -1,27 +1,15 @@
-import {
-  ElementRef,
-  inject,
-  Injectable,
-  OnDestroy,
-  Renderer2,
-  Signal,
-  WritableSignal,
-  signal,
-  RendererFactory2,
-  Inject,
-} from '@angular/core';
+import { ElementRef, Injectable, OnDestroy, Signal, signal } from '@angular/core';
 import { PageItem } from '../models/PageItem';
 import { DynamicElementService } from './dynamic-element.service';
 import { Page } from '../models/Page';
 import { PageBuilderDto } from '../models/PageBuilderDto';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { getDefaultBlockClasses, getDefaultBlockDirective, LibConsts } from '../consts/defauls';
-import { IDropEvent, moveItemInArray, transferArrayItem } from 'ngx-drag-drop-kit';
+import { IDropEvent } from 'ngx-drag-drop-kit';
 import { SourceItem } from '../models/SourceItem';
 import { Notify } from '../extensions/notify';
 import { BlockSelectorComponent } from '../components/block-selector/block-selector.component';
 import { BlockHelper } from '../helper/BlockHelper';
-import { cloneDeep } from '../utiles/clone-deep';
 import { HistoryService } from './history.service';
 import { IStorageService } from './storage/IStorageService';
 import { ClassManagerService } from './class-manager.service';
@@ -71,21 +59,16 @@ export class PageBuilderService implements OnDestroy {
     undefined,
   );
 
-  private renderer!: Renderer2;
-
   blockSelector?: BlockSelectorComponent;
 
   storageService!: IStorageService;
 
   copyStorage?: PageItem;
   constructor(
-    rendererFactory: RendererFactory2,
     private dynamicElementService: DynamicElementService,
     private history: HistoryService,
     public cls: ClassManagerService,
-  ) {
-    this.renderer = rendererFactory.createRenderer(null, null);
-  }
+  ) {}
 
   ngOnDestroy(): void {
     this._changed$.complete();
@@ -144,9 +127,9 @@ export class PageBuilderService implements OnDestroy {
         containerEl,
         this.pageInfo.pages[this.currentPageIndex()],
       );
+      this.removeBlock(dragItem);
+      await this.createBlockElement(dragItem, containerEl, event.currentIndex);
       if (container) {
-        this.removeBlock(dragItem);
-        await this.createBlockElement(dragItem, containerEl, event.currentIndex);
         dragItem.parent = container;
         container.children.splice(event.currentIndex, 0, dragItem);
       }
@@ -159,7 +142,7 @@ export class PageBuilderService implements OnDestroy {
       this.history.save(
         'edit',
         dragItem,
-        `Move block '${dragItem.id}' from: '${dragItem.parent?.id}' to: '${event.container.data[event.currentIndex].parent?.id}'`,
+        `Move block '${dragItem.id}' from: '${dragItem.parent?.id}' to: '${event.container.data[event.currentIndex]?.parent?.id}'`,
       );
     }
     // this.chdRef.detectChanges();
