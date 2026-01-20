@@ -81,6 +81,7 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
     @Inject(DOCUMENT) private doc: Document,
   ) {
     this.handlePageBuilderChange();
+
     this.editMode = this.pageBuilder.mode == 'Edit';
   }
 

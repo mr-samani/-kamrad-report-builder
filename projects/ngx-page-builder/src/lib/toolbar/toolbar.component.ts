@@ -130,11 +130,11 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
 
   async print() {
     const data = await preparePageDataForSave(this.pageBuilder);
-    this.previewService.openPreview(data, true);
+    await this.previewService.openPreview(data, true);
   }
   async preview() {
     const data = await preparePageDataForSave(this.pageBuilder);
-    this.previewService.openPreview(data, false);
+    await this.previewService.openPreview(data, false);
   }
 
   previewPage() {

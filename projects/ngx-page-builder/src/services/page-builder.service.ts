@@ -30,6 +30,7 @@ export interface PageItemChange {
   providedIn: 'root',
 })
 export class PageBuilderService implements OnDestroy {
+  // TODO: در حالت پیش نمایش من باید متوجه بشم که مد تغییر کرده چون مثلا در جدول داینامیک چون از همین سرویس استفاده میکنه مشکل ایجاد میشه
   mode: 'Edit' | 'Preview' = 'Preview';
   isSaving: boolean = false;
   sources: SourceItem[] = LibConsts.SourceItemList;
