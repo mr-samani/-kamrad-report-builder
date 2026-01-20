@@ -25,8 +25,8 @@ export function preparePageDataForSave(
         return;
       }
 
-      // TODo: clone data has error when window ....
-      const clonedData: PageBuilderDto = { ...pageInfo }; // cloneDeep(pageInfo);
+      //dont use cloneDeep(pageInfo) has error on clone object complex;
+      const clonedData: PageBuilderDto = PageBuilderDto.fromJSON(pageInfo);
 
       let tree = (list: PageItem[]) => {
         for (let item of list) {

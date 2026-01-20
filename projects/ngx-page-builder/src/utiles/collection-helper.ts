@@ -72,10 +72,10 @@ export function cloneTemplate(
     }
     return item;
   };
-  console.time('cleanTree');
+  //  console.time('cleanTree');
   //const t = cleanTree(cloneDeep(this.pageItem.template!));
   const t = cleanTree(template!);
-  console.timeEnd('cleanTree');
+  // console.timeEnd('cleanTree');
   // cleanTree([cloneDeep(this.pageItem.template!)]);
   return PageItem.fromJSON(t);
 }
