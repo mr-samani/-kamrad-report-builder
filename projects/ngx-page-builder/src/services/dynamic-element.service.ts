@@ -121,7 +121,6 @@ export class DynamicElementService {
       elementInjector: componentInjector,
       environmentInjector: this.envInjector,
     });
-
     this.appRef.attachView(compRef.hostView);
 
     let element = compRef.location.nativeElement as HTMLElement;

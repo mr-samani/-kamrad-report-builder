@@ -48,30 +48,81 @@ export class NgxPagePreviewService {
    */
   async openPreview(data: IPagebuilderOutput, print = false) {
     this.data = data;
-    this.pageContainer = this.doc.createElement('div');
     this.cleanCanvas();
+    this.pageContainer = this.doc.createElement('div');
+    this.pageContainer.id = 'prvMRS';
+    // مخفی کردن کانتینر موقت تا کاربر متوجه نشود
+    this.pageContainer.style.left = '-9999px';
+    this.pageContainer.style.position = 'absolute';
+    this.pageContainer.style.top = '-9999px';
+    this.doc.body.appendChild(this.pageContainer);
+
     await this.loadPageData();
-    // ساخت URL برای preview route
-    const previewUrl = this.createBlobUrl();
-    // باز کردن window جدید با URL
+
+    // باز کردن window جدید
     this.previewWindow = window.open(
-      previewUrl,
+      '', // URL را خالی می‌گذاریم چون خودمان محتوا را جابجا می‌کنیم
       '_blank',
       print ? '' : 'width=900,height=700,resizable=yes,scrollbars=yes',
     );
+
     if (!this.previewWindow) {
       Notify.error('Popup blocked! Please allow popups for this site.');
+      this.cleanCanvas(); // تمیز کردن در صورت بروز خطا
       return;
     }
 
+    // انتقال استایل‌ها و المنت‌ها به پنجره جدید
+    this.transferContentToNewWindow(this.previewWindow);
+
+    // حذف کانتینر خالی از پنجره اصلی (چون المنت‌ها به پنجره جدید منتقل شدند)
+    // if (this.pageContainer && this.pageContainer.parentNode) {
+    //   this.pageContainer.parentNode.removeChild(this.pageContainer);
+    // }
+
     if (print) {
-      // TODO check page loaded end
+      // صبر کوتاه برای لود شدن فونت‌ها و رندر شدن در پنجره جدید
       setTimeout(() => {
         this.previewWindow?.print();
         this.previewWindow?.close();
         this.previewWindow = null;
-        this.cleanCanvas();
       }, 1000);
+    }
+  }
+
+  private transferContentToNewWindow(targetWindow: Window) {
+    if (!this.data || !this.pageContainer) return;
+
+    const targetDoc = targetWindow.document;
+
+    // ۱. کپی کردن استایل‌های صفحه
+    const style = targetDoc.createElement('style');
+    style.innerHTML = `
+      body { margin: 0; padding: 0; overflow: auto; }
+      @page {
+        margin: 0px 0px 20px 0px;
+        size: ${this.data.config.size} ${this.data.config.orientation.toLowerCase()};
+        orientation: ${this.data.config.orientation}; 
+      }
+      ${this.data.style}
+    `;
+    targetDoc.head.appendChild(style);
+
+    // ۲. انتقال فیزیکی DOM Node به پنجره جدید
+    // این کار باعث می‌شود Event Listenerهای Angular همچنان کار کنند
+    // چون المنت‌ها از بین نمی‌روند، فقط والدشان عوض می‌شود.
+    targetDoc.body.appendChild(this.pageContainer);
+
+    // حذف استایل مخفی‌سازی که برای ساخت المنت گذاشته بودیم
+    this.pageContainer.style.position = '';
+    this.pageContainer.style.top = '';
+    this.pageContainer.style.left = '';
+
+    // اعمال کلاس‌های مربوط به کاغذ و جهت‌گیری
+    if (LibConsts.viewMode == 'PrintPage') {
+      this.pageContainer.className = `paper ${this.data.config.size} ${this.data.config.orientation}`;
+    } else {
+      this.pageContainer.className = `web-page-view`;
     }
   }
 
