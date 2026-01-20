@@ -24,7 +24,9 @@ export function preparePageDataForSave(
         });
         return;
       }
-      const clonedData: PageBuilderDto = cloneDeep(pageInfo);
+
+      // TODo: clone data has error when window ....
+      const clonedData: PageBuilderDto = { ...pageInfo }; // cloneDeep(pageInfo);
 
       let tree = (list: PageItem[]) => {
         for (let item of list) {
