@@ -35,13 +35,14 @@ import { TableSetting } from './table-setting';
 import { TableHelper } from './table-helper';
 import { _td, _template, _th } from './template';
 import { SelectedCellInfo, RangeSelectionInfo, TableSection } from './model';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'hero-table',
   templateUrl: './hero-table.component.html',
   styleUrls: ['./hero-table.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgxDragDropKitModule, SvgIconDirective],
+  imports: [CommonModule, NgxDragDropKitModule, SvgIconDirective],
   encapsulation: ViewEncapsulation.None,
 })
 export class HeroTableComponent implements OnInit, AfterViewInit {
@@ -157,8 +158,7 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
     } else {
       this.pageItem.template.isTemplateContainer = true;
     }
-
-    this.clearContainer();
+    await this.clearContainer();
     // dynamic rows
     if (this.settings.useDynamicData && this.pageItem.dataSource && this.pageItem.dataSource.id) {
       const skip = this.pageItem.dataSource?.skipCount || 0;
@@ -196,8 +196,8 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
     );
     this.chdRef.detectChanges();
   }
-  private clearContainer() {
-    this.dynamicElementService.destroyBatch(this.pageItem.children);
+  private async clearContainer() {
+    await this.dynamicElementService.destroyBatch(this.pageItem.children);
   }
 
   /**

@@ -1,6 +1,7 @@
 <div class="hero-table-wrapper" #wrapper>
   <div class="table-container" #tableContainer></div>
-  @if (!editMode) {
+  editMode= {{ editMode | json }}
+  @if (editMode) {
     <div class="table-toolbar" #toolbar [class.hide]="!firstSelectedCell">
       @if (showMergeButton) {
         <button class="btn-icon" (click)="mergeCells($event)" title="Merge cells">

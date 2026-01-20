@@ -7,11 +7,7 @@ export const _th: IPageItem = {
   disableMovement: true,
   lockMoveInnerChild: true,
   canHaveChild: true,
-  options: {
-    attributes: {
-      class: 'pbt-cell',
-    },
-  },
+  classList: ['pbt-cell'],
 };
 
 export const _td: IPageItem = {
@@ -20,11 +16,7 @@ export const _td: IPageItem = {
   disableMovement: true,
   lockMoveInnerChild: true,
   canHaveChild: true,
-  options: {
-    attributes: {
-      class: 'pbt-cell',
-    },
-  },
+  classList: ['pbt-cell'],
 };
 
 export const _headRow: IPageItem = {
@@ -52,11 +44,7 @@ export const _template: IPageItem = {
   disableMovement: true,
   lockMoveInnerChild: true,
   disableDelete: true,
-  options: {
-    attributes: {
-      class: 'ngx-hero-table',
-    },
-  },
+  classList: ['ngx-hero-table'],
   children: [
     {
       tag: 'thead',

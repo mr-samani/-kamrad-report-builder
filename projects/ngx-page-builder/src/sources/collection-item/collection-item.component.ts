@@ -133,6 +133,7 @@ export class CollectionItemComponent implements OnInit, OnDestroy, AfterViewInit
       await this.pageBuilder.createBlockElement(cloned, this.collectionContainer.nativeElement);
       this.pageItem.children.push(cloned);
     }
+    console.log('data-collection', this.pageItem.id, this.pageItem);
     this.chdRef.detectChanges();
   }
 
