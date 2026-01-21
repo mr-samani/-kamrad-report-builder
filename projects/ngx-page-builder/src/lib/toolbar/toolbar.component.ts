@@ -12,7 +12,7 @@ import { Notify } from '../../extensions/notify';
 import { HistoryService } from '../../services/history.service';
 import { LibConsts } from '../../consts/defauls';
 import { CssFileDialogComponent } from '../css-file-dialog/css-file-dialog.component';
-import { NgxPagePreviewService } from '../../services/ngx-page-preview.service';
+import { PagePreviewService } from '../../services/preview.service';
 import { PageBuilderDto, preparePageDataForSave } from '../../public-api';
 
 @Component({
@@ -35,7 +35,7 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
     private exporter: ExportHtmlService,
 
     public history: HistoryService,
-    private previewService: NgxPagePreviewService,
+    private previewService: PagePreviewService,
   ) {
     super(injector);
     effect(() => {
@@ -130,11 +130,11 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
 
   async print() {
     const data = await preparePageDataForSave(this.pageBuilder);
-    await this.previewService.openPreview(data, true);
+    await this.previewService.openPreview(data, 'Print');
   }
   async preview() {
     const data = await preparePageDataForSave(this.pageBuilder);
-    await this.previewService.openPreview(data, false);
+    await this.previewService.openPreview(data, 'Preview');
   }
 
   previewPage() {
@@ -176,7 +176,8 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
       });
   }
   async exportHtml() {
-    this.exporter.exportHtml();
+    const data = await preparePageDataForSave(this.pageBuilder);
+    this.exporter.exportHtml(data);
   }
   importHtml() {
     const pageIndex = this.pageBuilder.currentPageIndex();

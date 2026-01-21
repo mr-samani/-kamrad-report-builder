@@ -13,7 +13,7 @@ import { DynamicDataService } from '../../services/dynamic-data.service';
 import { LibConsts } from '../../consts/defauls';
 import { validateViewMode, ViewMode } from '../../consts/ViewMode';
 import { IPageBuilderDto } from '../../contracts/IPageBuilderDto';
-import { NgxPagePreviewService } from '../../services/ngx-page-preview.service';
+import { PagePreviewService } from '../../services/preview.service';
 import { IPagebuilderOutput } from '../../public-api';
 
 @Component({
@@ -61,7 +61,7 @@ export class NgxPagePreviewComponent implements OnInit {
 
   private paper = viewChild<ElementRef<HTMLElement>>('paper');
   constructor(
-    public previewService: NgxPagePreviewService,
+    public previewService: PagePreviewService,
     private dynamicDataService: DynamicDataService,
     private renderer: Renderer2,
     private chdRef: ChangeDetectorRef,

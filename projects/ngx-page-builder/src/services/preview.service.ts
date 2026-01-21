@@ -1,14 +1,6 @@
-import {
-  Renderer2,
-  Inject,
-  DOCUMENT,
-  ChangeDetectorRef,
-  Injectable,
-  RendererFactory2,
-} from '@angular/core';
+import { Renderer2, Inject, DOCUMENT, Injectable, RendererFactory2 } from '@angular/core';
 import { DynamicDataService } from './dynamic-data.service';
 import { DynamicElementService } from './dynamic-element.service';
-import { PageBuilderDto } from '../models/PageBuilderDto';
 import { LibConsts } from '../consts/defauls';
 import { waitForFontsToLoad, waitForRenderComplete } from '../utiles/rendering';
 import { Notify } from '../extensions/notify';
@@ -18,7 +10,7 @@ import { IPageItem } from '../contracts/IPageItem';
 import { Page } from '../models/Page';
 
 @Injectable({ providedIn: 'root' })
-export class NgxPagePreviewService {
+export class PagePreviewService {
   containerClassName = '';
   pageContainer?: HTMLElement;
   _data?: IPagebuilderOutput;
@@ -46,48 +38,60 @@ export class NgxPagePreviewService {
   /**
    * open preview window from page builder
    */
-  async openPreview(data: IPagebuilderOutput, print = false) {
-    this.data = data;
-    this.cleanCanvas();
-    this.pageContainer = this.doc.createElement('div');
-    this.pageContainer.id = 'prvMRS';
-    // مخفی کردن کانتینر موقت تا کاربر متوجه نشود
-    this.pageContainer.style.left = '-9999px';
-    this.pageContainer.style.position = 'absolute';
-    this.pageContainer.style.top = '-9999px';
-    this.doc.body.appendChild(this.pageContainer);
+  async openPreview(
+    data: IPagebuilderOutput,
+    type: 'Print' | 'Preview' | 'ExportHml' = 'Preview',
+  ): Promise<string> {
+    return new Promise<string>(async (resolve, reject) => {
+      this.data = data;
+      this.cleanCanvas();
+      this.pageContainer = this.doc.createElement('div');
+      this.pageContainer.id = 'prvMRS';
+      // مخفی کردن کانتینر موقت تا کاربر متوجه نشود
+      this.pageContainer.style.left = '-9999px';
+      this.pageContainer.style.position = 'absolute';
+      this.pageContainer.style.top = '-9999px';
+      this.doc.body.appendChild(this.pageContainer);
 
-    await this.loadPageData();
+      await this.loadPageData();
 
-    // باز کردن window جدید
-    this.previewWindow = window.open(
-      '', // URL را خالی می‌گذاریم چون خودمان محتوا را جابجا می‌کنیم
-      '_blank',
-      print ? '' : 'width=900,height=700,resizable=yes,scrollbars=yes',
-    );
+      // باز کردن window جدید
+      this.previewWindow = window.open(
+        '', // URL را خالی می‌گذاریم چون خودمان محتوا را جابجا می‌کنیم
+        '_blank',
+        type == 'Print' ? '' : 'width=900,height=700,resizable=yes,scrollbars=yes',
+      );
 
-    if (!this.previewWindow) {
-      Notify.error('Popup blocked! Please allow popups for this site.');
-      this.cleanCanvas(); // تمیز کردن در صورت بروز خطا
-      return;
-    }
+      if (!this.previewWindow) {
+        Notify.error('Popup blocked! Please allow popups for this site.');
+        this.cleanCanvas(); // تمیز کردن در صورت بروز خطا
+        reject('Popup blocked');
+        return;
+      }
 
-    // انتقال استایل‌ها و المنت‌ها به پنجره جدید
-    this.transferContentToNewWindow(this.previewWindow);
+      // انتقال استایل‌ها و المنت‌ها به پنجره جدید
+      this.transferContentToNewWindow(this.previewWindow);
 
-    // حذف کانتینر خالی از پنجره اصلی (چون المنت‌ها به پنجره جدید منتقل شدند)
-    // if (this.pageContainer && this.pageContainer.parentNode) {
-    //   this.pageContainer.parentNode.removeChild(this.pageContainer);
-    // }
+      // حذف کانتینر خالی از پنجره اصلی (چون المنت‌ها به پنجره جدید منتقل شدند)
+      // if (this.pageContainer && this.pageContainer.parentNode) {
+      //   this.pageContainer.parentNode.removeChild(this.pageContainer);
+      // }
 
-    if (print) {
-      // صبر کوتاه برای لود شدن فونت‌ها و رندر شدن در پنجره جدید
       setTimeout(() => {
-        this.previewWindow?.print();
-        this.previewWindow?.close();
-        this.previewWindow = null;
+        let html = '';
+        debugger;
+        // صبر کوتاه برای لود شدن فونت‌ها و رندر شدن در پنجره جدید
+        if (type == 'Print') {
+          this.previewWindow?.print();
+          this.previewWindow?.close();
+          this.previewWindow = null;
+        } else if (type == 'ExportHml') {
+          this.previewWindow?.close();
+          html = this.previewWindow?.document.firstElementChild?.outerHTML ?? '';
+        }
+        resolve(html);
       }, 1000);
-    }
+    });
   }
 
   private transferContentToNewWindow(targetWindow: Window) {
