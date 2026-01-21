@@ -79,7 +79,6 @@ export class PagePreviewService {
 
       setTimeout(() => {
         let html = '';
-        debugger;
         // صبر کوتاه برای لود شدن فونت‌ها و رندر شدن در پنجره جدید
         if (type == 'Print') {
           this.previewWindow?.print();
