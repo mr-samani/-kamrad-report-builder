@@ -1,5 +1,8 @@
-/** parseCssToRecord.ts */
-export function parseCssToRecord(cssText: string): Promise<Record<string, string>> {
+/**
+ * parse css stylesheet to record
+ * @param cssText like #name{color:red;}
+ */
+export function parseCssBlockToRecord(cssText: string): Promise<Record<string, string>> {
   return new Promise((resolve, reject) => {
     try {
       // 1) حذف کامنت‌ها (/* ... */)
@@ -144,4 +147,18 @@ export function parseCssToRecord(cssText: string): Promise<Record<string, string
       reject(error);
     }
   });
+}
+
+export function parseCssToRecord(css: string): Record<string, string> {
+  const declarations = css.split(';').filter((decl) => decl.trim() !== '');
+  const result: Record<string, string> = {};
+
+  for (const decl of declarations) {
+    const [key, ...valueParts] = decl.split(':');
+    if (key && valueParts.length > 0) {
+      result[key.trim()] = valueParts.join(':').trim();
+    }
+  }
+
+  return result;
 }

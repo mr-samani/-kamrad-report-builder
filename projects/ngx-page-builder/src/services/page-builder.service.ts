@@ -389,6 +389,8 @@ export class PageBuilderService implements OnDestroy {
     for (let p of page.footerItems) if (p.id == item.id) return page.footerItems;
     return undefined;
   }
+
+  // TODO: clear css class on delete tree
   async removeBlock(item: PageItem) {
     if (!item || item.disableDelete) return;
 

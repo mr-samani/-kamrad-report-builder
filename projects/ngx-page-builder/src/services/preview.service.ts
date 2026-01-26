@@ -107,9 +107,15 @@ export class PagePreviewService {
         size: ${this.data.config.size} ${this.data.config.orientation.toLowerCase()};
         orientation: ${this.data.config.orientation}; 
       }
-      ${this.data.style}
+      
     `;
     targetDoc.head.appendChild(style);
+    for (let s of this.data.styles) {
+      const style = targetDoc.createElement('style');
+      style.innerHTML = `${this.data.styles}`;
+      style.id = s.name;
+      targetDoc.head.appendChild(style);
+    }
 
     // ۲. انتقال فیزیکی DOM Node به پنجره جدید
     // این کار باعث می‌شود Event Listenerهای Angular همچنان کار کنند
@@ -149,38 +155,6 @@ export class PagePreviewService {
   }
 
   //--------------------------------------------------------------------------
-
-  private createBlobUrl(): string {
-    if (!this.pageContainer || !this.data) return '';
-    const { size, orientation } = this.data.config;
-
-    const w = this.doc.createElement('html');
-    const h = this.doc.createElement('head');
-    h.innerHTML = ` <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Preview</title>
-  <style>
-      body {
-        margin: 0;
-        padding: 0;
-        overflow: auto;
-      }
-       @page {
-        margin: 0px 0px 20px 0px;
-        size: ${size}  ${orientation.toLowerCase()};
-        orientation: ${orientation}; 
-      }
-      ${this.data.style}
-      }
-  </style>`;
-    const b = this.doc.createElement('body');
-    b.appendChild(this.pageContainer);
-    w.appendChild(h);
-    w.appendChild(b);
-
-    const blob = new Blob([w.innerHTML], { type: 'text/html' });
-    return URL.createObjectURL(blob);
-  }
 
   private async cleanCanvas() {
     if (!this.data || !this.pageContainer) return;
@@ -313,16 +287,22 @@ export class PagePreviewService {
     if (finded) {
       finded.remove();
     }
+
     const style = this.doc.createElement('style');
     style.id = 'NgxPageBuilderPrint';
     style.innerHTML = `
-      @page {
+       @page {
         margin: 0px 0px 20px 0px;
         size: ${size}  ${orientation.toLowerCase()};
         orientation: ${orientation}; 
       }
-    ${this.data.style}
-  }`;
+    `;
     this.doc.head.appendChild(style);
+    for (let s of this.data.styles) {
+      const style = this.doc.createElement('style');
+      style.innerHTML = `${this.data.styles}`;
+      style.id = s.name;
+      this.doc.head.appendChild(style);
+    }
   }
 }

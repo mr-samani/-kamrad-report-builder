@@ -21,16 +21,16 @@ export class LocalStorageService implements IStorageService {
           resolve({
             config: new PageBuilderConfig(),
             data: [],
-            style: '',
+            styles: [],
           });
           return;
         }
         const parsed: PageBuilderDto = new PageBuilderDto(JSON.parse(pageDto));
-        const css = await this.cls.exportAllCSS();
+        const styles = await this.cls.exportAllFileCSS();
         resolve({
           config: parsed.config,
           data: parsed.pages,
-          style: css,
+          styles,
         });
       } catch (error) {
         console.error('Error loading page data:', error);

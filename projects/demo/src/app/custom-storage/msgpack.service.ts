@@ -23,7 +23,7 @@ export class MessagePackStorageService implements IStorageService {
       return {
         config: new PageBuilderConfig(),
         data: [],
-        style: '',
+        styles: [],
       };
     }
   }

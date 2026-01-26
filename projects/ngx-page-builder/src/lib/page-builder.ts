@@ -29,6 +29,7 @@ import { preparePageDataForSave } from '../services/storage/prepare-page-builder
 import { ClassManagerService } from '../services/class-manager.service';
 import { IPagebuilderOutput } from '../contracts/IPageBuilderOutput';
 import { InnerContentComponent } from './inner-content/inner-content.component';
+import { IStyleSheetFile } from '../contracts/IStyleSheetFile';
 
 @Component({
   selector: 'ngx-page-builder',
@@ -56,8 +57,10 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
     this.loadPageData(pages);
   }
 
-  @Input('styles') set setStyles(val: string) {
-    this.cls.addCssFile('default', val);
+  @Input('styles') set setStyles(val: IStyleSheetFile[]) {
+    if (val && Array.isArray(val)) {
+      for (let f of val) this.cls.addCssFile(f.name ?? 'default', f.data);
+    }
   }
 
   @Input('dynamicData') set setDynamicData(val: DynamicDataStructure[]) {

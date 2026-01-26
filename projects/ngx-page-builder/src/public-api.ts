@@ -32,3 +32,4 @@ export * from './contracts/IPage';
 export * from './contracts/IPageConfig';
 export * from './contracts/IPageItem';
 export * from './contracts/IPageBuilderOutput';
+export * from './contracts/IStyleSheetFile';

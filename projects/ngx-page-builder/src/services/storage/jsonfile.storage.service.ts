@@ -27,11 +27,11 @@ export class JsonFileStorageService implements IStorageService {
         });
         const text = await file.text();
         const parsed: PageBuilderDto = new PageBuilderDto(JSON.parse(text));
-        const css = await this.cls.exportAllCSS();
+        const styles = await this.cls.exportAllFileCSS();
         resolve({
           config: parsed.config,
           data: parsed.pages,
-          style: css,
+          styles,
         });
       } catch (error) {
         if (error instanceof FileSelectionException) {

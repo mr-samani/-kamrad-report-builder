@@ -1,6 +1,7 @@
 import { AfterViewInit, Component, OnInit, viewChild } from '@angular/core';
 import {
   IPage,
+  IStyleSheetFile,
   NGX_PAGE_BUILDER_FILE_PICKER,
   NGX_PAGE_BUILDER_HTML_EDITOR,
   NgxPageBuilder,
@@ -24,44 +25,49 @@ export class BuilderComponent implements OnInit, AfterViewInit {
   pageBuilder = viewChild<NgxPageBuilder>('pageBuilder');
   dynamicData = DynamicData;
 
-  styles = `
- .blur-card {
-  background-size: cover;
-  background-position: center center;
-  background-repeat: repeat-y;
-  box-shadow: rgba(76, 48, 255, 0.2) 0px 0px 20px 0px;
-  color: rgb(0, 0, 237);
-  background-color: rgba(0, 0, 0, 0);
-  margin: 0px;
-  backdrop-filter: blur(14px);
-  display: block;
-  padding: 20px;
-  border-radius: 5px;
-  border: 1px solid rgba(236, 236, 236, 0.37);
-}
+  styles: IStyleSheetFile[] = [
+    {
+      name: 'default',
+      data: `
+          .blur-card {
+            background-size: cover;
+            background-position: center center;
+            background-repeat: repeat-y;
+            box-shadow: rgba(76, 48, 255, 0.2) 0px 0px 20px 0px;
+            color: rgb(0, 0, 237);
+            background-color: rgba(0, 0, 0, 0);
+            margin: 0px;
+            backdrop-filter: blur(14px);
+            display: block;
+            padding: 20px;
+            border-radius: 5px;
+            border: 1px solid rgba(236, 236, 236, 0.37);
+          }
 
-.center {
-  padding: 0px;
-  margin: 0px;
-  display: flex;
-  flex-flow: column;
-  place-content: center;
-  align-items: center;
-}
+          .center {
+            padding: 0px;
+            margin: 0px;
+            display: flex;
+            flex-flow: column;
+            place-content: center;
+            align-items: center;
+          }
 
-.header {
-  background:green;
-  width: 100%;
-  min-width: auto;
-  min-height: 50vh;
-  display: flex;
-  flex-flow: column;
-  place-content: center;
-  align-items: center;
-  gap: 15px;
-}
+          .header {
+            background:green;
+            width: 100%;
+            min-width: auto;
+            min-height: 50vh;
+            display: flex;
+            flex-flow: column;
+            place-content: center;
+            align-items: center;
+            gap: 15px;
+          }
 
-  `;
+  `,
+    },
+  ];
 
   data: IPage[] = [
     {

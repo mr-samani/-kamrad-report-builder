@@ -18,7 +18,7 @@ export function preparePageDataForSave(
         resolve({
           config: new PageBuilderConfig(),
           data: [],
-          style: '',
+          styles: [],
           html: '',
           script: '',
         });
@@ -71,11 +71,11 @@ export function preparePageDataForSave(
       clonedData.pages.map((m, index) => (m.order = index));
 
       const sanitized: IPageBuilderDto = sanitizeForStorage(clonedData);
-      const css = await cls.exportAllCSS();
+      const styles = await cls.exportAllFileCSS();
       return resolve({
         config: sanitized.config,
         data: sanitized.pages,
-        style: css,
+        styles,
       });
     } catch (error) {
       reject(error);

@@ -1,8 +1,9 @@
 import { DOCUMENT, inject, Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { parseCssToRecord } from '../utiles/css-parser';
-import { PageBuilderService } from './page-builder.service';
+import { parseCssBlockToRecord, parseCssToRecord } from '../utiles/css-parser';
 import { PageItem } from '../models/PageItem';
+import { IStyleSheetFile } from '../contracts/IStyleSheetFile';
+import { isEqual } from '../utiles/isEqual';
 
 interface ICssFile {
   id: string; // UUID یا unique ID
@@ -128,13 +129,14 @@ export class ClassManagerService {
   /**
    * افزودن css به فایل اصلی
    * @param item block
+   * @returns class name
    */
   public async addBlockCss(item: PageItem): Promise<void> {
     if (!item || !item.css) return;
 
     try {
       // Parse کردن CSS string
-      const parsedCss = await parseCssToRecord(item.css);
+      const parsedCss = await parseCssBlockToRecord(item.css);
 
       // اگه چیزی parse نشد، return
       if (Object.keys(parsedCss).length === 0) return;
@@ -155,10 +157,7 @@ export class ClassManagerService {
 
         if (existingCssText) {
           // selector وجود داره، چک کنیم محتواش یکیه یا نه
-          const normalizedExisting = this.normalizeCssText(existingCssText);
-          const normalizedNew = this.normalizeCssText(cssText);
-
-          if (normalizedExisting === normalizedNew) {
+          if ((await this.isEqualCss(existingCssText, cssText)) == true) {
             // دقیقاً همین محتوا وجود داره، کاری نکن
             continue;
           } else {
@@ -170,6 +169,16 @@ export class ClassManagerService {
 
             // classList رو آپدیت کن (فقط اگه class selector باشه)
             this.updateItemClassList(item, normalizedSelector, newSelector);
+            //replace all unsed this class with new
+            const replaceAll = (item: PageItem, previousName: string, newName: string) => {
+              let i = item.classList.findIndex((x) => '.' + x == previousName);
+              if (i > -1) {
+                item.classList[i] = newName;
+              }
+              if (item.children) for (let c of item.children) replaceAll(c, previousName, newName);
+              if (item.template) replaceAll(item.template, previousName, newName);
+            };
+            replaceAll(item, selector, newSelector);
           }
         } else {
           // selector وجود نداره، اضافه کن
@@ -179,6 +188,23 @@ export class ClassManagerService {
     } catch (error) {
       console.error('Error adding block CSS:', error);
     }
+  }
+
+  /**
+   * check css text is equal
+   * - note: currently check style name
+   * - TODO: must be check all real style => color:white; == color:#fff;
+   * @param a previous css text
+   * @param b new css text
+   * @returns boolean
+   */
+  private isEqualCss(a: string, b: string): boolean {
+    const normalizedA = Object.keys(parseCssToRecord(a));
+    const normalizedB = Object.keys(parseCssToRecord(b));
+    if (normalizedA.length != normalizedB.length) return false;
+
+    const aIsB = isEqual(normalizedA, normalizedB);
+    return aIsB;
   }
 
   /**
@@ -265,7 +291,7 @@ export class ClassManagerService {
    */
   public async addCssFile(name: string, content: string): Promise<ICssFile> {
     name = this.validateName(name);
-    const data = await parseCssToRecord(content);
+    const data = await parseCssBlockToRecord(content);
 
     const newFile: ICssFile = {
       id: this.generateId(),
@@ -296,7 +322,7 @@ export class ClassManagerService {
       throw new Error(`File with id ${fileId} not found`);
     }
 
-    const data = await parseCssToRecord(content);
+    const data = await parseCssBlockToRecord(content);
     const file = this.cssFileData[fileIndex];
 
     // حذف rules قدیمی این فایل
@@ -694,7 +720,23 @@ export class ClassManagerService {
 
     return rules.join('\n\n');
   }
+  public exportAllFileCSS(): IStyleSheetFile[] {
+    const files: IStyleSheetFile[] = [];
+    for (let file of this.cssFileData) {
+      const rules: string[] = [];
+      Object.entries(file.data).forEach(([selector, cssText]) => {
+        rules.push(`${selector} { ${cssText} }`);
+      });
+      files.push({
+        name: file.name,
+        createdAt: file.createdAt,
+        updatedAt: file.updatedAt,
+        data: rules.join('\n\n'),
+      });
+    }
 
+    return files;
+  }
   /**
    * Export کردن همه CSS
    */
