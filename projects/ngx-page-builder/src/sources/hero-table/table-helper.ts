@@ -31,6 +31,7 @@ export abstract class TableHelper {
     theadOrTbody.children?.splice(after ? safeRowIndex + 1 : safeRowIndex, 0, row);
 
     await pageBuilder.createBlockElement(
+      true,
       row,
       theadOrTbody.el!,
       after ? safeRowIndex + 1 : safeRowIndex,

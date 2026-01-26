@@ -196,7 +196,7 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
       .subscribe(async (r?: PageItem[]) => {
         if (r) {
           this.pageBuilder.pageInfo.pages[pageIndex].bodyItems.push(...r);
-          r.map(async (item) => await this.pageBuilder.createBlockElement(item));
+          r.map(async (item) => await this.pageBuilder.createBlockElement(true, item));
           this.chdRef.detectChanges();
         }
       });

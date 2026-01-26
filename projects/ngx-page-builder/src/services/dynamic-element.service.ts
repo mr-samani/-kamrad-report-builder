@@ -42,7 +42,8 @@ export class DynamicElementService {
    * create html element on droped to page
    * ایجاد المنت از روی سورس ها
    */
-  async createBlockElement(
+  async createBlock(
+    editMode: boolean,
     container: HTMLElement | ViewContainerRef,
     index: number,
     item: PageItem,
@@ -52,7 +53,7 @@ export class DynamicElementService {
       container instanceof ViewContainerRef ? container.element.nativeElement : container;
 
     if (item.customComponent) {
-      element = await this.createComponentElement(container, item, index);
+      element = await this.createComponentElement(editMode, container, item, index);
     } else {
       if (!item.tag) {
         item.tag = 'div';
@@ -84,6 +85,7 @@ export class DynamicElementService {
   }
 
   private async createComponentElement(
+    editMode: boolean,
     container: HTMLElement | ViewContainerRef,
     item: PageItem,
     index: number | null,
@@ -141,6 +143,9 @@ export class DynamicElementService {
     // set default propery pageItem
     if ('pageItem' in instance) {
       instance['pageItem'] = item;
+    }
+    if ('editMode' in instance) {
+      instance['editMode'] = editMode;
     }
 
     // ✅ Inputs

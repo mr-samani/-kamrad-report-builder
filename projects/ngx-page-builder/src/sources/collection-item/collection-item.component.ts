@@ -5,6 +5,7 @@ import {
   Component,
   ElementRef,
   Inject,
+  Input,
   OnDestroy,
   OnInit,
   ViewChild,
@@ -30,7 +31,9 @@ import { IPageItem } from '../../contracts/IPageItem';
   imports: [],
 })
 export class CollectionItemComponent implements OnInit, OnDestroy, AfterViewInit {
-  pageItem!: PageItem;
+  // inputs auto filled by create dynamic element
+  @Input() editMode: boolean = false;
+  @Input() pageItem!: PageItem;
   settingChangeSubscription?: Subscription;
   pagebuiderChangeSubscription?: Subscription;
 
@@ -130,7 +133,11 @@ export class CollectionItemComponent implements OnInit, OnDestroy, AfterViewInit
     for (let i = 0; i < childCount; i++) {
       let cloned = cloneTemplate(this.dataList, this.pageItem.template!, i);
 
-      await this.pageBuilder.createBlockElement(cloned, this.collectionContainer.nativeElement);
+      await this.pageBuilder.createBlockElement(
+        true,
+        cloned,
+        this.collectionContainer.nativeElement,
+      );
       this.pageItem.children.push(cloned);
     }
     console.log('data-collection', this.pageItem.id, this.pageItem);
@@ -148,7 +155,11 @@ export class CollectionItemComponent implements OnInit, OnDestroy, AfterViewInit
     const childCount = count;
     for (let i = 0; i < childCount; i++) {
       let cloned = cloneTemplate(this.dataList, this.pageItem.template!, i);
-      await this.pageBuilder.createBlockElement(cloned, this.collectionContainer.nativeElement);
+      await this.pageBuilder.createBlockElement(
+        this.editMode,
+        cloned,
+        this.collectionContainer.nativeElement,
+      );
       this.pageItem.children.push(cloned);
     }
     this.chdRef.detectChanges();

@@ -292,7 +292,8 @@ export class PagePreviewService {
   }
 
   private async createBlockElement(item: IPageItem, container: HTMLElement, index = -1) {
-    let el = await this.dynamicElementService.createBlockElement(
+    let el = await this.dynamicElementService.createBlock(
+      false,
       container,
       index,
       item as PageItem,

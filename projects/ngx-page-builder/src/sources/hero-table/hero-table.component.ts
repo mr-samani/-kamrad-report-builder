@@ -6,6 +6,7 @@ import {
   DOCUMENT,
   ElementRef,
   Inject,
+  Input,
   OnInit,
   Renderer2,
   ViewChild,
@@ -46,7 +47,9 @@ import { CommonModule } from '@angular/common';
   encapsulation: ViewEncapsulation.None,
 })
 export class HeroTableComponent implements OnInit, AfterViewInit {
-  pageItem!: PageItem;
+  // inputs auto filled by create dynamic element
+  @Input() editMode: boolean = false;
+  @Input() pageItem!: PageItem;
   settingChangeSubscription?: Subscription;
   selectBlockSubscription?: Subscription;
   pagebuiderChangeSubscription?: Subscription;
@@ -70,7 +73,6 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
 
   settings: TableSetting = new TableSetting();
 
-  editMode: boolean;
   constructor(
     @Inject(COMPONENT_DATA) private context: ComponentDataContext<TableSetting>,
     private chdRef: ChangeDetectorRef,
@@ -81,8 +83,6 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
     @Inject(DOCUMENT) private doc: Document,
   ) {
     this.handlePageBuilderChange();
-
-    this.editMode = this.pageBuilder.mode == 'Edit';
   }
 
   ngOnInit() {
@@ -192,6 +192,7 @@ export class HeroTableComponent implements OnInit, AfterViewInit {
     }
 
     await this.pageBuilder.createBlockElement(
+      this.editMode,
       this.pageItem.children[0],
       this.tableContainer.nativeElement,
     );

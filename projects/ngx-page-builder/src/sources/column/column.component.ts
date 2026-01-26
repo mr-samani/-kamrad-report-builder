@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  Input,
   OnInit,
   ViewChild,
   ViewEncapsulation,
@@ -21,7 +22,9 @@ import { SvgIconDirective } from '../../directives/svg-icon.directive';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ColumnComponent implements OnInit {
-  pageItem!: PageItem;
+  // inputs auto filled by create dynamic element
+  @Input() editMode: boolean = false;
+  @Input() pageItem!: PageItem;
 
   @ViewChild('colContainer', { static: true }) colContainer!: ElementRef<HTMLDivElement>;
   constructor(
@@ -39,7 +42,11 @@ export class ColumnComponent implements OnInit {
   }
   async loadCols() {
     for (const child of this.pageItem.children) {
-      let el = await this.pageBuilder.createBlockElement(child, this.colContainer.nativeElement);
+      let el = await this.pageBuilder.createBlockElement(
+        this.editMode,
+        child,
+        this.colContainer.nativeElement,
+      );
       if (!el) continue;
       if (child.children && child.children.length > 0 && el) {
         this.loadChilds(child.children, el);
@@ -49,7 +56,7 @@ export class ColumnComponent implements OnInit {
 
   loadChilds(childs: PageItem[], container: HTMLElement) {
     for (const child of childs) {
-      this.pageBuilder.createBlockElement(child, container);
+      this.pageBuilder.createBlockElement(this.editMode, child, container);
     }
   }
   addNewColumn(index?: number) {
@@ -65,7 +72,12 @@ export class ColumnComponent implements OnInit {
       },
       this.pageItem,
     );
-    this.pageBuilder.createBlockElement(newColumn, this.colContainer.nativeElement, index);
+    this.pageBuilder.createBlockElement(
+      this.editMode,
+      newColumn,
+      this.colContainer.nativeElement,
+      index,
+    );
     this.pageItem.children.splice(index ?? this.pageItem.children.length, 0, newColumn);
   }
 

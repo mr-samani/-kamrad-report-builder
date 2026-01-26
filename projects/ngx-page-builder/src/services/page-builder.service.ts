@@ -30,8 +30,6 @@ export interface PageItemChange {
   providedIn: 'root',
 })
 export class PageBuilderService implements OnDestroy {
-  // TODO: در حالت پیش نمایش من باید متوجه بشم که مد تغییر کرده چون مثلا در جدول داینامیک چون از همین سرویس استفاده میکنه مشکل ایجاد میشه
-  mode: 'Edit' | 'Preview' = 'Preview';
   isSaving: boolean = false;
   sources: SourceItem[] = LibConsts.SourceItemList;
   innerShadowRootDom?: ShadowRoot | null;
@@ -112,7 +110,7 @@ export class PageBuilderService implements OnDestroy {
       // انتقال از یک container به container دیگه
       const source = new PageItem(this.sources[event.previousIndex], parent);
       source.children = []; // very important to create reference to droplist data
-      await this.createBlockElement(source, containerEl, event.currentIndex);
+      await this.createBlockElement(true, source, containerEl, event.currentIndex);
       event.container.data.splice(event.currentIndex, 0, source);
       this.onSelectBlock(source);
       this.updateChangeDetection({ item: source, parent: event.container.data, type: 'AddBlock' });
@@ -127,7 +125,7 @@ export class PageBuilderService implements OnDestroy {
 
       await this.removeBlock(dragItem);
       dragItem.parent = parent;
-      await this.createBlockElement(dragItem, containerEl, event.currentIndex);
+      await this.createBlockElement(true, dragItem, containerEl, event.currentIndex);
       event.container.data.splice(event.currentIndex, 0, dragItem);
 
       this.updateChangeDetection({
@@ -285,7 +283,7 @@ export class PageBuilderService implements OnDestroy {
 
   private async genElms(list: PageItem[], container: HTMLElement, index = -1) {
     for (let i = 0; i < list.length; i++) {
-      list[i].el = await this.createBlockElement(list[i], container, index);
+      list[i].el = await this.createBlockElement(true, list[i], container, index);
     }
   }
   async reloadCurrentPage() {
@@ -295,14 +293,19 @@ export class PageBuilderService implements OnDestroy {
   /**
    *  ایجاد المنت جدید حتما باید با await انجام شود
    */
-  async createBlockElement(item: PageItem, container?: HTMLElement, index: number = -1) {
+  async createBlockElement(
+    editMode: boolean,
+    item: PageItem,
+    container?: HTMLElement,
+    index: number = -1,
+  ) {
     if (!container) {
       container = this.pageBody()?.nativeElement;
     }
     if (!container) {
       throw new Error('Required container to create element');
     }
-    if (this.mode == 'Edit') {
+    if (editMode) {
       item.options ??= {};
       item.options.directives ??= [];
       if (item.options.directives.length > 0) {
@@ -334,10 +337,10 @@ export class PageBuilderService implements OnDestroy {
       this.cls.addBlockCss(item);
     }
 
-    let el = await this.dynamicElementService.createBlockElement(container, index, item);
+    let el = await this.dynamicElementService.createBlock(editMode, container, index, item);
     if (item.children && item.children.length > 0 && el) {
       for (const child of item.children) {
-        await this.createBlockElement(child, el, -1);
+        await this.createBlockElement(editMode, child, el, -1);
       }
     }
     return el;
@@ -470,7 +473,7 @@ export class PageBuilderService implements OnDestroy {
       return;
     }
     let item = PageItem.fromJSON(this.copyStorage);
-    await this.createBlockElement(item, this.activeEl()?.el);
+    await this.createBlockElement(true, item, this.activeEl()?.el);
     this.activeEl()?.children.push(item);
     this.onSelectBlock(item);
     Notify.success('Paste successfully');
