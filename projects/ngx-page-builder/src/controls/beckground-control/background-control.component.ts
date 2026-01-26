@@ -97,7 +97,7 @@ export class BackgroundControlComponent
   }
 
   clear(property: string) {
-    (this as any)[property] = undefined;
+    (this.style as any)[property] = undefined;
     this.update();
   }
 }

@@ -57,7 +57,10 @@
     <details name="block-properties" (toggle)="openPanel(advanced)" #advanced>
       <summary>Advanced</summary>
       @if (advanced.open) {
-        <textcss-control [(ngModel)]="currentCss"></textcss-control>
+        <textcss-control
+          [(ngModel)]="style"
+          [currentClassName]="currentClassName"
+        ></textcss-control>
       }
     </details>
   } @else {

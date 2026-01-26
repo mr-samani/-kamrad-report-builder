@@ -13,14 +13,14 @@ import {
   Injector,
   OnDestroy,
   ViewEncapsulation,
+  Input,
 } from '@angular/core';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 import { IPageBuilderFilePicker } from '../../services/file-picker/IFilePicker';
 import { NGX_PAGE_BUILDER_FILE_PICKER } from '../../services/file-picker/token.filepicker';
-import { PageItem } from '../../models/PageItem';
 import { BaseControl } from '../base-control';
-import { mergeCssStyles } from '../../utiles/merge-css-styles';
+import { mergeCssStyles, parseStyleString } from '../../utiles/merge-css-styles';
 
 @Component({
   selector: 'textcss-control',
@@ -42,7 +42,9 @@ export class TextCssControlComponent
   extends BaseControl
   implements OnInit, AfterViewInit, ControlValueAccessor, OnDestroy
 {
-  @Output() change = new EventEmitter<string>();
+  @Input() currentClassName = '';
+
+  @Output() change = new EventEmitter<Partial<CSSStyleDeclaration>>();
   @ViewChild('editorTextarea', { static: false }) textareaRef?: ElementRef<HTMLTextAreaElement>;
   @ViewChild('highlightDiv', { static: false }) highlightRef?: ElementRef<HTMLDivElement>;
 
@@ -71,11 +73,13 @@ export class TextCssControlComponent
     }
   }
 
-  writeValue(css: string): void {
-    if (!css || typeof css !== 'string') {
-      css = '';
+  writeValue(style: Partial<CSSStyleDeclaration>): void {
+    debugger;
+    if (!style) {
+      style = {};
     }
-    this.textCss = css; // this.el.style.cssText.replace(/;\s*/g, ';\n');
+    this.style = style;
+    this.textCss = style.cssText?.replace(/;\s*/g, ';\n') ?? '';
     this.updateHighlight();
     this.cdr.detectChanges();
   }
@@ -110,7 +114,6 @@ export class TextCssControlComponent
 
     // Update highlight immediately
     this.updateHighlight();
-
     // Debounce CSS application
     if (this.updateTimeout) {
       clearTimeout(this.updateTimeout);
@@ -292,11 +295,12 @@ export class TextCssControlComponent
   update() {
     try {
       // Apply styles to element
+      this.style = parseStyleString(this.textCss);
       this.style.cssText = this.textCss;
-
       // Update item
       this.onChange(this.style);
-      this.change.emit(this.textCss);
+      this.change.emit(this.style);
+      this.cls.updateClass(this.currentClassName, this.style);
     } catch (error) {
       console.error('Invalid CSS:', error);
     }

@@ -18,7 +18,7 @@ export function mergeCssStyles(styleA?: string, styleB?: string): string {
   return objectToStyleString(merged);
 }
 
-function parseStyleString(style: string): Record<string, string> {
+export function parseStyleString(style: string): Record<string, string> {
   const result: Record<string, string> = {};
   if (!style) return result;
 
