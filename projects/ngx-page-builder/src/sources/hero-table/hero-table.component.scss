@@ -1,22 +1,6 @@
 .hero-table-wrapper {
   position: relative;
 }
-table.ngx-hero-table {
-  width: 100%;
-  border-collapse: collapse;
-  // border-collapse: separate;
-  // border-spacing: 2px;
-  border: 1px #2196f3 solid;
-  thead {
-    background-color: beige;
-  }
-  th,
-  td {
-    min-width: 32px;
-    min-height: 32px;
-    padding: 8px 5px;
-  }
-}
 
 .table-toolbar {
   position: absolute;
