@@ -53,38 +53,33 @@
   }
 }
 
-block-properties {
-  button {
-    all: unset;
-    box-shadow:
-      0px 0.5px 1px rgba(0, 0, 0, 0.8),
-      inset 0px 0.5px 0.5px rgba(255, 255, 255, 0.12);
-    background-color: rgba(255, 255, 255, 0.13);
-    background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.13) 0%,
-      rgba(255, 255, 255, 0.11) 100%
-    );
-    cursor: pointer;
-    margin: 4px;
-    padding: 5px 15px;
-    border-radius: 4px;
-    &:disabled {
-      cursor: not-allowed;
-      background-color: rgba(255, 255, 255, 0.455);
-    }
-    &:hover {
-      background: linear-gradient(180deg, rgba(69, 69, 69, 0.13) 0%, rgba(34, 34, 34, 0.11) 100%);
-    }
+block-properties button,
+.btn {
+  all: unset;
+  box-shadow:
+    0px 0.5px 1px rgba(0, 0, 0, 0.8),
+    inset 0px 0.5px 0.5px rgba(255, 255, 255, 0.12);
+  background-color: rgba(255, 255, 255, 0.13);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.13) 0%, rgba(255, 255, 255, 0.11) 100%);
+  cursor: pointer;
+  margin: 4px;
+  padding: 5px 15px;
+  border-radius: 4px;
+  &:disabled {
+    cursor: not-allowed;
+    background-color: rgba(255, 255, 255, 0.455);
+  }
+  &:hover {
+    background: linear-gradient(180deg, rgba(69, 69, 69, 0.13) 0%, rgba(34, 34, 34, 0.11) 100%);
+  }
 
-    svg[Icon] {
-      width: 18px;
-      max-height: 18px;
-    }
-    &:has(svg[Icon]) {
-      padding: 2px 5px;
-      line-height: 0;
-    }
+  svg[Icon] {
+    width: 18px;
+    max-height: 18px;
+  }
+  &:has(svg[Icon]) {
+    padding: 2px 5px;
+    line-height: 0;
   }
 }
 
@@ -126,3 +121,8 @@ block-properties {
   }
 }
 /*--------------group buttons------------------------------*/
+.loading-container {
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+}

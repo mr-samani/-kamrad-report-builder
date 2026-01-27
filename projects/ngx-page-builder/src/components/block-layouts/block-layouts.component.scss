@@ -39,6 +39,7 @@ ul.tree-list {
     }
     &.active > div {
       background-color: var(--active-button);
+      color: var(--active-button-fg);
     }
   }
 }

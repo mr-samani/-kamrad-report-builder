@@ -14,10 +14,14 @@ import {
 import { PAGE_BUILDER_CONFIGURATION } from './models/tokens';
 import { NGX_PAGE_BUILDER_HTML_EDITOR } from './services/html-editor/token.html-editor';
 import { NGX_PAGE_BUILDER_FILE_PICKER } from './services/file-picker/token.filepicker';
+import { NGX_PAGE_BUILDER_EXPORT_PLUGIN_STORE } from './services/plugin/plugin.token';
+import { PluginStore } from './services/plugin/plugin.store';
 
 export function providePageBuilder(config: PageBuilderConfiguration) {
   LibConsts.enableHistory = config.enableHistory === true;
   LibConsts.enableAddCssFile = config.enableAddCssFile === true;
+  LibConsts.enableExportAsPlugin = config.enableExportAsPlugin === true;
+  LibConsts.showPlugins = config.showPlugins === true;
   if (config.toolbarConfig) {
     LibConsts.toolbarConfig = { ...new PageBuilderToolbarConfig(), ...config.toolbarConfig };
   }
@@ -77,6 +81,10 @@ export function providePageBuilder(config: PageBuilderConfiguration) {
     {
       provide: NGX_PAGE_BUILDER_FILE_PICKER,
       useValue: '',
+    },
+    {
+      provide: NGX_PAGE_BUILDER_EXPORT_PLUGIN_STORE,
+      useValue: new PluginStore(),
     },
   ]);
 }

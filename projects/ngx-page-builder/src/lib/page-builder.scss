@@ -26,7 +26,7 @@
   background-color: var(--tools-bg);
   color: var(--tools-fg);
   max-height: calc(100vh - var(--topbar-height));
-  overflow-y: auto;
+  overflow-y: scroll;
   overflow-x: hidden;
   .tool {
     padding: 6px;

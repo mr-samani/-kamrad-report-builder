@@ -6,9 +6,14 @@ import {
 import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
-import { providePageBuilder, StorageType } from '@ngx-page-builder';
+import {
+  NGX_PAGE_BUILDER_EXPORT_PLUGIN_STORE,
+  providePageBuilder,
+  StorageType,
+} from '@ngx-page-builder';
 import { CustomSources } from './custom-source/custom-sources';
 import { provideHighcharts } from 'highcharts-angular';
+import { PluginService } from './builder/plugin.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -18,7 +23,13 @@ export const appConfig: ApplicationConfig = {
     providePageBuilder({
       customSources: CustomSources,
       storageType: StorageType.LocalStorage,
+      enableExportAsPlugin: true,
+      showPlugins: true,
     }),
+    {
+      provide: NGX_PAGE_BUILDER_EXPORT_PLUGIN_STORE,
+      useClass: PluginService,
+    },
     // {
     //   provide: NGX_PAGE_BUILDER_STORAGE_SERVICE,
     //   useClass: MessagePackStorageService,

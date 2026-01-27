@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit, viewChild } from '@angular/core';
+import { AfterViewInit, Component, DOCUMENT, Inject, OnInit, viewChild } from '@angular/core';
 import {
   IPage,
   IStyleSheetFile,
@@ -10,7 +10,7 @@ import { FilePickerService } from './file-picker.service';
 import { DynamicData } from '../dynamic-data/dynamic-data';
 import { HtmlEditorService } from './html-editor.service';
 import { RouterLink } from '@angular/router';
-
+import { MatDialog } from '@angular/material/dialog';
 @Component({
   selector: 'app-builder',
   templateUrl: './builder.component.html',
@@ -125,15 +125,17 @@ export class BuilderComponent implements OnInit, AfterViewInit {
       order: 0,
     },
   ];
-  constructor() {}
+  constructor(
+    private dialog: MatDialog,
+    @Inject(DOCUMENT) private doc: Document,
+  ) {}
 
   ngOnInit() {
     try {
       const savedData = localStorage.getItem('page');
       const parsed = JSON.parse(savedData || '{}');
       this.data = parsed?.data;
-
-      this.styles = parsed?.style;
+      this.styles = parsed?.styles;
     } catch (error) {}
   }
   ngAfterViewInit(): void {

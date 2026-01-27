@@ -29,44 +29,9 @@ export function preparePageDataForSave(
       const clone = deepCloneInstance(pageInfo, { cloneDom: false });
       const clonedData = PageBuilderDto.fromJSON(clone);
 
-      let tree = (list: PageItem[]) => {
-        for (let item of list) {
-          if (item.customComponent) {
-            delete (item.customComponent as any).component;
-            delete item.customComponent.componentSettings;
-            delete item.customComponent.providers;
-            delete item.customComponent.compInjector;
-            // dont delete customComponent
-            // delete item.customComponent;
-          }
-
-          // dont delete dataSource
-          // delete item.dataSource;
-          delete item.disableDelete;
-          delete item.disableMovement;
-          delete item.isTemplateContainer;
-          delete item.lockMoveInnerChild;
-
-          if (item.template) {
-            item.children = [];
-          }
-
-          cleanAttributes(item.options);
-          delete item.options?.events;
-          delete item.options?.directives;
-          delete item.el;
-
-          if (item.children && item.children.length > 0) {
-            tree(item.children);
-          }
-          if (item.template) {
-            tree([item.template]);
-          }
-        }
-      };
       for (let page of clonedData.pages) {
         const list = [...page.headerItems, ...page.bodyItems, ...page.footerItems];
-        tree(list);
+        preparePageItems(list);
       }
 
       clonedData.pages.map((m, index) => (m.order = index));
@@ -82,6 +47,43 @@ export function preparePageDataForSave(
       reject(error);
     }
   });
+}
+
+export function preparePageItems(list: PageItem[]) {
+  for (let item of list) {
+    if (item.customComponent) {
+      delete (item.customComponent as any).component;
+      delete item.customComponent.componentSettings;
+      delete item.customComponent.providers;
+      delete item.customComponent.compInjector;
+      // dont delete customComponent
+      // delete item.customComponent;
+    }
+
+    // dont delete dataSource
+    // delete item.dataSource;
+    delete item.disableDelete;
+    delete item.disableMovement;
+    delete item.isTemplateContainer;
+    delete item.lockMoveInnerChild;
+
+    if (item.template) {
+      item.children = [];
+    }
+
+    cleanAttributes(item.options);
+    delete item.options?.events;
+    delete item.options?.directives;
+    delete item.el;
+
+    if (item.children && item.children.length > 0) {
+      item.children = preparePageItems(item.children);
+    }
+    if (item.template) {
+      item.template = preparePageItems([item.template])[0];
+    }
+  }
+  return list;
 }
 
 function removeClassesFromHtml(

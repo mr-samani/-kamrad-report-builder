@@ -21,6 +21,9 @@ export const LibConsts: {
 
   /** enable history (undo , redo) */
   enableHistory: boolean;
+  /** show export button in block setting */
+  enableExportAsPlugin: boolean;
+  showPlugins: boolean;
 
   toolbarConfig?: PageBuilderToolbarConfig;
 } = {
@@ -28,6 +31,8 @@ export const LibConsts: {
   backendProxyImportUrl: 'http://localhost:3000/api/render',
   enableHistory: false,
   enableAddCssFile: false,
+  enableExportAsPlugin: false,
+  showPlugins: false,
   viewMode: 'PrintPage',
   toolbarConfig: new PageBuilderToolbarConfig(),
 };

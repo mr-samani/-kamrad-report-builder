@@ -1,4 +1,5 @@
 .ngx-page-builder {
+  --mat-dialog-container-max-width: 100%;
   /* page sizes */
   --a4-width: 210mm;
   --a4-height: 290mm; // 297mm;
@@ -8,6 +9,7 @@
   --letter-height: 279mm;
 
   --active-button: #0040ff;
+  --active-button-fg: #ffffff;
 
   --tools-bg: #282828;
   --toolbar-bg: #353535;

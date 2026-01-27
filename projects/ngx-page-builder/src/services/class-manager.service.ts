@@ -56,6 +56,7 @@ export class ClassManagerService {
       name: 'default',
       data: {
         '*': 'box-sizing:border-box',
+        '.img': `max-width:100%`,
       },
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -199,14 +200,19 @@ export class ClassManagerService {
    * @returns boolean
    */
   private isEqualCss(a: string, b: string): boolean {
-    const normalizedA = Object.keys(parseCssToRecord(a));
-    const normalizedB = Object.keys(parseCssToRecord(b));
-    if (normalizedA.length != normalizedB.length) return false;
+    // TODO: dont create new class when selector is duplicate
+    return true;
+    // const normalizedA = Object.keys(parseCssToRecord(a));
+    // const normalizedB = Object.keys(parseCssToRecord(b));
+    // if (normalizedA.length != normalizedB.length) return false;
 
-    const aIsB = isEqual(normalizedA, normalizedB);
-    return aIsB;
+    // const aIsB = isEqual(normalizedA, normalizedB);
+    // return aIsB;
   }
-
+  getBlockStyles(item: PageItem) {
+    //TODO: get all childs css
+    return item.css;
+  }
   /**
    * Normalize کردن CSS text برای مقایسه
    * حذف فضاهای اضافی و semicolon های آخر
@@ -802,7 +808,7 @@ export class ClassManagerService {
     const declarations: string[] = [];
 
     Object.entries(styles).forEach(([property, value]) => {
-      if (property === 'cssText' || typeof value !== 'string') {
+      if (property === 'cssText' || typeof value !== 'string' || value == '') {
         return;
       }
 

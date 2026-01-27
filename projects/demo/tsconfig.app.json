@@ -9,6 +9,6 @@
       "@ngx-page-builder": ["../ngx-page-builder/src/public-api.ts"]
     }
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "../ngx-page-builder/src/services/plugin/plugin.service.ts"],
   "exclude": ["src/**/*.spec.ts"]
 }

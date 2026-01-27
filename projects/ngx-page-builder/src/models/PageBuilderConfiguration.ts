@@ -9,6 +9,8 @@ export class PageBuilderConfiguration {
 
   toolbarConfig?: PageBuilderToolbarConfig;
   enableAddCssFile?: boolean = false;
+  enableExportAsPlugin?: boolean = false;
+  showPlugins?: boolean = false;
 }
 
 export class PageBuilderToolbarConfig {

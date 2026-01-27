@@ -75,6 +75,7 @@ export const SOURCE_ITEMS: SourceItem[] = [
         loading: 'lazy',
       },
     },
+    classList: ['img'],
   },
   {
     tag: 'input',
