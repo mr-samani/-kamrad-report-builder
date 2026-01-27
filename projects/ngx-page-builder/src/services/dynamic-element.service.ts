@@ -229,7 +229,7 @@ export class DynamicElementService {
     // }
 
     if (item.classList) {
-      element.classList = item.classList.join(' ');
+      element.classList.add(...item.classList);
     }
 
     return element;
