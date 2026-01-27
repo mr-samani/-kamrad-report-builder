@@ -9,8 +9,6 @@ import { IPlugin } from '../../contracts/IPlugin';
 import { PageItem } from '../../models/PageItem';
 import { Notify } from '../../extensions/notify';
 import { LoadingComponent } from '../../controls/loading/loading.component';
-import { NGX_PAGE_BUILDER_EXPORT_PLUGIN_STORE } from '../../services/plugin/plugin.token';
-import { IPluginStore } from '../../services/plugin/plugin.store';
 
 @Component({
   selector: 'app-export-plugin-dialog',
@@ -55,8 +53,12 @@ export class ExportPluginDialogComponent implements OnInit {
 
   ngOnInit() {}
 
-  ok() {
-    if (!this.plugin) return;
+  ok(ev?: Event) {
+    if (ev) {
+      ev.stopPropagation();
+      ev.preventDefault();
+    }
+    if (!this.plugin || !this.name) return;
     this.plugin.name = this.name;
     this.pluginService.save(this.plugin);
     this.dialogRef.close(true);

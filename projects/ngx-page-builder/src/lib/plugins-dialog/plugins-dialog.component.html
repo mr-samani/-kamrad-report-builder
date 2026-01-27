@@ -20,7 +20,7 @@
           @if (item.image) {
             <img [src]="item.image" [alt]="item.name" class="screenshot" />
           } @else {
-            <img src="assets/no-image.png" alt="no-image" class="screenshot" />
+            <img src="assets/default-image.png" alt="no-image" class="screenshot" />
           }
         </div>
         <div class="name">{{ item.name }}</div>
@@ -36,4 +36,15 @@
       <loading [loading]="loading"></loading>
     </div>
   }
+
+  <div class="pagination-container">
+    <span>Page {{ selectedPage + 1 | number }} from {{ total | number }}</span>
+    <ul class="pagination">
+      @for (p of pagination; track $index) {
+        <li (click)="changePage(p)" [class.active]="p == selectedPage">
+          {{ p + 1 }}
+        </li>
+      }
+    </ul>
+  </div>
 </mat-dialog-content>

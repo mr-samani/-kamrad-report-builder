@@ -3,3 +3,8 @@ export interface IPlugin {
   plugin: string;
   image: string;
 }
+
+export interface IPaginationPlugin {
+  items: IPlugin[];
+  total: number;
+}

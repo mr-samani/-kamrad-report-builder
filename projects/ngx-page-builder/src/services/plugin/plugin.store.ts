@@ -1,8 +1,8 @@
-import { IPlugin } from '../../contracts/IPlugin';
+import { IPaginationPlugin, IPlugin } from '../../contracts/IPlugin';
 
 export interface IPluginStore {
   save(plugin: IPlugin): void;
-  getAllPlugins(take: number, skip: number, filter: string): Promise<IPlugin[]>;
+  getAllPlugins(take: number, skip: number, filter: string): Promise<IPaginationPlugin>;
 }
 
 export class PluginStore {
@@ -12,10 +12,14 @@ export class PluginStore {
     console.log(plugin);
   }
 
-  getAllPlugins(take: number, skip: number, filter: string): Promise<IPlugin[]> {
-    return new Promise<IPlugin[]>((resolve, reject) => {
-      let list = this._plugins.filter((x) => x.name.includes(filter)).slice(skip, skip + take);
-      resolve(list);
+  getAllPlugins(take: number, skip: number, filter: string): Promise<IPaginationPlugin> {
+    return new Promise<IPaginationPlugin>((resolve, reject) => {
+      const result = this._plugins.filter((x) => x.name.includes(filter));
+      const list = result.slice(skip, skip + take);
+      resolve({
+        items: list,
+        total: result.length,
+      });
     });
   }
 }

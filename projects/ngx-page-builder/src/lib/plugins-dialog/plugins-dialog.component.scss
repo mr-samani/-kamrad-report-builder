@@ -70,3 +70,36 @@
     }
   }
 }
+
+/*------------------*/
+.pagination-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  flex-wrap: wrap;
+  list-style: none;
+  li {
+    border: 1px rgba(104, 104, 104, 0.5137254902) solid;
+    background: #fff;
+    color: #000;
+    border-radius: 3px;
+    min-width: 28px;
+    height: 24px;
+    display: grid;
+    place-items: center;
+    &.active {
+      color: #fff;
+      background: #436bc1c2;
+    }
+    &:hover {
+      cursor: pointer;
+      background: #5a8cfac2;
+    }
+  }
+}

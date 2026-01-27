@@ -11,7 +11,7 @@ import {
 } from '../../public-api';
 import { sanitizeForStorage } from '../storage/sanitizeForStorage';
 import { ClassManagerService } from '../class-manager.service';
-import { IPlugin } from '../../contracts/IPlugin';
+import { IPaginationPlugin, IPlugin } from '../../contracts/IPlugin';
 
 @Injectable({ providedIn: 'root' })
 export class PluginService {
@@ -46,7 +46,7 @@ export class PluginService {
     this.pluginStore.save(plugin);
   }
 
-  getAllPlugins(take: number, skip: number, filter: string): Promise<IPlugin[]> {
+  getAllPlugins(take: number, skip: number, filter: string): Promise<IPaginationPlugin> {
     return this.pluginStore.getAllPlugins(take, skip, filter);
   }
   addToForm(plugin: IPlugin) {

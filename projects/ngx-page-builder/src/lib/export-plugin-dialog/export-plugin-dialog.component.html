@@ -3,11 +3,21 @@
   <div class="screenshot-container">
     <img [src]="img" alt="" class="screenshot" />
   </div>
-  <loading [loading]="loading"></loading>
+  <div class="loading-container">
+    <loading [loading]="loading"></loading>
+  </div>
 
   <mat-form-field appearance="outline">
     <mat-label>Name</mat-label>
-    <input matInput id="name" name="name" [(ngModel)]="name" #nameInput="ngModel" required />
+    <input
+      matInput
+      id="name"
+      name="name"
+      [(ngModel)]="name"
+      #nameInput="ngModel"
+      required
+      (keydown.enter)="ok($event)"
+    />
     @if (nameInput.hasError('required')) {
       <mat-error class="text-danger">Name is required for plugin</mat-error>
     }

@@ -10,6 +10,7 @@ import { PageItem } from '../../models/PageItem';
 import { Notify } from '../../extensions/notify';
 import { LoadingComponent } from '../../controls/loading/loading.component';
 import { SvgIconDirective } from '../../directives/svg-icon.directive';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-plugins-dialog',
@@ -23,6 +24,7 @@ import { SvgIconDirective } from '../../directives/svg-icon.directive';
     MatInputModule,
     LoadingComponent,
     SvgIconDirective,
+    CommonModule,
   ],
 })
 export class PluginsDialogComponent implements OnInit {
@@ -30,7 +32,13 @@ export class PluginsDialogComponent implements OnInit {
   loading = true;
   search = '';
 
-  take = 20;
+  take = 10;
+  skip = 0;
+  total = 0;
+
+  pagination: number[] = [];
+  selectedPage = 0;
+
   constructor(
     @Inject(MAT_DIALOG_DATA) private _data: PageItem,
     private dialogRef: MatDialogRef<PluginsDialogComponent>,
@@ -44,12 +52,13 @@ export class PluginsDialogComponent implements OnInit {
 
   getList() {
     this.loading = true;
-    const skip = this.plugins.length;
     this.pluginService
-      .getAllPlugins(this.take, skip, this.search)
+      .getAllPlugins(this.take, this.skip, this.search)
       .finally(() => (this.loading = false))
       .then((p) => {
-        this.plugins = [...this.plugins, ...(p ?? [])];
+        this.plugins = p?.items ?? [];
+        this.total = p?.total ?? 0;
+        this.updatePagination();
         this.chdr.detectChanges();
       })
       .catch((error) => {
@@ -60,6 +69,7 @@ export class PluginsDialogComponent implements OnInit {
 
   filterList() {
     this.plugins = [];
+    this.skip = 0;
     this.getList();
   }
 
@@ -67,5 +77,18 @@ export class PluginsDialogComponent implements OnInit {
     if (!plugin) return;
     this.pluginService.addToForm(plugin).catch((err) => Notify.error(err));
     this.dialogRef.close(true);
+  }
+
+  updatePagination() {
+    const c = Math.ceil(this.total / this.take);
+    this.pagination = [];
+    for (let i = 0; i < c; i++) {
+      this.pagination.push(i);
+    }
+  }
+  changePage(p: number) {
+    this.selectedPage = p;
+    this.skip = p * this.take;
+    this.getList();
   }
 }

@@ -97,7 +97,6 @@ export class BackgroundControlComponent
   }
 
   clear(property: string) {
-    debugger;
     (this.style as any)[property] = undefined;
     if ((this as any)[property]) {
       (this as any)[property] = undefined;

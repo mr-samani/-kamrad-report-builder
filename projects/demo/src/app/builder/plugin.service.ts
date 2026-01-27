@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { IPlugin, IPluginStore } from '@ngx-page-builder';
+import { IPaginationPlugin, IPlugin, IPluginStore } from '@ngx-page-builder';
 
 @Injectable()
 export class PluginService implements IPluginStore {
@@ -18,10 +18,14 @@ export class PluginService implements IPluginStore {
     if (plugins.length > 0) this._plugins = plugins;
   }
 
-  getAllPlugins(take: number, skip: number, filter: string): Promise<IPlugin[]> {
-    return new Promise<IPlugin[]>((resolve, reject) => {
-      let list = this._plugins.filter((x) => x.name.includes(filter)).slice(skip, skip + take);
-      resolve(list);
+  getAllPlugins(take: number, skip: number, filter: string): Promise<IPaginationPlugin> {
+    return new Promise<IPaginationPlugin>((resolve, reject) => {
+      const result = this._plugins.filter((x) => x.name.includes(filter));
+      const list = result.slice(skip, skip + take);
+      resolve({
+        items: list,
+        total: result.length,
+      });
     });
   }
   save(plugin: IPlugin): void {
