@@ -45,7 +45,7 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
   }
 
   ngOnInit() {
-    console.log('LibConsts', LibConsts);
+    // console.log('LibConsts', LibConsts);
   }
 
   get canUndo(): boolean {

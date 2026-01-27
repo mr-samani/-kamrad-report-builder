@@ -20,6 +20,7 @@
     }
     &.active {
       background-color: var(--active-button);
+      color: var(--active-button-fg);
       border-color: var(--active-button);
       color: #fff;
     }

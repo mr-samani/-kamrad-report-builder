@@ -21,6 +21,7 @@ export function providePageBuilder(config: PageBuilderConfiguration) {
   LibConsts.enableHistory = config.enableHistory === true;
   LibConsts.enableAddCssFile = config.enableAddCssFile === true;
   LibConsts.enableExportAsPlugin = config.enableExportAsPlugin === true;
+  LibConsts.showPlugins = config.showPlugins === true;
   if (config.toolbarConfig) {
     LibConsts.toolbarConfig = { ...new PageBuilderToolbarConfig(), ...config.toolbarConfig };
   }

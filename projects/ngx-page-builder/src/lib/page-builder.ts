@@ -32,6 +32,8 @@ import { ClassManagerService } from '../services/class-manager.service';
 import { IPagebuilderOutput } from '../contracts/IPageBuilderOutput';
 import { InnerContentComponent } from './inner-content/inner-content.component';
 import { IStyleSheetFile } from '../contracts/IStyleSheetFile';
+import { LibConsts } from '../consts/defauls';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'ngx-page-builder',
@@ -81,10 +83,13 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
 
   subscriptions: Subscription[] = [];
 
+  showPlugins = LibConsts.showPlugins;
+
   constructor(
     injector: Injector,
     @Inject(NGX_PAGE_BUILDER_STORAGE_SERVICE) private storageService: IStorageService,
     private cls: ClassManagerService,
+    private dialog: MatDialog,
   ) {
     super(injector);
     this.pageBuilder.storageService = this.storageService;
@@ -124,6 +129,21 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
       console.error('Error loading page data:', error);
       Notify.error('Error loading page data: ' + error);
     }
+  }
+
+  async viewPlugins() {
+    const { PluginsDialogComponent } = await import('./plugins-dialog/plugins-dialog.component');
+    this.dialog
+      .open(PluginsDialogComponent, {
+        width: '80%',
+        minHeight: '80%',
+        panelClass: 'ngx-page-builder',
+      })
+      .afterClosed()
+      .subscribe((p) => {
+        if (p) {
+        }
+      });
   }
 
   /**

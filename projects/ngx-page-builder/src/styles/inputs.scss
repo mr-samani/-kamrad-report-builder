@@ -121,3 +121,8 @@ block-properties button,
   }
 }
 /*--------------group buttons------------------------------*/
+.loading-container {
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+}

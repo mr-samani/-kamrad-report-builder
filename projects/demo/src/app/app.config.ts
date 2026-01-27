@@ -24,6 +24,7 @@ export const appConfig: ApplicationConfig = {
       customSources: CustomSources,
       storageType: StorageType.LocalStorage,
       enableExportAsPlugin: true,
+      showPlugins: true,
     }),
     {
       provide: NGX_PAGE_BUILDER_EXPORT_PLUGIN_STORE,

@@ -9,13 +9,12 @@ import { IPlugin } from '../../contracts/IPlugin';
 import { PageItem } from '../../models/PageItem';
 import { Notify } from '../../extensions/notify';
 import { LoadingComponent } from '../../controls/loading/loading.component';
-import { NGX_PAGE_BUILDER_EXPORT_PLUGIN_STORE } from '../../services/plugin/plugin.token';
-import { IPluginStore } from '../../services/plugin/plugin.store';
+import { SvgIconDirective } from '../../directives/svg-icon.directive';
 
 @Component({
-  selector: 'app-export-plugin-dialog',
-  templateUrl: './export-plugin-dialog.component.html',
-  styleUrls: ['./export-plugin-dialog.component.scss'],
+  selector: 'app-plugins-dialog',
+  templateUrl: './plugins-dialog.component.html',
+  styleUrls: ['./plugins-dialog.component.scss'],
   imports: [
     FormsModule,
     MatDialogModule,
@@ -23,42 +22,50 @@ import { IPluginStore } from '../../services/plugin/plugin.store';
     MatFormFieldModule,
     MatInputModule,
     LoadingComponent,
+    SvgIconDirective,
   ],
 })
-export class ExportPluginDialogComponent implements OnInit {
-  name = '';
-  img = '';
-
-  plugin?: IPlugin;
+export class PluginsDialogComponent implements OnInit {
+  plugins: IPlugin[] = [];
   loading = true;
+  search = '';
+
+  take = 20;
   constructor(
     @Inject(MAT_DIALOG_DATA) private _data: PageItem,
-    private dialogRef: MatDialogRef<ExportPluginDialogComponent>,
+    private dialogRef: MatDialogRef<PluginsDialogComponent>,
     private pluginService: PluginService,
     private chdr: ChangeDetectorRef,
-  ) {
+  ) {}
+
+  ngOnInit() {
+    this.getList();
+  }
+
+  getList() {
     this.loading = true;
-    pluginService
-      .getPlugin(_data)
+    const skip = this.plugins.length;
+    this.pluginService
+      .getAllPlugins(this.take, skip, this.search)
+      .finally(() => (this.loading = false))
       .then((p) => {
-        this.plugin = p;
-        this.img = p.image;
-        this.name = p.name;
-        this.loading = false;
-        chdr.detectChanges();
+        this.plugins = [...this.plugins, ...(p ?? [])];
+        this.chdr.detectChanges();
       })
       .catch((error) => {
         Notify.error(error);
-        dialogRef.close();
+        this.dialogRef.close();
       });
   }
 
-  ngOnInit() {}
+  filterList() {
+    this.plugins = [];
+    this.getList();
+  }
 
-  ok() {
-    if (!this.plugin) return;
-    this.plugin.name = this.name;
-    this.pluginService.save(this.plugin);
+  ok(plugin: IPlugin) {
+    if (!plugin) return;
+    this.pluginService.addToForm(plugin);
     this.dialogRef.close(true);
   }
 }

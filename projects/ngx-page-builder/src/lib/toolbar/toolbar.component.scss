@@ -25,6 +25,7 @@
     &:hover,
     &.active {
       background: var(--active-button);
+      color: var(--active-button-fg);
     }
     svg {
       color: var(--toolbar-fg);
