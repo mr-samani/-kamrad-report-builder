@@ -65,7 +65,7 @@ export class PluginsDialogComponent implements OnInit {
 
   ok(plugin: IPlugin) {
     if (!plugin) return;
-    this.pluginService.addToForm(plugin);
+    this.pluginService.addToForm(plugin).catch((err) => Notify.error(err));
     this.dialogRef.close(true);
   }
 }

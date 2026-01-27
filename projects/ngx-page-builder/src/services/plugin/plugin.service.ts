@@ -3,8 +3,10 @@ import { PageItem } from '../../models/PageItem';
 import { snapdom } from '@zumer/snapdom';
 import { deepCloneInstance } from '../../utiles/clone-deep';
 import {
+  IPageItem,
   IPluginStore,
   NGX_PAGE_BUILDER_EXPORT_PLUGIN_STORE,
+  PageBuilderService,
   preparePageItems,
 } from '../../public-api';
 import { sanitizeForStorage } from '../storage/sanitizeForStorage';
@@ -15,6 +17,7 @@ import { IPlugin } from '../../contracts/IPlugin';
 export class PluginService {
   constructor(
     private cls: ClassManagerService,
+    private pageBuilder: PageBuilderService,
     @Inject(NGX_PAGE_BUILDER_EXPORT_PLUGIN_STORE) private pluginStore: IPluginStore,
   ) {}
   async getPlugin(item: PageItem): Promise<IPlugin> {
@@ -47,6 +50,14 @@ export class PluginService {
     return this.pluginStore.getAllPlugins(take, skip, filter);
   }
   addToForm(plugin: IPlugin) {
-    throw new Error('Method not implemented.');
+    return new Promise((resolve, reject) => {
+      try {
+        const parsed: { sanitized: IPageItem; style: string } = JSON.parse(plugin.plugin);
+        let item: PageItem = PageItem.fromJSON(parsed.sanitized);
+        this.pageBuilder.createBlockElement(true, item);
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
 }
