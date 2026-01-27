@@ -53,8 +53,11 @@ export class PluginService {
     return new Promise((resolve, reject) => {
       try {
         const parsed: { sanitized: IPageItem; style: string } = JSON.parse(plugin.plugin);
-        let item: PageItem = PageItem.fromJSON(parsed.sanitized);
-        this.pageBuilder.createBlockElement(true, item);
+
+        this.pageBuilder.addBlockToCurrentPage(parsed.sanitized);
+        if (parsed.style) {
+          this.cls.importPluginCss(plugin.name, parsed.style);
+        }
       } catch (error) {
         reject(error);
       }

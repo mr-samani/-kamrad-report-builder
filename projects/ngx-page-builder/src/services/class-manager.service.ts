@@ -211,7 +211,26 @@ export class ClassManagerService {
   }
   getBlockStyles(item: PageItem) {
     //TODO: get all childs css
-    return item.css;
+    let css = '';
+    const tree = (item: PageItem) => {
+      for (let c of item.classList) {
+        const s = this.getClassStyles(c);
+        if (s) {
+          css += `
+.${c}{
+  ${s}
+}
+`;
+        }
+      }
+      if (item.children) {
+        for (let child of item.children) {
+          tree(child);
+        }
+      }
+    };
+    tree(item);
+    return css;
   }
   /**
    * Normalize کردن CSS text برای مقایسه
@@ -319,10 +338,18 @@ export class ClassManagerService {
     return newFile;
   }
 
+  public async importPluginCss(name: string, content: string): Promise<void> {
+    const defulatFile = this.cssFileData.find((f) => f.name === 'default');
+    if (defulatFile) {
+      await this.updateCssFile(defulatFile.id, content, false);
+    } else {
+      await this.addCssFile('default', content);
+    }
+  }
   /**
    * آپدیت فایل CSS
    */
-  public async updateCssFile(fileId: string, content: string): Promise<void> {
+  public async updateCssFile(fileId: string, content: string, replace = true): Promise<void> {
     const fileIndex = this.cssFileData.findIndex((f) => f.id === fileId);
     if (fileIndex === -1) {
       throw new Error(`File with id ${fileId} not found`);
@@ -331,11 +358,14 @@ export class ClassManagerService {
     const data = await parseCssBlockToRecord(content);
     const file = this.cssFileData[fileIndex];
 
-    // حذف rules قدیمی این فایل
-    this.removeFileRules(fileId);
-
-    // آپدیت data
-    file.data = data;
+    if (replace) {
+      // حذف rules قدیمی این فایل
+      this.removeFileRules(fileId);
+      // آپدیت data
+      file.data = data;
+    } else {
+      file.data = Object.assign(file.data, data);
+    }
     file.updatedAt = new Date();
 
     this.updateAvailableClasses();

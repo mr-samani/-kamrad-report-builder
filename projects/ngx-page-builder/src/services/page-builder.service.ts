@@ -13,6 +13,7 @@ import { BlockHelper } from '../helper/BlockHelper';
 import { HistoryService } from './history.service';
 import { IStorageService } from './storage/IStorageService';
 import { ClassManagerService } from './class-manager.service';
+import { IPageItem } from '../public-api';
 
 export interface PageItemChange {
   item: PageItem | null;
@@ -80,8 +81,8 @@ export class PageBuilderService implements OnDestroy {
     this._changed$.next(data);
   }
 
-  public get currentPage(): Page {
-    return this.pageInfo.pages[this.currentPageIndex()] ?? new Page();
+  public get currentPage(): Page | undefined {
+    return this.pageInfo.pages[this.currentPageIndex()];
   }
   public set currentPage(page: Page) {
     if (!this.pageInfo.pages[this.currentPageIndex()]) {
@@ -169,7 +170,8 @@ export class PageBuilderService implements OnDestroy {
     return new Promise(async (resolve, reject) => {
       let index = this.currentPageIndex() + 1;
       this.pageInfo.pages.splice(index, 0, new Page());
-      return await this.changePage(index + 1);
+      const c = await this.changePage(index + 1);
+      resolve(c);
     });
   }
   removePage(): Promise<number> {
@@ -273,6 +275,10 @@ export class PageBuilderService implements OnDestroy {
   updatePage(blocks: PageItem[]): Promise<number> {
     return new Promise(async (resolve, reject) => {
       try {
+        if (!this.currentPage) {
+          Notify.error('Page Not Exist!');
+          return;
+        }
         this.currentPage.bodyItems = blocks;
         await this.changePage(this.currentPageIndex() + 1);
       } catch (error) {
@@ -474,14 +480,32 @@ export class PageBuilderService implements OnDestroy {
     if (!this.activeEl() || !this.copyStorage || !this.activeEl()?.el) {
       return;
     }
-    let item = PageItem.fromJSON(this.copyStorage);
-    await this.createBlockElement(true, item, this.activeEl()?.el);
-    this.activeEl()?.children.push(item);
-    this.onSelectBlock(item);
-    Notify.success('Paste successfully');
+    await this.addBlockToCurrentPage(this.copyStorage);
   }
   copyBlock(currentBlock: PageItem) {
     this.copyStorage = Object.assign({}, currentBlock);
     Notify.info('Block copied to memory');
+  }
+
+  async addBlockToCurrentPage(p: IPageItem) {
+    let item = PageItem.fromJSON(p);
+    let activeBlock = this.activeEl();
+
+    if (!this.currentPage) {
+      await this.addPage();
+    }
+    if (activeBlock) {
+      activeBlock.children.push(item);
+    } else {
+      if (!this.pageInfo.pages[this.currentPageIndex()]) {
+        Notify.error('Page Not Exist!');
+        return;
+      }
+
+      this.pageInfo.pages[this.currentPageIndex()].bodyItems.push(item);
+    }
+    await this.createBlockElement(true, item, activeBlock?.el);
+    this.onSelectBlock(item);
+    Notify.success('Add successfully');
   }
 }

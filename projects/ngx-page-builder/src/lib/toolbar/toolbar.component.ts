@@ -55,11 +55,17 @@ export class ToolbarComponent extends PageBuilderBaseComponent implements OnInit
     return this.history.canRedo();
   }
   undo() {
+    if (!this.pageBuilder.currentPage) {
+      return;
+    }
     let blocks = this.pageBuilder.currentPage.bodyItems;
     blocks = this.history.undo(blocks);
     this.pageBuilder.updatePage(blocks);
   }
   redo() {
+    if (!this.pageBuilder.currentPage) {
+      return;
+    }
     let blocks = this.pageBuilder.currentPage.bodyItems;
     blocks = this.history.redo(blocks);
     this.pageBuilder.updatePage(blocks);

@@ -9,8 +9,8 @@
       #PageHeader
       [class.show-outlines]="pageBuilder.showOutlines"
       ngxDropList
-      [data]="pageBuilder.currentPage.headerItems"
-      [class.is-empty]="pageBuilder.currentPage.headerItems.length == 0"
+      [data]="pageBuilder.currentPage?.headerItems"
+      [class.is-empty]="pageBuilder.currentPage?.headerItems?.length == 0"
       (drop)="pageBuilder.onDrop($event)"
     ></div>
   }
@@ -20,7 +20,7 @@
     #PageBody
     [class.show-outlines]="pageBuilder.showOutlines"
     ngxDropList
-    [data]="pageBuilder.currentPage.bodyItems"
+    [data]="pageBuilder.currentPage?.bodyItems"
     (drop)="pageBuilder.onDrop($event)"
   ></div>
 
@@ -30,8 +30,8 @@
       #PageFooter
       [class.show-outlines]="pageBuilder.showOutlines"
       ngxDropList
-      [class.is-empty]="pageBuilder.currentPage.footerItems.length == 0"
-      [data]="pageBuilder.currentPage.footerItems"
+      [class.is-empty]="pageBuilder.currentPage?.footerItems?.length == 0"
+      [data]="pageBuilder.currentPage?.footerItems"
       (drop)="pageBuilder.onDrop($event)"
     ></div>
   }
