@@ -22,6 +22,7 @@ export class Page implements IPage {
     p.footerItems = (data.footerItems || []).map(PageItem.fromJSON);
     p.config = new PageConfig(data.config);
     p.order = data.order ?? 0;
+
     return p;
   }
 }

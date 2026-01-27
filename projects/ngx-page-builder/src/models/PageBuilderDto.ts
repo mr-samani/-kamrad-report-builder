@@ -7,23 +7,16 @@ export class PageBuilderDto implements IPageBuilderDto {
   pages: Page[] = [];
 
   constructor(data?: PageBuilderDto | any) {
-    if (data) {
-      for (var property in data) {
-        if (this.hasOwnProperty(property)) (<any>this)[property] = (<any>data)[property];
-      }
+    this.config = new PageBuilderConfig(data?.config);
+
+    if (data && data.pages) {
+      this.pages = data.pages.map((p: Page) => Page.fromJSON(p));
+    } else {
+      this.pages = [];
     }
   }
   static fromJSON(data: IPageBuilderDto): PageBuilderDto {
-    const p = new PageBuilderDto(data);
-    if (!data) {
-      return p;
-    }
-    if (!data.pages) {
-      data.pages = [];
-    }
-    p.pages = data.pages.map((page: any) => Page.fromJSON(page));
-    p.config = new PageBuilderConfig(data.config);
-    return p;
+    return new PageBuilderDto(data);
   }
 }
 export class PageBuilderConfig {

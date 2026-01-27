@@ -64,3 +64,38 @@ export function cloneDeep<T>(value: T, stack = new WeakMap()): T {
 
   return clonedObj as T;
 }
+
+// utils/clone-safe.ts
+export function deepCloneInstance<T>(
+  input: T,
+  options: { cloneDom?: boolean } = { cloneDom: false },
+): T {
+  const { cloneDom } = options;
+  const map = new WeakMap<any, any>();
+
+  function _clone(value: any): any {
+    if (value === null || typeof value !== 'object') return value;
+    if (typeof HTMLElement !== 'undefined' && value instanceof HTMLElement) {
+      return cloneDom ? (value.cloneNode ? value.cloneNode(true) : value) : value;
+    }
+    if (map.has(value)) return map.get(value);
+    let copy: any;
+    try {
+      copy = Array.isArray(value) ? [] : Object.create(Object.getPrototypeOf(value) || {});
+    } catch (e) {
+      copy = Array.isArray(value) ? [] : {};
+    }
+    map.set(value, copy);
+    if (Array.isArray(value)) {
+      for (let i = 0; i < value.length; i++) copy[i] = _clone(value[i]);
+      return copy;
+    }
+    for (const key of Object.keys(value)) {
+      if (typeof value[key] === 'function') continue;
+      copy[key] = _clone(value[key]);
+    }
+    return copy;
+  }
+
+  return _clone(input) as T;
+}

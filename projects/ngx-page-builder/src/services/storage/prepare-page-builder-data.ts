@@ -3,7 +3,7 @@ import { PageBuilderConfig, PageBuilderDto } from '../../models/PageBuilderDto';
 import { PageItem } from '../../models/PageItem';
 import { ISourceOptions } from '../../models/SourceItem';
 import { IPageBuilderDto, PageBuilderService } from '../../public-api';
-import { cloneDeep } from '../../utiles/clone-deep';
+import { cloneDeep, deepCloneInstance } from '../../utiles/clone-deep';
 import { ClassManagerService } from '../class-manager.service';
 import { sanitizeForStorage } from './sanitizeForStorage';
 
@@ -26,7 +26,8 @@ export function preparePageDataForSave(
       }
 
       //dont use cloneDeep(pageInfo) has error on clone object complex;
-      const clonedData: PageBuilderDto = PageBuilderDto.fromJSON(pageInfo);
+      const clone = deepCloneInstance(pageInfo, { cloneDom: false });
+      const clonedData = PageBuilderDto.fromJSON(clone);
 
       let tree = (list: PageItem[]) => {
         for (let item of list) {
