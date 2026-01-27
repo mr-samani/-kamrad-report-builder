@@ -44,7 +44,7 @@ export class ClassManagerService {
 
   constructor() {
     // Initialize با فایل پیش‌فرض
-    // this.initializeDefaultFile();
+    this.initializeDefaultFile();
   }
 
   /**
@@ -56,6 +56,7 @@ export class ClassManagerService {
       name: 'default',
       data: {
         '*': 'box-sizing:border-box',
+        '.img': `max-width:100%`,
       },
       createdAt: new Date(),
       updatedAt: new Date(),
