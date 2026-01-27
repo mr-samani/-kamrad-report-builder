@@ -5,6 +5,8 @@ import { PageItem } from '../../models/PageItem';
 import { TextBindingComponent } from '../text-binding/text-binding.component';
 import { DynamicDataService } from '../../services/dynamic-data.service';
 import { DynamicDataStructure } from '../../models/DynamicData';
+import { MatDialog } from '@angular/material/dialog';
+import { LibConsts } from '../../consts/defauls';
 
 @Component({
   selector: 'block-settings',
@@ -21,9 +23,11 @@ export class BlockSettingsComponent extends BaseComponent implements OnInit {
   parentCollection?: PageItem;
   collectionDsList: DynamicDataStructure[] = [];
 
+  enableExportAsPlugin = LibConsts.enableExportAsPlugin;
   constructor(
     injector: Injector,
     private dynamicDataService: DynamicDataService,
+    private dialog: MatDialog,
   ) {
     super(injector);
     effect(async () => {
@@ -66,5 +70,16 @@ export class BlockSettingsComponent extends BaseComponent implements OnInit {
       return this.parentCollectionItem(item.parent);
     }
     return undefined;
+  }
+
+  async exportBlockAsPlugin() {
+    if (!this.item) return;
+    const { ExportPluginDialogComponent } = await import(
+      '../../lib/export-plugin-dialog/export-plugin-dialog.component'
+    );
+    this.dialog.open(ExportPluginDialogComponent, {
+      data: this.item,
+      width: '80%',
+    });
   }
 }

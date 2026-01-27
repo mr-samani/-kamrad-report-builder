@@ -33,3 +33,7 @@ export * from './contracts/IPageConfig';
 export * from './contracts/IPageItem';
 export * from './contracts/IPageBuilderOutput';
 export * from './contracts/IStyleSheetFile';
+export * from './contracts/IPlugin';
+
+export * from './services/plugin/plugin.store';
+export * from './services/plugin/plugin.token';

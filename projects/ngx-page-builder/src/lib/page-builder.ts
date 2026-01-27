@@ -1,11 +1,13 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
   Inject,
   Injector,
   Input,
   OnDestroy,
   OnInit,
+  Output,
   viewChild,
   ViewEncapsulation,
 } from '@angular/core';
@@ -74,6 +76,7 @@ export class NgxPageBuilder extends PageBuilderBaseComponent implements OnInit, 
   set SetViewMode(val: ViewMode) {
     super.viewMode = val;
   }
+
   blockSelector = viewChild<BlockSelectorComponent>('blockSelector');
 
   subscriptions: Subscription[] = [];

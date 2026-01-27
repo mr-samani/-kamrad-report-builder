@@ -140,7 +140,7 @@ export class CollectionItemComponent implements OnInit, OnDestroy, AfterViewInit
       );
       this.pageItem.children.push(cloned);
     }
-    console.log('data-collection', this.pageItem.id, this.pageItem);
+    // console.log('data-collection', this.pageItem.id, this.pageItem);
     this.chdRef.detectChanges();
   }
 

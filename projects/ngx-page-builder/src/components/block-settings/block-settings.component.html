@@ -20,5 +20,9 @@
     } @else {
       <p>No settings available.</p>
     }
+
+    @if (enableExportAsPlugin) {
+      <button type="button" class="btn" (click)="exportBlockAsPlugin()">Export as plugin</button>
+    }
   }
 </div>
