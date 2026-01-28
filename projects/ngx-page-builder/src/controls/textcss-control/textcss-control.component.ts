@@ -5,7 +5,6 @@ import {
   ElementRef,
   EventEmitter,
   forwardRef,
-  Inject,
   OnInit,
   Output,
   ViewChild,
@@ -17,10 +16,8 @@ import {
 } from '@angular/core';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 
-import { IPageBuilderFilePicker } from '../../services/file-picker/IFilePicker';
-import { NGX_PAGE_BUILDER_FILE_PICKER } from '../../services/file-picker/token.filepicker';
 import { BaseControl } from '../base-control';
-import { mergeCssStyles, parseStyleString } from '../../utiles/merge-css-styles';
+import { parseStyleString } from '../../utiles/merge-css-styles';
 
 @Component({
   selector: 'textcss-control',
@@ -53,7 +50,6 @@ export class TextCssControlComponent
 
   constructor(
     injector: Injector,
-    @Inject(NGX_PAGE_BUILDER_FILE_PICKER) private filePicker: IPageBuilderFilePicker | null,
     private cdr: ChangeDetectorRef,
   ) {
     super(injector);

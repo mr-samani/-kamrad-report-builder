@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@angular/core';
 import { PageItem } from '../../models/PageItem';
-import { snapdom } from '@zumer/snapdom';
 import { deepCloneInstance } from '../../utiles/clone-deep';
 import {
   IPageItem,
@@ -13,8 +12,8 @@ import { sanitizeForStorage } from '../storage/sanitizeForStorage';
 import { ClassManagerService } from '../class-manager.service';
 import { IPaginationPlugin, IPlugin } from '../../contracts/IPlugin';
 
-@Injectable({ providedIn: 'root' })
-export class PluginService {
+@Injectable()
+export class PBPluginService {
   constructor(
     private cls: ClassManagerService,
     private pageBuilder: PageBuilderService,
@@ -25,6 +24,11 @@ export class PluginService {
       try {
         if (!item.el) {
           throw new Error('Can not get html element!');
+        }
+
+        const { snapdom } = await import('@zumer/snapdom');
+        if (!snapdom) {
+          throw new Error('SnamDom not exist. `npm i @zumer/snapdom`');
         }
 
         const style = this.cls.getBlockStyles(item);

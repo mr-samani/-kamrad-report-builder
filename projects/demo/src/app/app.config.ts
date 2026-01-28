@@ -28,7 +28,7 @@ export const appConfig: ApplicationConfig = {
     }),
     {
       provide: NGX_PAGE_BUILDER_EXPORT_PLUGIN_STORE,
-      useClass: PluginService,
+      useExisting: PluginService,
     },
     // {
     //   provide: NGX_PAGE_BUILDER_STORAGE_SERVICE,

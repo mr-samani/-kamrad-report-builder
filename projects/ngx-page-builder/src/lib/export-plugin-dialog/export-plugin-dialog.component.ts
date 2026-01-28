@@ -4,7 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
-import { PluginService } from '../../services/plugin/plugin.service';
+import { PBPluginService } from '../../services/plugin/plugin.service';
 import { IPlugin } from '../../contracts/IPlugin';
 import { PageItem } from '../../models/PageItem';
 import { Notify } from '../../extensions/notify';
@@ -22,6 +22,7 @@ import { LoadingComponent } from '../../controls/loading/loading.component';
     MatInputModule,
     LoadingComponent,
   ],
+  providers: [PBPluginService],
 })
 export class ExportPluginDialogComponent implements OnInit {
   name = '';
@@ -32,7 +33,7 @@ export class ExportPluginDialogComponent implements OnInit {
   constructor(
     @Inject(MAT_DIALOG_DATA) private _data: PageItem,
     private dialogRef: MatDialogRef<ExportPluginDialogComponent>,
-    private pluginService: PluginService,
+    private pluginService: PBPluginService,
     private chdr: ChangeDetectorRef,
   ) {
     this.loading = true;
